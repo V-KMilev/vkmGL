@@ -1,0 +1,88 @@
+cmake_minimum_required(VERSION 3.21.2)
+
+project(vkmGL VERSION 0.0.1)
+
+message("=== [BUILD] GPU Core ===")
+
+find_package(OpenGL REQUIRED)
+
+set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
+
+set(GLFW_DIR ${THIRD_PARTY_DIR}/glfw)
+set(GLM_DIR ${THIRD_PARTY_DIR}/glm)
+set(STB_DIR ${THIRD_PARTY_DIR}/stb_image)
+
+set(CORE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/core)
+set(COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/common)
+
+include_directories(${CORE_DIR})
+include_directories(${COMMON_DIR})
+
+add_subdirectory(${GLFW_DIR})
+
+set(GLAD_SOURCES "${GLFW_DIR}/deps/glad_gl.c")
+set(GLAD_HEADERS "${GLFW_DIR}/deps/glad/gl.h")
+
+set(SOURCES
+	${COMMON_DIR}/error/error_handle.cpp
+	${COMMON_DIR}/files/file_read.cpp
+
+	${CORE_DIR}/error/gl_error_handle.cpp
+
+	${CORE_DIR}/gl_frame_buffer.cpp
+	${CORE_DIR}/gl_index_buffer.cpp
+	${CORE_DIR}/gl_render_buffer.cpp
+	${CORE_DIR}/gl_render.cpp
+	${CORE_DIR}/gl_shader.cpp
+	${CORE_DIR}/gl_texture.cpp
+	${CORE_DIR}/gl_uniform_buffer.cpp
+	${CORE_DIR}/gl_vertex_array.cpp
+	${CORE_DIR}/gl_vertex_buffer_layout.cpp
+	${CORE_DIR}/gl_vertex_buffer.cpp
+)
+
+set(HEADERS
+	${COMMON_DIR}/error/error_handle.h
+	${COMMON_DIR}/files/file_read.h
+
+	${CORE_DIR}/error/gl_error_handle.h
+	${CORE_DIR}/include/gl_include.h
+
+	${CORE_DIR}/gl_frame_buffer.h
+	${CORE_DIR}/gl_index_buffer.h
+	${CORE_DIR}/gl_render_buffer.h
+	${CORE_DIR}/gl_render.h
+	${CORE_DIR}/gl_shader.h
+	${CORE_DIR}/gl_texture.h
+	${CORE_DIR}/gl_uniform_buffer.h
+	${CORE_DIR}/gl_vertex_array.h
+	${CORE_DIR}/gl_vertex_buffer_layout.h
+	${CORE_DIR}/gl_vertex_buffer.h
+)
+
+add_library(${PROJECT_NAME} STATIC
+	${GLAD_SOURCES}
+	${SOURCES}
+
+	${GLM_DIR}/glm
+
+	${GLAD_HEADERS}
+	${HEADERS}
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+	${GLAD_HEADERS}
+	${HEADERS}
+
+	${GLFW_DIR}/include
+	${GLFW_DIR}/deps
+
+	${GLM_DIR}/glm
+
+	${STB_DIR}
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+	OpenGL::GL
+	glfw
+)
