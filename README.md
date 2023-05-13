@@ -7,6 +7,7 @@ OpenGL library encapsulating basic OpenGL structures
 ## Build
 ```
 git clone https://github.com/V-KMilev/vkmGL.git
+git submodule update --init --recursive
 ```
 You can find the lib in the build folder as `vkmGL.lib`
 
