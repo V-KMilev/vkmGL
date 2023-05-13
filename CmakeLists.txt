@@ -11,9 +11,26 @@ set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 set(GLFW_DIR ${THIRD_PARTY_DIR}/glfw)
 set(GLM_DIR ${THIRD_PARTY_DIR}/glm)
 set(STB_DIR ${THIRD_PARTY_DIR}/stb_image)
+set(IMGUI_DIR ${THIRD_PARTY_DIR}/imgui )
 
 set(CORE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/core)
 set(COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/common)
+
+set(IMGUI
+	"${IMGUI_DIR}/backends/imgui_impl_opengl3.h"
+	"${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
+
+	"${IMGUI_DIR}/backends/imgui_impl_glfw.h"
+	"${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
+
+	"${IMGUI_DIR}/imgui_demo.cpp"
+	"${IMGUI_DIR}/imgui_draw.cpp"
+	"${IMGUI_DIR}/imgui_tables.cpp"
+	"${IMGUI_DIR}/imgui_widgets.cpp"
+
+	"${IMGUI_DIR}/imgui.h"
+	"${IMGUI_DIR}/imgui.cpp"
+)
 
 include_directories(${CORE_DIR})
 include_directories(${COMMON_DIR})
@@ -22,6 +39,21 @@ add_subdirectory(${GLFW_DIR})
 
 set(GLAD_SOURCES "${GLFW_DIR}/deps/glad_gl.c")
 set(GLAD_HEADERS "${GLFW_DIR}/deps/glad/gl.h")
+
+set(IMGUI_SOURCES
+	"${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
+	"${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
+	"${IMGUI_DIR}/imgui_demo.cpp"
+	"${IMGUI_DIR}/imgui_draw.cpp"
+	"${IMGUI_DIR}/imgui_tables.cpp"
+	"${IMGUI_DIR}/imgui_widgets.cpp"
+	"${IMGUI_DIR}/imgui.cpp"
+)
+set(IMGUI_HEADERS
+	"${IMGUI_DIR}/backends/imgui_impl_opengl3.h"
+	"${IMGUI_DIR}/backends/imgui_impl_glfw.h"
+	"${IMGUI_DIR}/imgui.h"
+)
 
 set(SOURCES
 	${COMMON_DIR}/error/error_handle.cpp
@@ -64,6 +96,8 @@ add_library(${PROJECT_NAME} STATIC
 	${GLAD_SOURCES}
 	${SOURCES}
 
+	${IMGUI_SOURCES}
+
 	${GLM_DIR}/glm
 
 	${GLAD_HEADERS}
@@ -80,6 +114,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	${GLM_DIR}/glm
 
 	${STB_DIR}
+
+	${IMGUI_DIR}
+	${IMGUI_DIR}/backends
+
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
