@@ -1,9 +1,9 @@
 #include "gl_shader.h"
 
-#include "error/gl_error_handle.h"
+#include "gl_error_handle.h"
 
-#include "error/error_handle.h"
-#include "files/file_read.h"
+#include "error_handle.h"
+#include "file_read.h"
 
 ProgramShaders::ProgramShaders(
 	const std::string &vertexShader,
@@ -22,21 +22,21 @@ Shader::Shader(
  , mFragmentFilePath(fragmentFileName)
  , mGeometryFilePath(geometryFileName)
  , mUpdateFlag(false)
- , mID(0) {
+ , _mID(0) {
 	mPath = vertexFileName.substr(0, vertexFileName.find_last_of('\\'));
 
 	ProgramShaders source = getShaders(vertexFileName, fragmentFileName, geometryFileName);
-	mID = createShader(source.vertexShader, source.fragmentShader, source.geometryShader);
+	_mID = createShader(source.vertexShader, source.fragmentShader, source.geometryShader);
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 }
 
 Shader::~Shader() {
-	MY_GL_CHECK(glDeleteProgram(mID));
+	MY_GL_CHECK(glDeleteProgram(_mID));
 }
 
 void Shader::bind() const {
-	MY_GL_CHECK(glUseProgram(mID));
+	MY_GL_CHECK(glUseProgram(_mID));
 }
 
 void Shader::unbind() const {
@@ -111,7 +111,7 @@ int Shader::getUniformLocation(const std::string &name) const {
 		return mUniformLocationCache[name];
 	}
 
-	int location = glGetUniformLocation(mID, &name[0]);
+	int location = glGetUniformLocation(_mID, &name[0]);
 
 	// -1 means we dont have such uniform
 	// We want to store the uiforms that are not existing so the program can continue
@@ -238,7 +238,7 @@ void Shader::reCompleShader() {
 	if(!source.geometryShader.empty()) { MY_GL_CHECK(glDeleteShader(geometryShad)); } // delete geometry shader
 
 	// Set the new program as current
-	mID = program;
+	_mID = program;
 
 	std::cerr << "SHADER RECOMPLE: Shader [" << program << "][" << mPath << "] successfully recompled!\n";
 }

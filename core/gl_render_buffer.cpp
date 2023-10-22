@@ -1,9 +1,9 @@
 #include "gl_render_buffer.h"
 
-#include "error/gl_error_handle.h"
+#include "gl_error_handle.h"
 
-RenderBuffer::RenderBuffer() : mID(0) {
-	MY_GL_CHECK(glGenRenderbuffers(1, &mID));
+RenderBuffer::RenderBuffer() : _mID(0) {
+	MY_GL_CHECK(glGenRenderbuffers(1, &_mID));
 }
 
 RenderBuffer::RenderBuffer(
@@ -12,9 +12,9 @@ RenderBuffer::RenderBuffer(
 	uint32_t width,
 	uint32_t height
 )
- : mID(0)
+ : _mID(0)
 {
-	glGenRenderbuffers(1, &mID);
+	glGenRenderbuffers(1, &_mID);
 
 	bind();
 
@@ -29,13 +29,13 @@ RenderBuffer::RenderBuffer(
 }
 
 RenderBuffer::~RenderBuffer() {
-	MY_GL_CHECK(glDeleteRenderbuffers(1, &mID));
+	MY_GL_CHECK(glDeleteRenderbuffers(1, &_mID));
 }
 
 
 
 void RenderBuffer::bind() const {
-	MY_GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, mID));
+	MY_GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, _mID));
 }
 
 void RenderBuffer::unbind() const {
@@ -63,5 +63,5 @@ void RenderBuffer::update(
 }
 
 uint32_t RenderBuffer::getID() const {
-	return mID;
+	return _mID;
 }

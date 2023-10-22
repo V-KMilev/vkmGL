@@ -60,5 +60,5 @@ class VertexArray {
 		void addBuffer(const VertexBuffer &vertex_buffer, const VertexBufferLayout& layout);
 
 	private:
-		unsigned int mID;
+		unsigned int _mID;
 };

@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "error/gl_error_handle.h"
+#include "gl_error_handle.h"
 
 class FrameBuffer {
 	public:
@@ -54,5 +54,5 @@ class FrameBuffer {
 		uint32_t getID() const;
 
 	private:
-		unsigned int mID;
+		unsigned int _mID;
 };

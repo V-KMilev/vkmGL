@@ -29,5 +29,5 @@ class RenderBuffer {
 		uint32_t getID() const;
 
 	private:
-		unsigned int mID;
+		unsigned int _mID;
 };
