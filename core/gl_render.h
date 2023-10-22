@@ -9,11 +9,6 @@
 #include "gl_index_buffer.h"
 #include "gl_shader.h"
 
-#define CubeVerticesSize 24
-#define CubeIndicesSize  36
-#define QuadVerticesSize 20
-#define QuadIndicesSize  6
-
 class Renderer {
 	public:
 		/**
@@ -89,11 +84,6 @@ class Renderer {
 			const uint32_t *buffers
 		) const;
 
-		void drawCube(
-			const Shader &shader,
-			unsigned int drawType = GL_TRIANGLES
-		) const;
-
 		void drawQuad(
 			const Shader &shader,
 			unsigned int drawType = GL_TRIANGLES
@@ -107,65 +97,6 @@ class Renderer {
 
 	private:
 		glm::vec4 mClearColor;
-
-		std::shared_ptr<VertexArray>  mQuadVA;
-		std::shared_ptr<VertexBuffer> mQuadVB;
-		std::shared_ptr<IndexBuffer>  mQuadIB;
-		std::shared_ptr<VertexBufferLayout> mQuadLayout;
-
-		std::shared_ptr<VertexArray>  mCubeVA;
-		std::shared_ptr<VertexBuffer> mCubeVB;
-		std::shared_ptr<IndexBuffer>  mCubeIB;
-		std::shared_ptr<VertexBufferLayout> mCubeLayout;
-
-		const float mCubeVertices[CubeVerticesSize] {
-			-1, -1,  1, //0
-			 1, -1,  1, //1
-			-1,  1,  1, //2
-			 1,  1,  1, //3
-			-1, -1, -1, //4
-			 1, -1, -1, //5
-			-1,  1, -1, //6
-			 1,  1, -1  //7
-		};
-		const uint32_t mCubeIndices[CubeIndicesSize] = {
-			//Top
-			2, 6, 7,
-			2, 3, 7,
-
-			//Bottom
-			0, 4, 5,
-			0, 1, 5,
-
-			//Left
-			0, 2, 6,
-			0, 4, 6,
-
-			//Right
-			1, 3, 7,
-			1, 5, 7,
-
-			//Front
-			0, 2, 3,
-			0, 1, 3,
-
-			//Back
-			4, 6, 7,
-			4, 5, 7
-		};
-
-		const float mQuadVertices[QuadVerticesSize] = {
-			// positions        // texture Coords
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f
-		};
-
-		const uint32_t mQuadIndices[QuadIndicesSize] = {
-			0, 1, 2,
-			2, 1, 3
-		};
 
 		//ImGui members
 		float mImguiSpeed      = 1.0f;
