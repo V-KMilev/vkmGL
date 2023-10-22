@@ -1,0 +1,42 @@
+message("========= [BUILDING] Submodules =========")
+
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+set(GLFW_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/glfw)
+set(STB_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/stb_image)
+set(GLM_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/glm)
+
+set(SOURCES
+	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+	${IMGUI_DIR}/imgui_demo.cpp
+	${IMGUI_DIR}/imgui_draw.cpp
+	${IMGUI_DIR}/imgui_tables.cpp
+	${IMGUI_DIR}/imgui.cpp
+
+	${GLFW_DIR}/deps/glad_gl.c
+)
+
+set(HEADERS
+	${IMGUI_DIR}/backends/imgui_impl_opengl3.h
+	${IMGUI_DIR}/backends/imgui_impl_glfw.h
+	${IMGUI_DIR}/imgui.h
+
+	${GLFW_DIR}/deps/glad/gl.h
+
+	${GLM_DIR}/glm
+	${STB_DIR}
+)
+
+add_subdirectory(${GLFW_DIR})
+
+# Set the target's include directories
+target_include_directories(${PROJECT_NAME} PRIVATE
+	${GLFW_DIR}/include
+	${GLFW_DIR}/deps
+	${IMGUI_DIR}/backends
+	${IMGUI_DIR}
+	${HEADERS}
+)
+
+# Add the source files to the target
+target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})

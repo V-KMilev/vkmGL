@@ -1,125 +1,25 @@
 cmake_minimum_required(VERSION 3.21.2)
+project(vkmGL VERSION 0.1.0 LANGUAGES C CXX)
 
-project(vkmGL VERSION 0.0.1)
+# Set the C++ standard to 17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-message("=== [BUILD] GPU Core ===")
+message("========= [BUILDING] VKM-GL =========")
 
+# Find OpenGL. Required for the library
 find_package(OpenGL REQUIRED)
 
-set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
+# Main target
+add_library(${PROJECT_NAME} STATIC empty.cpp)
 
-set(GLFW_DIR ${THIRD_PARTY_DIR}/glfw)
-set(GLM_DIR ${THIRD_PARTY_DIR}/glm)
-set(STB_DIR ${THIRD_PARTY_DIR}/stb_image)
-set(IMGUI_DIR ${THIRD_PARTY_DIR}/imgui )
+# Include the sources from subdirectories
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modules)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/common)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core)
 
-set(CORE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/core)
-set(COMMON_DIR ${CMAKE_CURRENT_SOURCE_DIR}/common)
-
-set(IMGUI
-	"${IMGUI_DIR}/backends/imgui_impl_opengl3.h"
-	"${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
-
-	"${IMGUI_DIR}/backends/imgui_impl_glfw.h"
-	"${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
-
-	"${IMGUI_DIR}/imgui_demo.cpp"
-	"${IMGUI_DIR}/imgui_draw.cpp"
-	"${IMGUI_DIR}/imgui_tables.cpp"
-	"${IMGUI_DIR}/imgui_widgets.cpp"
-
-	"${IMGUI_DIR}/imgui.h"
-	"${IMGUI_DIR}/imgui.cpp"
-)
-
-include_directories(${CORE_DIR})
-include_directories(${COMMON_DIR})
-
-add_subdirectory(${GLFW_DIR})
-
-set(GLAD_SOURCES "${GLFW_DIR}/deps/glad_gl.c")
-set(GLAD_HEADERS "${GLFW_DIR}/deps/glad/gl.h")
-
-set(IMGUI_SOURCES
-	"${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
-	"${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
-	"${IMGUI_DIR}/imgui_demo.cpp"
-	"${IMGUI_DIR}/imgui_draw.cpp"
-	"${IMGUI_DIR}/imgui_tables.cpp"
-	"${IMGUI_DIR}/imgui_widgets.cpp"
-	"${IMGUI_DIR}/imgui.cpp"
-)
-set(IMGUI_HEADERS
-	"${IMGUI_DIR}/backends/imgui_impl_opengl3.h"
-	"${IMGUI_DIR}/backends/imgui_impl_glfw.h"
-	"${IMGUI_DIR}/imgui.h"
-)
-
-set(SOURCES
-	${COMMON_DIR}/error/error_handle.cpp
-	${COMMON_DIR}/files/file_read.cpp
-
-	${CORE_DIR}/error/gl_error_handle.cpp
-
-	${CORE_DIR}/gl_frame_buffer.cpp
-	${CORE_DIR}/gl_index_buffer.cpp
-	${CORE_DIR}/gl_render_buffer.cpp
-	${CORE_DIR}/gl_render.cpp
-	${CORE_DIR}/gl_shader.cpp
-	${CORE_DIR}/gl_texture.cpp
-	${CORE_DIR}/gl_uniform_buffer.cpp
-	${CORE_DIR}/gl_vertex_array.cpp
-	${CORE_DIR}/gl_vertex_buffer_layout.cpp
-	${CORE_DIR}/gl_vertex_buffer.cpp
-)
-
-set(HEADERS
-	${COMMON_DIR}/error/error_handle.h
-	${COMMON_DIR}/files/file_read.h
-
-	${CORE_DIR}/error/gl_error_handle.h
-	${CORE_DIR}/include/gl_include.h
-
-	${CORE_DIR}/gl_frame_buffer.h
-	${CORE_DIR}/gl_index_buffer.h
-	${CORE_DIR}/gl_render_buffer.h
-	${CORE_DIR}/gl_render.h
-	${CORE_DIR}/gl_shader.h
-	${CORE_DIR}/gl_texture.h
-	${CORE_DIR}/gl_uniform_buffer.h
-	${CORE_DIR}/gl_vertex_array.h
-	${CORE_DIR}/gl_vertex_buffer_layout.h
-	${CORE_DIR}/gl_vertex_buffer.h
-)
-
-add_library(${PROJECT_NAME} STATIC
-	${GLAD_SOURCES}
-	${SOURCES}
-
-	${IMGUI_SOURCES}
-
-	${GLM_DIR}/glm
-
-	${GLAD_HEADERS}
-	${HEADERS}
-)
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-	${GLAD_HEADERS}
-	${HEADERS}
-
-	${GLFW_DIR}/include
-	${GLFW_DIR}/deps
-
-	${GLM_DIR}/glm
-
-	${STB_DIR}
-
-	${IMGUI_DIR}
-	${IMGUI_DIR}/backends
-
-)
-
+# Link the main target with external libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	OpenGL::GL
 	glfw
