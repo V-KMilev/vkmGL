@@ -2,9 +2,9 @@
 
 #include <assert.h>
 
-#include "error/gl_error_handle.h"
+#include "gl_error_handle.h"
 
-#include "error/error_handle.h"
+#include "error_handle.h"
 
 VertexBufferLayout::VertexBufferLayout() : myStride(0) {}
 

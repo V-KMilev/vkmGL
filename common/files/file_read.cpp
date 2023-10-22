@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "error/error_handle.h"
+#include "error_handle.h"
 
 std::string fileToString(const std::string &file_name) {
 	std::ifstream file(file_name);

@@ -58,6 +58,6 @@ class IndexBuffer {
 		unsigned int getID() const;
 
 	private:
-		unsigned int mID;
+		unsigned int _mID;
 		unsigned int mCount;
 };

@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-#include "error/gl_error_handle.h"
+#include "gl_error_handle.h"
 
 enum class TextureReadType {
 	DEFAULT = 0,
@@ -271,5 +271,5 @@ class Texture {
 		int width, height;
 		int components_per_pixel;
 
-		unsigned int mID;
+		unsigned int _mID;
 };

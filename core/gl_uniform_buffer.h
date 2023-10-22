@@ -51,5 +51,5 @@ class UniformBuffer {
 		unsigned int getID() const;
 
 	private:
-		unsigned int mID;
+		unsigned int _mID;
 };

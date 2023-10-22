@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "error/error_handle.h"
+#include "error_handle.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -12,7 +12,7 @@
 	/* Constructs */
 
 Texture::Texture()
- : mID(0)
+ : _mID(0)
  , mType("")
  , mPath("")
  , my_local_buffer(nullptr)
@@ -23,7 +23,7 @@ Texture::Texture()
 {}
 
 Texture::Texture(Texture &&texture) noexcept {
-	this->mID                  = texture.mID;
+	this->_mID                  = texture._mID;
 	this->mType                = std::move(texture.mType);
 	this->mPath                = std::move(texture.mPath);
 	this->mReadType            = texture.mReadType;
@@ -32,12 +32,12 @@ Texture::Texture(Texture &&texture) noexcept {
 	this->height               = texture.height;
 	this->components_per_pixel = texture.components_per_pixel;
 
-	texture.mID = 0;
+	texture._mID = 0;
 	texture.my_local_buffer = nullptr;
 }
 
 Texture& Texture::operator = (Texture &&texture) noexcept {
-	this->mID                  = texture.mID;
+	this->_mID                  = texture._mID;
 	this->mType                = std::move(texture.mType);
 	this->mPath                = std::move(texture.mPath);
 	this->mReadType            = texture.mReadType;
@@ -46,7 +46,7 @@ Texture& Texture::operator = (Texture &&texture) noexcept {
 	this->height               = texture.height;
 	this->components_per_pixel = texture.components_per_pixel;
 
-	texture.mID = 0;
+	texture._mID = 0;
 	texture.my_local_buffer = nullptr;
 
 	return *this;
@@ -58,7 +58,7 @@ Texture::Texture(
 	TextureReadType readType,
 	unsigned char* data
 )
- : mID(0)
+ : _mID(0)
  , mPath(texture_path)
  , mType(type)
  , mReadType(readType)
@@ -71,11 +71,11 @@ Texture::Texture(
 	// OGL starts its textures form the bottom so we need to flip out
 	stbi_set_flip_vertically_on_load(true);
 
-	MY_GL_CHECK(glGenTextures(1, &mID));
+	MY_GL_CHECK(glGenTextures(1, &_mID));
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 
-	MY_GL_CHECK(glBindTexture(GL_TEXTURE_2D, mID));
+	MY_GL_CHECK(glBindTexture(GL_TEXTURE_2D, _mID));
 
 	if(readType == TextureReadType::DEFAULT) {
 
@@ -151,7 +151,7 @@ Texture::Texture(
 	const std::vector<std::string> &texture_paths,
 	TextureReadType readType
 )
- : mID(0)
+ : _mID(0)
  , mPath("")
  , mType("")
  , mReadType(readType)
@@ -164,13 +164,13 @@ Texture::Texture(
 	// OGL starts its textures form the bottom so we need to flip out
 	stbi_set_flip_vertically_on_load(true);
 
-	if(mID == 0) {
-		MY_GL_CHECK(glGenTextures(1, &mID));
+	if(_mID == 0) {
+		MY_GL_CHECK(glGenTextures(1, &_mID));
 	}
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 
-	MY_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, mID));
+	MY_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, _mID));
 
 	for(int i = 0; i < 6; i++) {
 
@@ -255,7 +255,7 @@ Texture::Texture(
 	void*        data,
 	TextureReadType readType
 )
- : mID(0)
+ : _mID(0)
  , mPath("")
  , mType("")
  , mReadType(readType)
@@ -270,11 +270,11 @@ Texture::Texture(
 		stbi__vertical_flip(data, width, height, sizeof(float) * 3);
 	}
 
-	MY_GL_CHECK(glGenTextures(1, &mID));
+	MY_GL_CHECK(glGenTextures(1, &_mID));
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 
-	MY_GL_CHECK(glBindTexture(target, mID));
+	MY_GL_CHECK(glBindTexture(target, _mID));
 
 	if(target == GL_TEXTURE_CUBE_MAP) {
 
@@ -324,7 +324,7 @@ Texture::Texture(
 	const std::vector<void*> &data,
 	TextureReadType readType
 )
- : mID(0)
+ : _mID(0)
  , mPath("")
  , mType("")
  , mReadType(readType)
@@ -333,11 +333,11 @@ Texture::Texture(
  , height(0)
  , components_per_pixel(0)
 {
-	MY_GL_CHECK(glGenTextures(1, &mID));
+	MY_GL_CHECK(glGenTextures(1, &_mID));
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 
-	MY_GL_CHECK(glBindTexture(target, mID));
+	MY_GL_CHECK(glBindTexture(target, _mID));
 
 	if(target != GL_TEXTURE_CUBE_MAP) {
 
@@ -377,13 +377,13 @@ Texture::Texture(
 }
 
 Texture::~Texture() {
-	if(mID != 0) { MY_GL_CHECK(glDeleteTextures(1, &mID)); }
+	if(_mID != 0) { MY_GL_CHECK(glDeleteTextures(1, &_mID)); }
 }
 
 void Texture::remove() {
-	if(mID != 0) {
-		MY_GL_CHECK(glDeleteTextures(1, &mID));
-		mID = 0;
+	if(_mID != 0) {
+		MY_GL_CHECK(glDeleteTextures(1, &_mID));
+		_mID = 0;
 	}
 }
 
@@ -399,13 +399,13 @@ void Texture::update(
 	// OGL starts its textures form the bottom so we need to flip out
 	stbi_set_flip_vertically_on_load(true);
 
-	if(mID == 0) {
-		MY_GL_CHECK(glGenTextures(1, &mID));
+	if(_mID == 0) {
+		MY_GL_CHECK(glGenTextures(1, &_mID));
 	}
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 
-	MY_GL_CHECK(glBindTexture(GL_TEXTURE_2D, mID));
+	MY_GL_CHECK(glBindTexture(GL_TEXTURE_2D, _mID));
 
 	if(readType == TextureReadType::DEFAULT) {
 
@@ -481,13 +481,13 @@ void Texture::update(
 	const std::vector<std::string> &texture_paths,
 	TextureReadType readType
 ) {
-	if(mID == 0) {
-		MY_GL_CHECK(glGenTextures(1, &mID));
+	if(_mID == 0) {
+		MY_GL_CHECK(glGenTextures(1, &_mID));
 	}
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 
-	MY_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, mID));
+	MY_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, _mID));
 
 	float* my_local_buffer_f;
 
@@ -578,13 +578,13 @@ void Texture::update(
 		stbi__vertical_flip(data, width, height, sizeof(float) * 3);
 	}
 
-	if(mID == 0) {
-		MY_GL_CHECK(glGenTextures(1, &mID));
+	if(_mID == 0) {
+		MY_GL_CHECK(glGenTextures(1, &_mID));
 	}
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 
-	MY_GL_CHECK(glBindTexture(target, mID));
+	MY_GL_CHECK(glBindTexture(target, _mID));
 
 	if(target == GL_TEXTURE_CUBE_MAP) {
 
@@ -634,11 +634,11 @@ void Texture::update(
 	const std::vector<void*> &data,
 	TextureReadType readType
 ) {
-	MY_GL_CHECK(glGenTextures(1, &mID));
+	MY_GL_CHECK(glGenTextures(1, &_mID));
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 
-	MY_GL_CHECK(glBindTexture(target, mID));
+	MY_GL_CHECK(glBindTexture(target, _mID));
 
 	if(target != GL_TEXTURE_CUBE_MAP) {
 
@@ -684,7 +684,7 @@ void Texture::update(
 
 void Texture::bind(uint32_t slot, uint32_t type) const {
 	MY_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
-	MY_GL_CHECK(glBindTexture(type, mID));
+	MY_GL_CHECK(glBindTexture(type, _mID));
 };
 
 void Texture::unbind() const {

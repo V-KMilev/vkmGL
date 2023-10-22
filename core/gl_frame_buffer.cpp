@@ -2,12 +2,12 @@
 
 #include <stdint.h>
 
-#include "error/error_handle.h"
+#include "error_handle.h"
 
 #include "gl_texture.h"
 
-FrameBuffer::FrameBuffer() : mID(0) {
-	MY_GL_CHECK(glGenFramebuffers(1, &mID));
+FrameBuffer::FrameBuffer() : _mID(0) {
+	MY_GL_CHECK(glGenFramebuffers(1, &_mID));
 }
 
 FrameBuffer::FrameBuffer(
@@ -17,9 +17,9 @@ FrameBuffer::FrameBuffer(
 	uint32_t textureID,
 	uint32_t level
 )
- : mID(0)
+ : _mID(0)
 {
-	MY_GL_CHECK(glGenFramebuffers(1, &mID));
+	MY_GL_CHECK(glGenFramebuffers(1, &_mID));
 
 	bind();
 
@@ -37,7 +37,7 @@ FrameBuffer::FrameBuffer(
 
 	M_ASSERT(
 		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO #" + std::to_string(mID) + " not complete!").data()
+		std::string("FBO ERROR: " + std::to_string(status) + " | FBO #" + std::to_string(_mID) + " not complete!").data()
 	);
 }
 
@@ -47,9 +47,9 @@ FrameBuffer::FrameBuffer(
 	uint32_t textureID,
 	uint32_t level
 )
- : mID(0)
+ : _mID(0)
 {
-	MY_GL_CHECK(glGenFramebuffers(1, &mID));
+	MY_GL_CHECK(glGenFramebuffers(1, &_mID));
 
 	bind();
 
@@ -66,18 +66,18 @@ FrameBuffer::FrameBuffer(
 
 	M_ASSERT(
 		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO #" + std::to_string(mID) + " not complete!").data()
+		std::string("FBO ERROR: " + std::to_string(status) + " | FBO #" + std::to_string(_mID) + " not complete!").data()
 	);
 }
 
 FrameBuffer::~FrameBuffer() {
-	MY_GL_CHECK(glDeleteFramebuffers(1, &mID));
+	MY_GL_CHECK(glDeleteFramebuffers(1, &_mID));
 }
 
 
 
 void FrameBuffer::bind(uint32_t target) const {
-	MY_GL_CHECK(glBindFramebuffer(target, mID));
+	MY_GL_CHECK(glBindFramebuffer(target, _mID));
 }
 
 void FrameBuffer::unbind(uint32_t target) const {
@@ -107,7 +107,7 @@ void FrameBuffer::bindRenderBuffer(
 
 	M_ASSERT(
 		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO #" + std::to_string(mID) + " not complete!").data()
+		std::string("FBO ERROR: " + std::to_string(status) + " | FBO #" + std::to_string(_mID) + " not complete!").data()
 	);
 }
 
@@ -134,7 +134,7 @@ void FrameBuffer::update(
 
 	M_ASSERT(
 		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO [" + std::to_string(mID) + "] not complete!").data()
+		std::string("FBO ERROR: " + std::to_string(status) + " | FBO [" + std::to_string(_mID) + "] not complete!").data()
 	);
 }
 
@@ -159,10 +159,10 @@ void FrameBuffer::update(
 
 	M_ASSERT(
 		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO [" + std::to_string(mID) + "] not complete!").data()
+		std::string("FBO ERROR: " + std::to_string(status) + " | FBO [" + std::to_string(_mID) + "] not complete!").data()
 	);
 }
 
 uint32_t FrameBuffer::getID() const {
-	return mID;
+	return _mID;
 }

@@ -1,21 +1,21 @@
 #include "gl_vertex_array.h"
 
-#include "error/gl_error_handle.h"
+#include "gl_error_handle.h"
 
-#include "error/error_handle.h"
+#include "error_handle.h"
 
-VertexArray::VertexArray() : mID(0) {
-	MY_GL_CHECK(glGenVertexArrays(1, &mID));
+VertexArray::VertexArray() : _mID(0) {
+	MY_GL_CHECK(glGenVertexArrays(1, &_mID));
 
-	M_ASSERT(mID != 0);
+	M_ASSERT(_mID != 0);
 }
 
 VertexArray::~VertexArray() {
-	MY_GL_CHECK(glDeleteVertexArrays(1, &mID));
+	MY_GL_CHECK(glDeleteVertexArrays(1, &_mID));
 }
 
 void VertexArray::bind() const {
-	MY_GL_CHECK(glBindVertexArray(mID));
+	MY_GL_CHECK(glBindVertexArray(_mID));
 }
 
 void VertexArray::unbind() const {
@@ -23,7 +23,6 @@ void VertexArray::unbind() const {
 }
 
 void VertexArray::addBuffer(const VertexBuffer &vertex_buffer, const VertexBufferLayout& layout) {
-
 	bind();
 	vertex_buffer.bind();
 
@@ -43,4 +42,4 @@ void VertexArray::addBuffer(const VertexBuffer &vertex_buffer, const VertexBuffe
 	}
 }
 
-unsigned int VertexArray::getID() const { return mID; }
+unsigned int VertexArray::getID() const { return _mID; }

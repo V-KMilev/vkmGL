@@ -262,5 +262,5 @@ class Shader {
 
 		bool mUpdateFlag;
 
-		uint32_t mID;
+		uint32_t _mID;
 };
