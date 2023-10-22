@@ -1,0 +1,27 @@
+message("========= [BUILDING] OpenGL Core =========")
+
+set(SOURCES
+	${CMAKE_CURRENT_SOURCE_DIR}/error/gl_error_handle.cpp
+
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_frame_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_frame_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_index_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_render_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_render.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_shader.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_texture.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_uniform_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_vertex_array.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_vertex_buffer_layout.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/gl_vertex_buffer.cpp
+)
+
+
+# Set the target's include directories
+target_include_directories(${PROJECT_NAME} PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/error
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# Add the source files to the target
+target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
