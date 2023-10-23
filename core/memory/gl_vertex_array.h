@@ -17,7 +17,7 @@ namespace Core {
 
 			void bind() const;
 			void unbind() const;
-			
+
 			unsigned int getID() const;
 
 			void addBuffer(const VertexBuffer& vertex_buffer, const VertexBufferLayout& layout) const;
