@@ -1,55 +1,31 @@
 #pragma once
 
-#include <stdint.h>
+// To avoid including the full glad implementation, we redefine GL_ARRAY_BUFFER
+#ifndef GL_ARRAY_BUFFER
+	#define GL_ARRAY_BUFFER 0x8892
+#endif
 
-class VertexBuffer {
-	public:
-		/**
-		 * @brief Construct a new Vertex Buffer object
-		 * 
-		 */
-		VertexBuffer() = default;
+namespace Core {
+	class VertexBuffer {
+		public:
+			VertexBuffer() = delete;
+			~VertexBuffer();
 
-		/**
-		 * @brief Construct a new Vertex Buffer object
-		 * 
-		 * @note https://docs.gl/es3/glBufferData
-		 * 
-		 * @param[in] data 
-		 * @param[in] size 
-		 */
-		VertexBuffer(const void* data, unsigned int size);
+			VertexBuffer(const void* data, unsigned int size);
 
-		/**
-		 * @brief Destroy the Vertex Buffer object
-		 * 
-		 * @note https://docs.gl/es3/glDeleteBuffers
-		 * 
-		 */
-		~VertexBuffer();
-		
-		/**
-		 * @brief Binds the VertexBuffer object to the specified buffer binding point
-		 * 
-		 * @note https://docs.gl/gl3/glBindBuffer
-		 */
-		void bind() const;
+			VertexBuffer(const VertexBuffer& other);
+			VertexBuffer& operator = (const VertexBuffer& other);
 
-		/**
-		 * @brief Binds the VertexBuffer object to the zero binding point
-		 * 
-		 * @note https://docs.gl/gl3/glBindBuffer
-		 * 
-		 */
-		void unbind() const;
+			VertexBuffer(VertexBuffer && other);
+			VertexBuffer& operator = (VertexBuffer && other);
 
-		/**
-		 * @brief Get the ID of the object
-		 * 
-		 * @return unsigned int 
-		 */
-		unsigned int getID() const;
+			void bind(unsigned int targetBuffer = GL_ARRAY_BUFFER) const;
+			void unbind() const;
 
-	private:
-		unsigned int _mID;
+			unsigned int getID() const;
+
+		private:
+			unsigned int _mID;
+			unsigned int _mSize;
+	};
 };
