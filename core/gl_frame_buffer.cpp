@@ -1,168 +1,87 @@
 #include "gl_frame_buffer.h"
 
-#include <stdint.h>
+#include <stdio.h>
 
+#include "gl_error_handle.h"
 #include "error_handle.h"
 
-#include "gl_texture.h"
+namespace Core {
+	FrameBuffer::FrameBuffer(Dimensions dimensions) : _mID(0), _mDimensions(dimensions) {
+		MY_GL_CHECK(glGenFramebuffers(1, &_mID));
+	}
 
-FrameBuffer::FrameBuffer() : _mID(0) {
-	MY_GL_CHECK(glGenFramebuffers(1, &_mID));
-}
+	FrameBuffer::~FrameBuffer() {
+		MY_GL_CHECK(glDeleteFramebuffers(1, &_mID));
+	}
 
-FrameBuffer::FrameBuffer(
-	uint32_t target,
-	uint32_t attachment,
-	uint32_t textarget,
-	uint32_t textureID,
-	uint32_t level
-)
- : _mID(0)
-{
-	MY_GL_CHECK(glGenFramebuffers(1, &_mID));
+	void FrameBuffer::bind(unsigned int target) const {
+		MY_GL_CHECK(glBindFramebuffer(target, _mID));
+	}
 
-	bind();
+	void FrameBuffer::unbind() const {
+		MY_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+	}
 
-	MY_GL_CHECK(
-		glFramebufferTexture2D(
-			target,
-			attachment,
-			textarget,
-			textureID,
-			level
-		)
-	);
+	unsigned int FrameBuffer::getID() const {
+		return _mID;
+	}
 
-	uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	bool FrameBuffer::init(
+		unsigned int target,
+		unsigned int attachment,
+		unsigned int textureID,
+		unsigned int level,
+		unsigned int textarget,
+		unsigned int layer
+	) const {
+		bind();
 
-	M_ASSERT(
-		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO #" + std::to_string(_mID) + " not complete!").data()
-	);
-}
+		if (_mDimensions == Dimensions::_ND) {
+			MY_GL_CHECK(glFramebufferTexture(target, attachment, textureID, level));
+		}
+		else if (_mDimensions == Dimensions::_1D) {
+			MY_GL_CHECK(glFramebufferTexture1D(target, attachment, textarget, textureID, level));
+		}
+		else if (_mDimensions == Dimensions::_2D) {
+			MY_GL_CHECK(glFramebufferTexture2D(target, attachment, textarget, textureID, level));
+		}
+		else if (_mDimensions == Dimensions::_3D) {
+			MY_GL_CHECK(glFramebufferTexture3D(target, attachment, textarget, textureID, level, layer));
+		}
+		else {
+			printf("[ERROR:CORE] FBO: [ID:%ud] has invalid dimensions!", _mID);
 
-FrameBuffer::FrameBuffer(
-	uint32_t target,
-	uint32_t attachment,
-	uint32_t textureID,
-	uint32_t level
-)
- : _mID(0)
-{
-	MY_GL_CHECK(glGenFramebuffers(1, &_mID));
+			return false;
+		}
 
-	bind();
+		unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		M_ASSERT(status == GL_FRAMEBUFFER_COMPLETE);
 
-	MY_GL_CHECK(
-		glFramebufferTexture(
-			target,
-			attachment,
-			textureID,
-			level
-		)
-	);
+		return true;
+	}
 
-	uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	bool FrameBuffer::update(
+		unsigned int target,
+		unsigned int attachment,
+		unsigned int textureID,
+		unsigned int level,
+		unsigned int textarget,
+		unsigned int layer
+	) const {
+		return init(target, attachment, textureID, level, textarget, layer);
+	}
 
-	M_ASSERT(
-		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO #" + std::to_string(_mID) + " not complete!").data()
-	);
-}
+	void FrameBuffer::bindRenderBuffer(
+		unsigned int target,
+		unsigned int attachment,
+		unsigned int renderbuffertarget,
+		unsigned int renderbufferID
+	) const {
+		bind();
 
-FrameBuffer::~FrameBuffer() {
-	MY_GL_CHECK(glDeleteFramebuffers(1, &_mID));
-}
+		MY_GL_CHECK(glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbufferID));
 
-
-
-void FrameBuffer::bind(uint32_t target) const {
-	MY_GL_CHECK(glBindFramebuffer(target, _mID));
-}
-
-void FrameBuffer::unbind(uint32_t target) const {
-	MY_GL_CHECK(glBindFramebuffer(target, 0));
-}
-
-
-
-void FrameBuffer::bindRenderBuffer(
-	uint32_t target,
-	uint32_t attachment,
-	uint32_t renderbuffertarget,
-	uint32_t renderbufferID
-) const {
-	bind();
-
-	MY_GL_CHECK(
-		glFramebufferRenderbuffer(
-			target,
-			attachment,
-			renderbuffertarget,
-			renderbufferID
-		)
-	);
-
-	uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-	M_ASSERT(
-		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO #" + std::to_string(_mID) + " not complete!").data()
-	);
-}
-
-void FrameBuffer::update(
-	uint32_t target,
-	uint32_t attachment,
-	uint32_t textarget,
-	uint32_t textureID,
-	uint32_t level
-) const {
-	bind();
-
-	MY_GL_CHECK(
-		glFramebufferTexture2D(
-			target,
-			attachment,
-			textarget,
-			textureID,
-			level
-		)
-	);
-
-	uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-	M_ASSERT(
-		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO [" + std::to_string(_mID) + "] not complete!").data()
-	);
-}
-
-void FrameBuffer::update(
-	uint32_t target,
-	uint32_t attachment,
-	uint32_t textureID,
-	uint32_t level
-) const {
-	bind();
-
-	MY_GL_CHECK(
-		glFramebufferTexture(
-			target,
-			attachment,
-			textureID,
-			level
-		)
-	);
-
-	uint32_t status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-	M_ASSERT(
-		status == GL_FRAMEBUFFER_COMPLETE,
-		std::string("FBO ERROR: " + std::to_string(status) + " | FBO [" + std::to_string(_mID) + "] not complete!").data()
-	);
-}
-
-uint32_t FrameBuffer::getID() const {
-	return _mID;
-}
+		unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		M_ASSERT(status == GL_FRAMEBUFFER_COMPLETE);
+	}
+};

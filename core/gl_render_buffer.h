@@ -1,33 +1,45 @@
 #pragma once
 
-#include <stdint.h>
+namespace Core {
+	class RenderBuffer {
+		public:
+			RenderBuffer();
+			~RenderBuffer();
 
-class RenderBuffer {
-	public:
-		RenderBuffer();
+			RenderBuffer(
+				unsigned int target,
+				unsigned int internalformat,
+				unsigned int width,
+				unsigned int height
+			);
 
-		RenderBuffer(
-			uint32_t target,
-			uint32_t internalformat,
-			uint32_t width,
-			uint32_t height
-		);
+			RenderBuffer(const RenderBuffer& other) = delete;
+			RenderBuffer& operator = (const RenderBuffer& other) = delete;
 
-		~RenderBuffer();
+			RenderBuffer(RenderBuffer && other) = delete;
+			RenderBuffer& operator = (RenderBuffer && other) = delete;
 
-		void bind() const;
+			void bind() const;
+			void unbind() const;
 
-		void unbind() const;
+			unsigned int getID() const;
 
-		void update(
-			uint32_t target,
-			uint32_t internalformat,
-			uint32_t width,
-			uint32_t height
-		) const;
+			bool init(
+				unsigned int target,
+				unsigned int internalformat,
+				unsigned int width,
+				unsigned int height
+			) const;
 
-		uint32_t getID() const;
+			bool update(
+				unsigned int target,
+				unsigned int internalformat,
+				unsigned int width,
+				unsigned int height
+			) const;
 
-	private:
-		unsigned int _mID;
+
+		private:
+			unsigned int _mID;
+	};
 };

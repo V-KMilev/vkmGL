@@ -1,33 +1,67 @@
 #include "gl_vertex_buffer_layout.h"
 
-#include <assert.h>
+#include <utility>
 
 #include "gl_error_handle.h"
-
 #include "error_handle.h"
 
-VertexBufferLayout::VertexBufferLayout() : myStride(0) {}
+namespace Core {
+	VertexBufferLayout::VertexBufferLayout() :  _mStride(0), _mElements({}) {}
 
-template<typename T>
-void push(unsigned int count) {
+	VertexBufferLayout::VertexBufferLayout(const VertexBufferLayout& other) {
+		this->_mElements = other._mElements;
+		this->_mStride   = other._mStride;
+	}
 
-	M_ASSERT(false);
-}
+	VertexBufferLayout& VertexBufferLayout::operator = (const VertexBufferLayout& other) {
+		if (this == &other) {
+			return *this;
+		}
 
-const std::vector<VertexBufferElement>& VertexBufferLayout::getElements() const { return myElements; }
+		this->_mElements = other._mElements;
+		this->_mStride   = other._mStride;
+		return *this;
+	}
 
-unsigned int VertexBufferLayout::getStride() const { return myStride; }
+	VertexBufferLayout::VertexBufferLayout(VertexBufferLayout && other) {
+		this->_mElements = std::move(other._mElements);
+		this->_mStride   = std::move(other._mStride);
+	}
 
-template<>
-void VertexBufferLayout::push<float>(unsigned int count) {
+	VertexBufferLayout& VertexBufferLayout::operator = (VertexBufferLayout && other) {
+		if (this == &other) {
+			return *this;
+		}
 
-	VertexBufferElement element;
-	element.type = GL_FLOAT;
-	element.count = count;
-	element.normalized = GL_FALSE;
+		this->_mElements = std::move(other._mElements);
+		this->_mStride   = std::move(other._mStride);
+		return *this;
+	}
 
-	myElements.push_back(element);
+	template<typename T>
+	void push(unsigned int count) {
+		// Error message indicating that push function should be used
+		M_ASSERT(false);
+	}
 
-	/* Custom for every template : float == GLfloat */
-	myStride += count * sizeof(GLfloat);
-}
+	unsigned int VertexBufferLayout::getStride() const {
+		return _mStride;
+	}
+
+	const std::vector<VertexBufferElement>& VertexBufferLayout::getElements() const {
+		return _mElements;
+	}
+
+	template<>
+	void VertexBufferLayout::push<float>(unsigned int count) {
+		VertexBufferElement element;
+		element.type       = GL_FLOAT;
+		element.count      = count;
+		element.normalized = GL_FALSE;
+
+		_mElements.push_back(element);
+
+		// Update the stride based on the element's size
+		_mStride += count * sizeof(GLfloat);
+	}
+};

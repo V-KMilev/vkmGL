@@ -1,58 +1,63 @@
 #pragma once
 
-#include <stdint.h>
+// To avoid including the full glad implementation, we redefine GL_FRAMEBUFFER
+#ifndef GL_FRAMEBUFFER
+	#define GL_FRAMEBUFFER 0x8D40
+#endif
 
-#include "gl_error_handle.h"
+namespace Core {
+	enum class Dimensions {
+		_ND  = 0,
+		_1D  = 1,
+		_2D  = 2,
+		_3D  = 3
+	};
 
-class FrameBuffer {
-	public:
-		FrameBuffer();
+	class FrameBuffer {
+		public:
+			FrameBuffer(Dimensions dimensions);
+			~FrameBuffer();
 
-		FrameBuffer(
-			uint32_t target,
-			uint32_t attachment,
-			uint32_t textarget,
-			uint32_t textureID,
-			uint32_t level
-		);
+			FrameBuffer(const FrameBuffer& other) = delete;
+			FrameBuffer& operator = (const FrameBuffer& other) = delete;
 
-			FrameBuffer(
-			uint32_t target,
-			uint32_t attachment,
-			uint32_t textureID,
-			uint32_t level
-		);
+			FrameBuffer(FrameBuffer && other) = delete;
+			FrameBuffer& operator = (FrameBuffer && other) = delete;
 
-		~FrameBuffer();
+			void bind(unsigned int targetBuffer = GL_FRAMEBUFFER) const;
+			void unbind() const;
 
-		void bind(uint32_t target = GL_FRAMEBUFFER) const;
+			unsigned int getID() const;
 
-		void unbind(uint32_t target = GL_FRAMEBUFFER) const;
+			bool init(
+				unsigned int target,
+				unsigned int attachment,
+				unsigned int textureID,
+				unsigned int level,
+				unsigned int textarget = 0,
+				unsigned int layer = 0
+			) const;
 
-		void bindRenderBuffer(
-			uint32_t target,
-			uint32_t attachment,
-			uint32_t renderbuffertarget,
-			uint32_t renderbufferID
-		) const;
+			bool update(
+				unsigned int target,
+				unsigned int attachment,
+				unsigned int textureID,
+				unsigned int level,
+				unsigned int textarget = 0,
+				unsigned int layer = 0
+			) const;
 
-		void update(
-			uint32_t target,
-			uint32_t attachment,
-			uint32_t textarget,
-			uint32_t textureID,
-			uint32_t level
-		) const;
+			void bindRenderBuffer(
+				unsigned int target,
+				unsigned int attachment,
+				unsigned int renderbuffertarget,
+				unsigned int renderbufferID
+			) const;
 
-		void update(
-			uint32_t target,
-			uint32_t attachment,
-			uint32_t textureID,
-			uint32_t level
-		) const;
 
-		uint32_t getID() const;
+		private:
+			unsigned int _mID;
 
-	private:
-		unsigned int _mID;
+			Dimensions _mDimensions;
+	};
 };

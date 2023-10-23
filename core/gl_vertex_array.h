@@ -1,64 +1,28 @@
 #pragma once
 
-#include <stdint.h>
-
 #include "gl_vertex_buffer_layout.h"
 #include "gl_vertex_buffer.h"
 
-class VertexArray {
-	public:
+namespace Core {
+	class VertexArray {
+		public:
+			VertexArray();
+			~VertexArray();
 
-		/**
-		 * @brief Construct a new Vertex Array object
-		 * 
-		 * @note https://docs.gl/gl3/glGenVertexArrays
-		 * 
-		 */
-		VertexArray();
+			VertexArray(const VertexArray& other) = delete;
+			VertexArray& operator = (const VertexArray& other) = delete;
 
-		/**
-		 * @brief Destroy the Vertex Array object
-		 * 
-		 * @note https://docs.gl/gl3/glDeleteVertexArrays
-		 * 
-		 */
-		~VertexArray();
+			VertexArray(VertexArray && other) = delete;
+			VertexArray& operator = (VertexArray && other) = delete;
 
-		/**
-		 * @brief Binds the VertexArray object to the specified array binding point
-		 * 
-		 */
-		void bind() const;
+			void bind() const;
+			void unbind() const;
+			
+			unsigned int getID() const;
 
-		/**
-		 * @brief Binds the VertexArray object to the zero binding point
-		 * 
-		 */
-		void unbind() const;
-		
-		/**
-		 * @brief Get the ID of the object
-		 * 
-		 * @return unsigned int 
-		 */
-		unsigned int getID() const;
+			void addBuffer(const VertexBuffer& vertex_buffer, const VertexBufferLayout& layout) const;
 
-		/**
-		 * @brief Adds AttribArray to the VertexArray
-		 * 
-		 * @note We pass two buffers, VertexBuffer and VertexBufferLayout.
-		 * We pass the VertexBuffer to bind the vertices we are going to use. 
-		 * We pass the VertexBufferLayout to get the layout of our vertices. 
-		 * For each element in the layout we secify the corresponding data 
-		 * format 
-		 * https://docs.gl/es3/glEnableVertexAttribArray
-		 * https://docs.gl/es3/glVertexAttribPointer
-		 * 
-		 * @param[in] vertex_buffer 
-		 * @param[in] layout 
-		 */
-		void addBuffer(const VertexBuffer &vertex_buffer, const VertexBufferLayout& layout);
-
-	private:
-		unsigned int _mID;
+		private:
+			unsigned int _mID;
+	};
 };
