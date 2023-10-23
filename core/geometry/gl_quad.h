@@ -14,11 +14,11 @@ namespace Core {
 			Quad(Quad && other);
 			Quad& operator = (Quad && other);
 
-			bool init(textureID) override;
+			bool init(unsigned int textureID = 0) override;
 			bool deinit() override;
 
 		private:
-			const float _mVertices[QuadVerticesSize] = {
+			const float _mVertices[QuadVerticesSize + TextureVertices * QuadVertices] = {
 				// positions        // texture Coords
 				-1.0f,  1.0f, 0.0f, 0.0f, 0.0f,    //top left
 				 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,    //top right
@@ -30,5 +30,5 @@ namespace Core {
 				0, 1, 2,
 				2, 1, 3
 			};
-	}
+	};
 };
