@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdint.h>
-#include <memory.h>
+#include <memory>
 
 #include "gl_vertex_array.h"
 #include "gl_vertex_buffer.h"
@@ -31,13 +30,19 @@ namespace Core {
 	public:
 		virtual ~BasicObject() = default;
 
-		virtual BasicObject(const BasicObject& other) = 0;
-		virtual BasicObject& operator = (const BasicObject& other) = 0;
+		// Constructor for copy
+		BasicObject(const BasicObject& other) = default;
 
-		virtual BasicObject(BasicObject && other) = 0;
-		virtual BasicObject& operator = (BasicObject && other) = 0;
+		// Copy assignment operator
+		BasicObject& operator=(const BasicObject& other) = default;
 
-		virtual bool init(textureID = 0) = 0;
+		// Constructor for move
+		BasicObject(BasicObject&& other) = default;
+
+		// Move assignment operator
+		BasicObject& operator=(BasicObject&& other) = default;
+
+		virtual bool init(unsigned int textureID = 0) = 0;
 		virtual bool deinit() = 0;
 
 	private:
@@ -46,7 +51,7 @@ namespace Core {
 		std::shared_ptr<IndexBuffer>        _mIB;
 		std::shared_ptr<VertexBufferLayout> _mVBL;
 
-		std::shared_ptr<Texture> _mTexture;
+		// std::shared_ptr<Texture> _mTexture;
 
 		Common::ObjectID _mID;
 	};
