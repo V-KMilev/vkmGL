@@ -6,7 +6,7 @@ namespace Core {
 	namespace Common {
 		unsigned int ObjectID::_mIDCount = 0;
 
-		ObjectID::ObjectID(unsigned int id) : _mID(_mIDCount) {
+		ObjectID::ObjectID() : _mID(_mIDCount) {
 			_mIDCount++;
 		}
 
