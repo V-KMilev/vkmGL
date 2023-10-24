@@ -1,9 +1,11 @@
 message("========= [BUILDING] Submodules =========")
 
-set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
-set(GLFW_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/glfw)
-set(STB_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/stb_image)
-set(GLM_DIR   ${CMAKE_CURRENT_SOURCE_DIR}/glm)
+set(VKMGL_MODULES_DIR ${vkmGL_SOURCE_DIR}/modules)
+
+set(IMGUI_DIR ${VKMGL_MODULES_DIR}/imgui)
+set(GLFW_DIR  ${VKMGL_MODULES_DIR}/glfw)
+set(STB_DIR   ${VKMGL_MODULES_DIR}/stb_image)
+set(GLM_DIR   ${VKMGL_MODULES_DIR}/glm)
 
 set(SOURCES
 	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp

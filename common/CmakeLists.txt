@@ -1,17 +1,18 @@
 message("========= [BUILDING] Common =========")
 
-set(SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/error/error_handle.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/files/file_read.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/object_id/object_id.cpp
-)
+set(VKMGL_COMMON_DIR ${vkmGL_SOURCE_DIR}/common)
 
+set(SOURCES
+	${VKMGL_COMMON_DIR}/error/error_handle.cpp
+	${VKMGL_COMMON_DIR}/files/file_read.cpp
+	${VKMGL_COMMON_DIR}/object_id/object_id.cpp
+)
 
 # Set the target's include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/error
-	${CMAKE_CURRENT_SOURCE_DIR}/files
-	${CMAKE_CURRENT_SOURCE_DIR}/object_id
+	${VKMGL_COMMON_DIR}/error
+	${VKMGL_COMMON_DIR}/files
+	${VKMGL_COMMON_DIR}/object_id
 )
 
 # Add the source files to the target
