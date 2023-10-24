@@ -1,14 +1,12 @@
 #pragma once
 
-#include <cstdint>
-
 namespace Core {
 	namespace Common {
 
 		class ObjectID {
 			public:
-				ObjectID(uint32_t id);
-				~ObjectID();
+				ObjectID(unsigned int id);
+				~ObjectID() = default;
 
 				ObjectID(const ObjectID& other);
 				ObjectID& operator = (const ObjectID& other);
@@ -16,11 +14,13 @@ namespace Core {
 				ObjectID(ObjectID && other);
 				ObjectID& operator = (ObjectID && other);
 
-				bool init();
-				bool deinit();
+				unsigned int getID() const;
 
 			private:
-				uint32_t _mID;
+				unsigned int _mID;
+
+				static unsigned int _mIDCount;
 		};
 	};
 };
+

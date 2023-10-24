@@ -4,8 +4,11 @@
 
 namespace Core {
 	namespace Common {
-		ObjectID::ObjectID(uint32_t id) : _mID(id) {}
-		ObjectID::~ObjectID() {}
+		unsigned int ObjectID::_mIDCount = 0;
+
+		ObjectID::ObjectID(unsigned int id) : _mID(_mIDCount) {
+			_mIDCount++;
+		}
 
 		ObjectID::ObjectID(const ObjectID& other) {
 			this->_mID = other._mID;
@@ -31,6 +34,10 @@ namespace Core {
 
 			this->_mID = std::move(other._mID);
 			return *this;
+		}
+
+		unsigned int ObjectID::getID() const {
+			return _mID;
 		}
 	};
 };
