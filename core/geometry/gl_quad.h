@@ -11,12 +11,20 @@ namespace Core {
 			Quad(const Quad& other);
 			Quad& operator = (const Quad& other);
 
-			Quad(Quad && other);
-			Quad& operator = (Quad && other);
+			Quad(Quad && other) = delete;
+			Quad& operator = (Quad && other) = delete;
 
-			bool init(unsigned int textureID = 0) override;
+			unsigned int getID() const override;
+
+			bool updateTexture(const Texture& texture) override;
+			bool updateTexture(unsigned int textureID) override;
+			bool updateTexture(const std::string& file) override;
+
+			void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType) const override;
+
+		private:
+			bool init() override;
 			bool deinit() override;
-
 		private:
 			const float _mVertices[QuadVerticesSize + TextureVertices * QuadVertices] = {
 				// positions        // texture Coords
@@ -26,7 +34,7 @@ namespace Core {
 				 1.0f, -1.0f, 0.0f, 1.0f, 1.0f     //bottom right
 			};
 
-			const uint32_t _mIndices[QuadIndicesSize] = {
+			const unsigned int _mIndices[QuadIndicesSize] = {
 				0, 1, 2,
 				2, 1, 3
 			};
