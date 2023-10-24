@@ -1,6 +1,6 @@
-message("========= [BUILDING] OpenGL Core =========")
+message("[BUILDING:VKMGL] OpenGL Core")
 
-set(VKMGL_CORE_DIR ${vkmGL_SOURCE_DIR}/core)
+set(VKMGL_CORE_DIR ${VKMGL_SOURCE_DIR}/core)
 
 set(SOURCES
 	${VKMGL_CORE_DIR}/error/gl_error_handle.cpp
@@ -23,7 +23,7 @@ set(SOURCES
 
 
 # Set the target's include directories
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME} PUBLIC
 	${VKMGL_CORE_DIR}
 	${VKMGL_CORE_DIR}/error
 	${VKMGL_CORE_DIR}/geometry

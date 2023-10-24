@@ -1,6 +1,6 @@
-message("========= [BUILDING] Submodules =========")
+message("[BUILDING:VKMGL] Submodules")
 
-set(VKMGL_MODULES_DIR ${vkmGL_SOURCE_DIR}/modules)
+set(VKMGL_MODULES_DIR ${VKMGL_SOURCE_DIR}/modules)
 
 set(IMGUI_DIR ${VKMGL_MODULES_DIR}/imgui)
 set(GLFW_DIR  ${VKMGL_MODULES_DIR}/glfw)
@@ -32,12 +32,17 @@ set(HEADERS
 add_subdirectory(${GLFW_DIR})
 
 # Set the target's include directories
-target_include_directories(${PROJECT_NAME} PRIVATE
-	${GLFW_DIR}/include
+target_include_directories(${PROJECT_NAME} PUBLIC
+	${GLFW_DIR}/deps/glad
 	${GLFW_DIR}/deps
+	${GLFW_DIR}/include
+
 	${IMGUI_DIR}/backends
 	${IMGUI_DIR}
-	${HEADERS}
+
+	${GLM_DIR}/glm
+
+	${STB_DIR}
 )
 
 # Add the source files to the target
