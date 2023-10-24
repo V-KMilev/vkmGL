@@ -1,31 +1,33 @@
 message("========= [BUILDING] OpenGL Core =========")
 
+set(VKMGL_CORE_DIR ${vkmGL_SOURCE_DIR}/core)
+
 set(SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/error/gl_error_handle.cpp
+	${VKMGL_CORE_DIR}/error/gl_error_handle.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/geometry/gl_quad.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/geometry/gl_triangle.cpp
+	${VKMGL_CORE_DIR}/geometry/gl_quad.cpp
+	${VKMGL_CORE_DIR}/geometry/gl_triangle.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/memory/gl_frame_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/memory/gl_index_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/memory/gl_render_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/memory/gl_uniform_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/memory/gl_vertex_array.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/memory/gl_vertex_buffer_layout.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/memory/gl_vertex_buffer.cpp
+	${VKMGL_CORE_DIR}/memory/gl_frame_buffer.cpp
+	${VKMGL_CORE_DIR}/memory/gl_index_buffer.cpp
+	${VKMGL_CORE_DIR}/memory/gl_render_buffer.cpp
+	${VKMGL_CORE_DIR}/memory/gl_uniform_buffer.cpp
+	${VKMGL_CORE_DIR}/memory/gl_vertex_array.cpp
+	${VKMGL_CORE_DIR}/memory/gl_vertex_buffer_layout.cpp
+	${VKMGL_CORE_DIR}/memory/gl_vertex_buffer.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/gl_render.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/gl_shader.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/gl_texture.cpp
+	${VKMGL_CORE_DIR}/gl_render.cpp
+	${VKMGL_CORE_DIR}/gl_shader.cpp
+	${VKMGL_CORE_DIR}/gl_texture.cpp
 )
 
 
 # Set the target's include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/error
-	${CMAKE_CURRENT_SOURCE_DIR}/geometry
-	${CMAKE_CURRENT_SOURCE_DIR}/memory
+	${VKMGL_CORE_DIR}
+	${VKMGL_CORE_DIR}/error
+	${VKMGL_CORE_DIR}/geometry
+	${VKMGL_CORE_DIR}/memory
 )
 
 # Add the source files to the target
