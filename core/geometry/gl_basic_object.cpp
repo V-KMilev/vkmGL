@@ -2,7 +2,7 @@
 
 #include "gl_basic_object.h"
 
-namespace Core{
+namespace Core {
 	BasicObject::BasicObject() :
 		_mTexture(nullptr),
 		_mVA(nullptr),

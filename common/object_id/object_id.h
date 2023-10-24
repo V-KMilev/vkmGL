@@ -5,7 +5,7 @@ namespace Core {
 
 		class ObjectID {
 			public:
-				ObjectID(unsigned int id);
+				ObjectID();
 				~ObjectID() = default;
 
 				ObjectID(const ObjectID& other);
