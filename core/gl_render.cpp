@@ -6,7 +6,7 @@
 #include "error_handle.h"
 
 namespace Core {
-	Renderer::Renderer() : _mClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {}
+	Renderer::Renderer() : _mClearColor(glm::vec4(1.0f, 0.25f, 0.25f, 1.0f)) {}
 
 	Renderer::Renderer(const Renderer& other) {
 		this->_mClearColor = other._mClearColor;
