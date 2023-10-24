@@ -1,64 +1,86 @@
 #include "gl_render.h"
 
-Renderer::Renderer() : mClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {}
+#include <utility>
 
-void Renderer::clear() const {
-	MY_GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-}
+#include "gl_error_handle.h"
+#include "error_handle.h"
 
-void Renderer::clearColor() const {
-	MY_GL_CHECK(
-		glClearColor(
-			mClearColor[0],
-			mClearColor[1],
-			mClearColor[2],
-			mClearColor[3]
-		)
-	);
-}
+namespace Core {
+	Renderer::Renderer() : _mClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)) {}
 
-void Renderer::draw(
-	const VertexArray &vertex_array,
-	const IndexBuffer &index_buffer,
-	const Shader &shader,
-	unsigned int drawType
-) const {
-	shader.bind();
+	Renderer::Renderer(const Renderer& other) {
+		this->_mClearColor = other._mClearColor;
+	}
 
-	vertex_array.bind();
-	index_buffer.bind();
+	Renderer& Renderer::operator = (const Renderer& other) {
+		if (this == &other) {
+			return *this;
+		}
 
-	MY_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, nullptr));
+		this->_mClearColor = other._mClearColor;
+		return *this;
+	}
 
-	// Can add unbindings but not necessary. Only for debuging
-}
+	Renderer::Renderer(Renderer && other) {
+		this->_mClearColor = std::move(other._mClearColor);
+	}
 
-void Renderer::draw(
-	const VertexArray &vertex_array,
-	const Shader &shader,
-	unsigned int drawType,
-	unsigned int first,
-	unsigned int count
-) const {
-	shader.bind();
+	Renderer& Renderer::operator = (Renderer && other) {
+		if (this == &other) {
+			return *this;
+		}
 
-	vertex_array.bind();
+		this->_mClearColor = std::move(other._mClearColor);
+		return *this;
+	}
 
-	MY_GL_CHECK(glDrawArrays(drawType, first, count));
-}
+	void Renderer::clear() const {
+		MY_GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	}
 
-void Renderer::draw(
-	uint32_t count,
-	const uint32_t *buffers
-) const {
-	MY_GL_CHECK(glDrawBuffers(count, buffers));
-}
+	void Renderer::clearColor() const {
+		MY_GL_CHECK(
+			glClearColor(
+				_mClearColor[0],
+				_mClearColor[1],
+				_mClearColor[2],
+				_mClearColor[3]
+			)
+		);
+	}
 
+	void Renderer::draw(
+		const VertexArray& vertex_array,
+		const IndexBuffer& index_buffer,
+		const Shader &shader,
+		unsigned int drawType
+	) const {
+		shader.bind();
 
-// void Renderer::drawQuad(
-// 	const Shader &shader,
-// 	unsigned int drawType,
-// 	const Quad& quad
-// ) const {
-// 	draw(*mQuadVA, *mQuadIB, shader, drawType);
-// }
+		vertex_array.bind();
+		index_buffer.bind();
+
+		MY_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, nullptr));
+	}
+
+	void Renderer::draw(
+		const VertexArray& vertex_array,
+		const Shader& shader,
+		unsigned int drawType,
+		unsigned int first,
+		unsigned int count
+	) const {
+		shader.bind();
+
+		vertex_array.bind();
+
+		MY_GL_CHECK(glDrawArrays(drawType, first, count));
+	}
+
+	void Renderer::draw(
+		unsigned int count,
+		const unsigned int* buffers
+	) const {
+		MY_GL_CHECK(glDrawBuffers(count, buffers));
+	}
+};

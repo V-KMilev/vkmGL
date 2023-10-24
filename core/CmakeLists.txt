@@ -22,8 +22,8 @@ set(SOURCES
 
 # Set the target's include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/error
-	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${CMAKE_CURRENT_SOURCE_DIR}/geometry
 	${CMAKE_CURRENT_SOURCE_DIR}/memory
 )
