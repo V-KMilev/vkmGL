@@ -5,11 +5,9 @@
 #endif
 
 #include <glad/gl.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 
 void printGLErrors(const char* file, int line, const char* function);
 
-#define MY_GL_CHECK(MyFunction)                     \
-	MyFunction;                                     \
+#define MY_GL_CHECK(MyFunction)                   \
+	MyFunction;                                   \
 	printGLErrors(__FILE__, __LINE__, __FUNCTION__)
