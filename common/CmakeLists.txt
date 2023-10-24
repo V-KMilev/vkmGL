@@ -1,6 +1,6 @@
-message("========= [BUILDING] Common =========")
+message("[BUILDING:VKMGL] Common")
 
-set(VKMGL_COMMON_DIR ${vkmGL_SOURCE_DIR}/common)
+set(VKMGL_COMMON_DIR ${VKMGL_SOURCE_DIR}/common)
 
 set(SOURCES
 	${VKMGL_COMMON_DIR}/error/error_handle.cpp
@@ -9,7 +9,7 @@ set(SOURCES
 )
 
 # Set the target's include directories
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME} PUBLIC
 	${VKMGL_COMMON_DIR}/error
 	${VKMGL_COMMON_DIR}/files
 	${VKMGL_COMMON_DIR}/object_id
