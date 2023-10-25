@@ -1,5 +1,10 @@
 #include "gl_basic_object.h"
 
+// To avoid including the full glad implementation, we redefine GL_TRIANGLES
+#ifndef GL_TRIANGLES
+	#define GL_TRIANGLES 0x0004
+#endif
+
 namespace Core {
 	class Quad : public BasicObject {
 		public:
@@ -18,7 +23,7 @@ namespace Core {
 			bool updateTexture(unsigned int textureID) override;
 			bool updateTexture(const std::string& file) override;
 
-			void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType) const override;
+			void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType = GL_TRIANGLES) const override;
 
 		private:
 			bool init() override;

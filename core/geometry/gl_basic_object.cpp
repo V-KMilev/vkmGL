@@ -1,5 +1,3 @@
-#pragma once
-
 #include "gl_basic_object.h"
 
 namespace Core {
