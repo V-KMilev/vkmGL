@@ -12,11 +12,15 @@ namespace Core {
 		ShaderSource();
 		~ShaderSource() = default;
 
-		ShaderSource (
-			const std::string &vertexShader,
-			const std::string &fragmentShader,
-			const std::string &geometryShader
+		ShaderSource (const std::string& path);
+
+		void validShaderPaths(
+			const std::string& vertexShaderName,
+			const std::string& fragmentShaderName,
+			std::string& geometryShaderName
 		);
+
+		std::string _mPath;
 
 		std::string vertexShader;
 		std::string fragmentShader;
@@ -62,7 +66,7 @@ namespace Core {
 			void setUniform1i(const std::string& uniformName, int i0) const;
 
 		private:
-			unsigned int createShader() const;
+			void createShader();
 
 			unsigned int CompileShader(unsigned int type, const std::string& source) const;
 

@@ -1,25 +1,59 @@
 #include "gl_shader.h"
 
 #include <stdio.h>
+#include <filesystem>
 
 #include "gl_error_handle.h"
 #include "error_handle.h"
 
 #include "file_read.h"
 
+namespace fs = std::filesystem;
+
 namespace Core {
 	ShaderSource::ShaderSource() :
+		_mPath(""),
 		vertexShader(""),
 		fragmentShader(""),
 		geometryShader("") {}
 
-	ShaderSource::ShaderSource(
-		const std::string& vertexShader,
-		const std::string& fragmentShader,
-		const std::string& geometryShader
-	) : vertexShader(vertexShader),
-		fragmentShader(fragmentShader),
-		geometryShader(geometryShader) {}
+	ShaderSource::ShaderSource(const std::string& path) :
+		_mPath(path),
+		vertexShader(""),
+		fragmentShader(""),
+		geometryShader("") {
+
+		std::string vertexShaderName   = _mPath + "vertexShader.shader";
+		std::string fragmentShaderName = _mPath + "fragmentShader.shader";
+		std::string geometryShaderName = _mPath + "geometryShader.shader";
+
+		validShaderPaths(
+			vertexShaderName,
+			fragmentShaderName,
+			geometryShaderName
+		);
+
+		vertexShader   = fileToString(vertexShaderName);
+		fragmentShader = fileToString(fragmentShaderName);
+		geometryShader = fileToString(geometryShaderName);
+	}
+
+	void ShaderSource::validShaderPaths(
+		const std::string& vertexShaderName,
+		const std::string& fragmentShaderName,
+		std::string& geometryShaderName
+	) {
+		if(!fs::exists(vertexShaderName)) {
+			printf("[ERROR:CORE] Shader: '%s' does not contain vertex shader!\n", _mPath.c_str());
+		}
+		if(!fs::exists(fragmentShaderName)) {
+			printf("[ERROR:CORE] Shader: '%s' does not contain fragment shader!\n", _mPath.c_str());
+		}
+		if(!fs::exists(geometryShaderName)) {
+			printf("[INFO:CORE] Shader: '%s' is runnig without geometry shader!\n", _mPath.c_str());
+			geometryShaderName = "";
+		}
+	}
 
 	Shader::Shader(const std::string& path) :
 		_mID(0),
@@ -27,15 +61,13 @@ namespace Core {
 		_mSource(),
 		_mUniformLocationCache({})
 	{
-		_mSource = ShaderSource(
-			path + "fragmentShader.shader",
-			path + "vertexShader.shader",
-			path + "geometryShader.shader"
-		);
+		if (!fs::exists(_mPath)) {
+			printf("[ERROR:CORE] Shader path: '%s' is not existing!\n", _mPath.c_str());
+		}
 
-		_mID = createShader();
+		_mSource = ShaderSource(path);
 
-		M_ASSERT(_mID != 0);
+		createShader();
 	}
 
 	Shader::~Shader() {
@@ -67,9 +99,12 @@ namespace Core {
 		return _mPath;
 	}
 
-	unsigned int Shader::createShader() const {
+	void Shader::createShader() {
 		// Create a new program
-		unsigned int program = glCreateProgram();
+		_mID = glCreateProgram();
+
+		// Ensure the shader ID is valid
+		M_ASSERT(_mID != 0);
 
 		unsigned int vertexShader   = 0;
 		unsigned int fragmentShader = 0;
@@ -84,15 +119,15 @@ namespace Core {
 		}
 
 		// Attach the shaders
-		MY_GL_CHECK(glAttachShader(program, vertexShader));
-		MY_GL_CHECK(glAttachShader(program, fragmentShader));
+		MY_GL_CHECK(glAttachShader(_mID, vertexShader));
+		MY_GL_CHECK(glAttachShader(_mID, fragmentShader));
 
 		if (!_mSource.geometryShader.empty()) {
-			MY_GL_CHECK(glAttachShader(program, geometryShader));
+			MY_GL_CHECK(glAttachShader(_mID, geometryShader));
 		}
 
-		MY_GL_CHECK(glLinkProgram(program));
-		MY_GL_CHECK(glValidateProgram(program));
+		MY_GL_CHECK(glLinkProgram(_mID));
+		MY_GL_CHECK(glValidateProgram(_mID));
 
 		// Delete the shaders
 		MY_GL_CHECK(glDeleteShader(vertexShader));
@@ -102,9 +137,7 @@ namespace Core {
 			MY_GL_CHECK(glDeleteShader(geometryShader));
 		}
 
-		printf("[INFO:CORE] Shader: '%s' [ID:%u] successfully created!\n", _mPath.c_str(), program);
-
-		return program;
+		printf("[INFO:CORE] Shader[ID:%u]: '%s' successfully created!\n", _mID, _mPath.c_str());
 	}
 
 	unsigned int Shader::CompileShader(unsigned int type, const std::string& source) const {
@@ -132,7 +165,7 @@ namespace Core {
 		else if (type == GL_FRAGMENT_SHADER) { shaderTypeName = "FRAGMENT"; }
 		else if (type == GL_GEOMETRY_SHADER) { shaderTypeName = "GEOMETRY"; }
 
-		printf("[ERROR:CORE] Shader: %s, Failed to compile %s shader!\n", _mPath.c_str(), shaderTypeName.c_str());
+		printf("[ERROR:CORE] Shader[ID:%u]: '%s' failed to compile '%s' shader[ID:%u]!\n", _mID, _mPath.c_str(), shaderTypeName.c_str(), id);
 
 		// Get error message
 		int infoLogLength;
@@ -159,7 +192,7 @@ namespace Core {
 		// -1 means we dont have such uniform
 		// We want to store the uiforms that are not existing so the program can continue
 		if(location == -1) {
-			printf("[WARN:CORE] Shader: %s, Uniform: '%s' does not exist!\n", _mPath.c_str(), name.c_str());
+			printf("[WARN:CORE] Shader[ID:%u]: '%s', Uniform: '%s' does not exist!\n", _mID, _mPath.c_str(), name.c_str());
 		}
 
 		_mUniformLocationCache[name] = location;
