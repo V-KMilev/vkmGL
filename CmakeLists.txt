@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21.2)
-project(VKMGL VERSION 0.1.0 LANGUAGES C CXX)
+project(vkmGL VERSION 0.1.0 LANGUAGES C CXX)
 
 # Set the C++ standard to 17
 set(CMAKE_CXX_STANDARD 17)
