@@ -40,32 +40,32 @@ namespace Core {
 	#define QuadIndicesSize     QuadIndices
 
 struct ObjectWorldData {
-	// x, y, z
 	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 scale    = glm::vec3(1.0f, 1.0f, 1.0f);
-
 	// roll, pitch, yaw
 	glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 };
 
-class BasicObject {
+class Object {
 	public:
-		BasicObject();
-		virtual ~BasicObject() = default;
+		Object();
+		virtual ~Object() = default;
 
-		BasicObject(const BasicObject& other);
-		BasicObject& operator = (const BasicObject& other);
+		Object(const Object& other);
+		Object& operator = (const Object& other);
 
-		BasicObject(BasicObject&& other) = delete;
-		BasicObject& operator = (BasicObject&& other) = delete;
+		Object(Object&& other) = delete;
+		Object& operator = (Object&& other) = delete;
 
-		virtual bool updateTexture(const Texture& texture)  = 0;
-		virtual bool updateTexture(unsigned int textureID)  = 0;
-		virtual bool updateTexture(const std::string& file) = 0;
+		unsigned int getID() const;
+		const Texture& getTexture() const;
+		ObjectWorldData& getWorldData();
+		const ObjectWorldData& getWorldData() const;
 
-		virtual void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType = GL_TRIANGLES) const = 0;
+		bool setTexture(const std::string& file);
+		bool setTexture(const Texture& texture);
 
-		virtual unsigned int getID() const = 0;
+		void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType = GL_TRIANGLES) const;
 
 	protected:
 		virtual bool init() = 0;
