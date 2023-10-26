@@ -5,7 +5,7 @@ set(VKMGL_CORE_DIR ${VKMGL_SOURCE_DIR}/core)
 set(SOURCES
 	${VKMGL_CORE_DIR}/error/gl_error_handle.cpp
 
-	${VKMGL_CORE_DIR}/geometry/gl_basic_object.cpp
+	${VKMGL_CORE_DIR}/geometry/gl_object.cpp
 	${VKMGL_CORE_DIR}/geometry/gl_quad.cpp
 	${VKMGL_CORE_DIR}/geometry/gl_triangle.cpp
 

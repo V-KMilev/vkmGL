@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gl_basic_object.h"
+#include "gl_object.h"
 
 // To avoid including the full glad implementation, we redefine GL_TRIANGLES
 #ifndef GL_TRIANGLES
@@ -8,7 +8,7 @@
 #endif
 
 namespace Core {
-	class Triangle : public BasicObject {
+	class Triangle : public Object {
 		public:
 			Triangle();
 			~Triangle() = default;
@@ -19,14 +19,6 @@ namespace Core {
 			Triangle(Triangle && other) = delete;
 			Triangle& operator = (Triangle && other) = delete;
 
-			unsigned int getID() const override;
-
-			bool updateTexture(const Texture& texture) override;
-			bool updateTexture(unsigned int textureID) override;
-			bool updateTexture(const std::string& file) override;
-
-			void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType = GL_TRIANGLES) const override;
-
 		private:
 			bool init() override;
 			bool deinit() override;
@@ -34,9 +26,9 @@ namespace Core {
 		private:
 			static constexpr float _mVertices[TriangleVerticesSize + TextureVertices * TriangleVertices] = {
 				// positions        // texture Coords
-				-1.0f,  1.0f, 0.0f, 1.0f, 0.0f,    //top left
-				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,    //bottom left
-				 1.0f, -1.0f, 0.0f, 0.0f, 1.0f     //bottom right
+				-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,    // bottom left
+				 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,    // bottom right
+				-1.0f,  1.0f, 0.0f, 0.0f, 1.0f     // top left
 			};
 
 			static constexpr unsigned int _mIndices[TriangleIndicesSize] = {
