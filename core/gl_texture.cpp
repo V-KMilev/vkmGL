@@ -11,11 +11,31 @@
 #include "error_handle.h"
 
 namespace Core {
-	Texture::Texture() {
-		// Generate a new texture
-		MY_GL_CHECK(glGenTextures(1, &_mID));
-
-		M_ASSERT(_mID != 0);
+	TextureParams::TextureParams(
+		unsigned int target,
+		unsigned int level,
+		unsigned int internalFormat,
+		int          width,
+		int          height,
+		unsigned int border,
+		unsigned int format,
+		unsigned int type,
+		void* data,
+		int componentsPerPixel
+	) : 
+		target(target),
+		level(level),
+		internalFormat(internalFormat),
+		width(width),
+		height(height),
+		border(border),
+		format(format),
+		type(type),
+		componentsPerPixel(componentsPerPixel)
+	{
+		if(data) {
+			this->data = static_cast<unsigned char*>(data);
+		}
 	}
 
 	Texture::~Texture() {
@@ -24,9 +44,17 @@ namespace Core {
 		}
 	}
 
-	Texture::Texture(const std::string& file) :
-		_mPath(file),
-		_mSource(TextureSource::FILE)
+	Texture::Texture(
+		const std::string& name,
+		TextureWrap        wrap,
+		TextureFilter      filter,
+		TextureParams      params
+	) :
+		_mName(name),
+		_mSource(TextureSource::RAW),
+		_mWrap(wrap),
+		_mFilter(filter),
+		_mParams(params)
 	{
 		// Generate a new texture
 		MY_GL_CHECK(glGenTextures(1, &_mID));
@@ -34,10 +62,47 @@ namespace Core {
 		M_ASSERT(_mID != 0);
 	}
 
-	Texture::Texture(const std::string& name, void* data) :
+	Texture::Texture(
+		const std::string& name,
+		TextureWrap        wrap,
+		TextureFilter      filter,
+		void* data,
+		unsigned int target,
+		unsigned int level,
+		unsigned int internalFormat,
+		unsigned int width,
+		unsigned int height,
+		unsigned int border,
+		unsigned int format,
+		unsigned int type
+	) :
 		_mName(name),
 		_mSource(TextureSource::RAW),
-		_mData(static_cast<unsigned char*>(data))
+		_mWrap(wrap),
+		_mFilter(filter),
+		_mParams(
+			TextureParams(
+				target,
+				level,
+				internalFormat,
+				width,
+				height,
+				border,
+				format,
+				type,
+				data
+			)
+		)
+	{
+		// Generate a new texture
+		MY_GL_CHECK(glGenTextures(1, &_mID));
+
+		M_ASSERT(_mID != 0);
+	}
+
+	Texture::Texture(const std::string& file) :
+		_mPath(file),
+		_mSource(TextureSource::FILE)
 	{
 		// Generate a new texture
 		MY_GL_CHECK(glGenTextures(1, &_mID));
@@ -53,10 +118,7 @@ namespace Core {
 		_mWrap               = other._mWrap;
 		_mFilter             = other._mFilter;
 
-		_mData               = other._mData;
-		_mWidth              = other._mWidth;
-		_mHeight             = other._mHeight;
-		_mComponentsPerPixel = other._mComponentsPerPixel;
+		_mParams             = other._mParams;
 	}
 
 	Texture& Texture::operator = (const Texture& other) {
@@ -71,10 +133,7 @@ namespace Core {
 		_mWrap               = other._mWrap;
 		_mFilter             = other._mFilter;
 
-		_mData               = other._mData;
-		_mWidth              = other._mWidth;
-		_mHeight             = other._mHeight;
-		_mComponentsPerPixel = other._mComponentsPerPixel;
+		_mParams             = other._mParams;
 
 		return *this;
 	}
@@ -88,10 +147,7 @@ namespace Core {
 		_mWrap               = std::move(other._mWrap);
 		_mFilter             = std::move(other._mFilter);
 
-		_mData               = std::move(other._mData);
-		_mWidth              = std::move(other._mWidth);
-		_mHeight             = std::move(other._mHeight);
-		_mComponentsPerPixel = std::move(other._mComponentsPerPixel);
+		_mParams             = std::move(other._mParams);
 
 		other._mID = 0;
 	}
@@ -109,10 +165,7 @@ namespace Core {
 		_mWrap               = std::move(other._mWrap);
 		_mFilter             = std::move(other._mFilter);
 
-		_mData               = std::move(other._mData);
-		_mWidth              = std::move(other._mWidth);
-		_mHeight             = std::move(other._mHeight);
-		_mComponentsPerPixel = std::move(other._mComponentsPerPixel);
+		_mParams             = std::move(other._mParams);
 
 		other._mID = 0;
 
@@ -152,13 +205,81 @@ namespace Core {
 	}
 
 	unsigned int Texture::getWidth() const {
-		return _mHeight;
+		return _mParams.width;
 	}
 
 	unsigned int Texture::getHeight() const {
-		return _mWidth;
+		return _mParams.height;
 	}
 
+	bool Texture::init() {
+		if (_mSource == TextureSource::FILE) {
+			if (_mPath.empty()) {
+				printf("[WARN:CORE] Empty texture path!\n");
+				return false;
+			}
+			setName();
+
+
+			if(!setFlip()) {
+				return false;
+			}
+
+			if (!_mParams.data) {
+				// Loading the texture from the specified path
+				_mParams.data = stbi_load(
+					_mPath.c_str(),
+					&_mParams.width,
+					&_mParams.height,
+					&_mParams.componentsPerPixel,
+					_mBytesPerPixel
+				);
+			}
+
+			// Check if the texture buffer is empty (texture load failed)
+			if (!_mParams.data) {
+				printf("[WARN:CORE] Failed to load texture '%s'. Error: %s\n", _mPath.c_str(), stbi_failure_reason());
+
+				_mParams.data               = nullptr;
+				_mParams.width              = 0;
+				_mParams.height             = 0;
+				_mParams.componentsPerPixel = 0;
+
+				return false;
+			}
+
+		}
+
+		bind();
+
+		MY_GL_CHECK(glTexImage2D(
+			_mParams.target,
+			_mParams.level,
+			_mParams.internalFormat,
+			_mParams.width,
+			_mParams.height,
+			_mParams.border,
+			_mParams.format,
+			_mParams.type,
+			_mParams.data)
+		);
+
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		if (_mParams.data) {
+			// Free the image data that is no longer needed
+			stbi_image_free(_mParams.data);
+			_mParams.data = nullptr;
+		}
+
+		if (!setTextureProperties()) {
+			unbind();
+			return false;
+		}
+
+		unbind();
+		return true;
+	}
 
 	void Texture::clear() {
 		if(_mID != 0) {
@@ -168,87 +289,37 @@ namespace Core {
 	}
 
 	bool Texture::update() {
-		return initData();
+		return init();
 	}
 
 	bool Texture::update(TextureWrap wrap) {
 		_mWrap = wrap;
 
-		return initData();
+		return init();
 	}
 
 	bool Texture::update(TextureFilter filter) {
 		_mFilter = filter;
 
-		return initData();
+		return init();
 	}
 
 	bool Texture::update(const std::string& file) {
 		_mPath = file;
 		_mSource = TextureSource::FILE;
 
-		return initData();
+		return init();
 	}
 
 	bool Texture::update(const std::string& name, void* data, int width, int height) {
 		_mName   = name;
 		_mSource = TextureSource::RAW;
 
-		_mData   = static_cast<unsigned char*>(data);
-		_mWidth  = width;
-		_mHeight = height;
+		_mParams.data   = static_cast<unsigned char*>(data);
+		_mParams.width  = width;
+		_mParams.height = height;
 
-		return initData();
-	}
-
-	bool Texture::initData() {
-		if (_mSource == TextureSource::FILE) {
-			if (_mPath.empty()) {
-				printf("[WARN:CORE] Empty texture path!\n");
-				return false;
-			}
-			setName();
-		}
-		else {
-			if(!_mData) {
-				_mData = getData();
-			}
-		}
-
-		if(!setFlip()) {
-			return false;
-		}
-
-		if (!_mData) {
-			// Loading the texture from the specified path
-			_mData = stbi_load(_mPath.c_str(), &_mWidth, &_mHeight, &_mComponentsPerPixel, _mBytesPerPixel);
-		}
-
-		// Check if the texture buffer is empty (texture load failed)
-		if (!_mData) {
-			printf("[WARN:CORE] Failed to load texture '%s'. Error: %s\n", _mPath.c_str(), stbi_failure_reason());
-
-			_mData               = nullptr;
-			_mWidth              = 0;
-			_mHeight             = 0;
-			_mComponentsPerPixel = 0;
-
-			return false;
-		}
-
-		bind();
-
-		MY_GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _mWidth, _mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, _mData));
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		// Free the image data that is no longer needed
-		stbi_image_free(_mData);
-		_mData = nullptr;
-
-		if (!setTextureParams()) {
-			return false;
-		}
-		return true;
+		return init();
 	}
 
 	void Texture::setName() {
@@ -265,9 +336,9 @@ namespace Core {
 		if(_mSource == TextureSource::FILE) {
 			stbi_set_flip_vertically_on_load(true);
 		}
-		else if(_mSource == TextureSource::RAW) {
-			stbi__vertical_flip(_mData, _mWidth, _mHeight, sizeof(float) * 3);
-		}
+		// else if(_mSource == TextureSource::RAW) {
+		// 	stbi__vertical_flip(_mParams.data, _mParams.width, _mParams.height, sizeof(float) * 3);
+		// }
 		else {
 			printf("[WARN:CORE] Failed to load texture '%s'. Texture source is set to NONE\n", _mPath.c_str());
 			return false;
@@ -275,7 +346,7 @@ namespace Core {
 		return true;
 	}
 
-	bool Texture::setTextureParams() const {
+	bool Texture::setTextureProperties() const {
 		unsigned int filter = -1;
 		unsigned int wrap   = -1;
 
