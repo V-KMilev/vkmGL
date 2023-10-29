@@ -15,9 +15,9 @@ find_package(OpenGL REQUIRED)
 add_library(${PROJECT_NAME} STATIC empty.cpp)
 
 # Include the sources from subdirectories
-add_subdirectory(${VKMGL_SOURCE_DIR}/modules)
-add_subdirectory(${VKMGL_SOURCE_DIR}/common)
-add_subdirectory(${VKMGL_SOURCE_DIR}/core)
+add_subdirectory(${PROJECT_SOURCE_DIR}/modules)
+add_subdirectory(${PROJECT_SOURCE_DIR}/common)
+add_subdirectory(${PROJECT_SOURCE_DIR}/core)
 
 # Link the main target with external libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC
