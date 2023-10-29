@@ -1,6 +1,6 @@
 message("[BUILDING:VKMGL] OpenGL Core")
 
-set(VKMGL_CORE_DIR ${VKMGL_SOURCE_DIR}/core)
+set(VKMGL_CORE_DIR ${PROJECT_SOURCE_DIR}/core)
 
 set(SOURCES
 	${VKMGL_CORE_DIR}/error/gl_error_handle.cpp
@@ -19,6 +19,8 @@ set(SOURCES
 
 	${VKMGL_CORE_DIR}/gl_render.cpp
 	${VKMGL_CORE_DIR}/gl_shader.cpp
+
+	${VKMGL_CORE_DIR}/gl_pick_texture.cpp
 	${VKMGL_CORE_DIR}/gl_texture.cpp
 )
 

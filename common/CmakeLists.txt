@@ -1,6 +1,6 @@
 message("[BUILDING:VKMGL] Common")
 
-set(VKMGL_COMMON_DIR ${VKMGL_SOURCE_DIR}/common)
+set(VKMGL_COMMON_DIR ${PROJECT_SOURCE_DIR}/common)
 
 set(SOURCES
 	${VKMGL_COMMON_DIR}/error/error_handle.cpp
