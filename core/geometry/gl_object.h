@@ -39,48 +39,55 @@ namespace Core {
 	#define TriangleIndicesSize TriangleIndices
 	#define QuadIndicesSize     QuadIndices
 
-struct ObjectWorldData {
-	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 scale    = glm::vec3(1.0f, 1.0f, 1.0f);
-	// roll, pitch, yaw
-	glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-};
+	struct ObjectWorldData {
+		public:
+			void updateModel();
 
-class Object {
-	public:
-		Object();
-		virtual ~Object() = default;
+		public:
+			glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+			glm::vec3 scale    = glm::vec3(1.0f, 1.0f, 1.0f);
+			// roll, pitch, yaw
+			glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
-		Object(const Object& other);
-		Object& operator = (const Object& other);
+			glm::mat4 model = glm::mat4(1.0f);
+	};
 
-		Object(Object&& other) = delete;
-		Object& operator = (Object&& other) = delete;
+	class Object {
+		public:
+			Object();
+			virtual ~Object() = default;
 
-		unsigned int getID() const;
-		const Texture& getTexture() const;
-		ObjectWorldData& getWorldData();
-		const ObjectWorldData& getWorldData() const;
+			Object(const Object& other);
+			Object& operator = (const Object& other);
 
-		bool setTexture(const std::string& file);
-		bool setTexture(const Texture& texture);
+			Object(Object && other) = delete;
+			Object& operator = (Object && other) = delete;
 
-		void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType = GL_TRIANGLES) const;
+			unsigned int getID() const;
+			const Texture& getTexture() const;
 
-	protected:
-		virtual bool init() = 0;
-		virtual bool deinit() = 0;
+			ObjectWorldData& getWorldData();
+			const ObjectWorldData& getWorldData() const;
 
-	protected:
-		Common::ObjectID _mID;
+			bool updateTexture(const std::string& file);
+			bool updateTexture(const Texture& texture);
 
-		ObjectWorldData _mWorldData;
+			void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType = GL_TRIANGLES) const;
 
-		std::shared_ptr<Texture> _mTexture;
+		protected:
+			virtual bool init() = 0;
+			virtual bool deinit() = 0;
 
-		std::shared_ptr<VertexArray>        _mVA;
-		std::shared_ptr<VertexBuffer>       _mVB;
-		std::shared_ptr<IndexBuffer>        _mIB;
-		std::shared_ptr<VertexBufferLayout> _mVBL;
+		protected:
+			Common::ObjectID _mID;
+
+			ObjectWorldData _mWorldData;
+
+			std::shared_ptr<Texture> _mTexture;
+
+			std::shared_ptr<VertexArray>        _mVA;
+			std::shared_ptr<VertexBuffer>       _mVB;
+			std::shared_ptr<IndexBuffer>        _mIB;
+			std::shared_ptr<VertexBufferLayout> _mVBL;
 	};
 }
