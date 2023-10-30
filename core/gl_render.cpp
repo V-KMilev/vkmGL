@@ -53,14 +53,15 @@ namespace Core {
 		const VertexArray& vertex_array,
 		const IndexBuffer& index_buffer,
 		const Shader &shader,
-		unsigned int drawType
+		unsigned int drawType,
+		unsigned int indices
 	) const {
 		shader.bind();
 
 		vertex_array.bind();
 		index_buffer.bind();
 
-		MY_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, nullptr));
+		MY_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, (const void*) indices));
 	}
 
 	void Renderer::draw(
