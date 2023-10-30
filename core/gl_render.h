@@ -27,7 +27,8 @@ namespace Core {
 				const VertexArray& vertex_array,
 				const IndexBuffer& index_buffer,
 				const Shader &shader,
-				unsigned int drawType
+				unsigned int drawType,
+				unsigned int indices = 0
 			) const;
 
 			void draw(

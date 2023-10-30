@@ -220,7 +220,6 @@ namespace Core {
 			}
 			setName();
 
-
 			if(!setFlip()) {
 				return false;
 			}
@@ -247,7 +246,6 @@ namespace Core {
 
 				return false;
 			}
-
 		}
 
 		bind();
@@ -261,8 +259,8 @@ namespace Core {
 			_mParams.border,
 			_mParams.format,
 			_mParams.type,
-			_mParams.data)
-		);
+			_mParams.data
+		));
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -273,6 +271,7 @@ namespace Core {
 		}
 
 		if (!setTextureProperties()) {
+
 			unbind();
 			return false;
 		}
@@ -336,9 +335,6 @@ namespace Core {
 		if(_mSource == TextureSource::FILE) {
 			stbi_set_flip_vertically_on_load(true);
 		}
-		// else if(_mSource == TextureSource::RAW) {
-		// 	stbi__vertical_flip(_mParams.data, _mParams.width, _mParams.height, sizeof(float) * 3);
-		// }
 		else {
 			printf("[WARN:CORE] Failed to load texture '%s'. Texture source is set to NONE\n", _mPath.c_str());
 			return false;
