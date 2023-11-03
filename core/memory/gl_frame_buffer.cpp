@@ -9,16 +9,16 @@ namespace Core {
 	FrameBufferParams::FrameBufferParams(
 		unsigned int target,
 		unsigned int attachment,
-		unsigned int textarget,
 		unsigned int textureID,
 		unsigned int level,
+		unsigned int textarget,
 		unsigned int layer
 	) : 
 		target(target),
 		attachment(attachment),
-		textarget(textarget),
 		textureID(textureID),
 		level(level),
+		textarget(textarget),
 		layer(layer) {}
 
 	FrameBuffer::~FrameBuffer() {
@@ -39,20 +39,20 @@ namespace Core {
 		Dimension dimension,
 		unsigned int target,
 		unsigned int attachment,
-		unsigned int textarget,
-		unsigned int texture,
+		unsigned int textureID,
 		unsigned int level,
+		unsigned int textarget,
 		unsigned int layer
 	) :
 		_mDimensions(dimension),
 		_mParams(
 			FrameBufferParams(
-			target,
-			attachment,
-			textarget,
-			texture,
-			level,
-			layer
+				target,
+				attachment,
+				textureID,
+				level,
+				textarget,
+				layer
 			)
 		)
 	{
@@ -74,8 +74,11 @@ namespace Core {
 		return _mID;
 	}
 
-	bool FrameBuffer::init(
-	) const {
+	void FrameBuffer::read(unsigned int targetBuffer) {
+		MY_GL_CHECK(glReadBuffer(targetBuffer));
+	}
+
+	bool FrameBuffer::init() const {
 		bind();
 
 		if (_mDimensions == Dimension::_ND) {
@@ -116,8 +119,8 @@ namespace Core {
 		}
 		else {
 			printf("[ERROR:CORE] FBO: [ID:%ud] has invalid dimension!", _mID);
-			unbind();
 
+			unbind();
 			return false;
 		}
 
@@ -125,13 +128,10 @@ namespace Core {
 		M_ASSERT(status == GL_FRAMEBUFFER_COMPLETE);
 
 		unbind();
-
 		return true;
 	}
 
-	bool FrameBuffer::update(
-		FrameBufferParams params
-	) {
+	bool FrameBuffer::update(FrameBufferParams params) {
 		_mParams = params;
 
 		return init();
