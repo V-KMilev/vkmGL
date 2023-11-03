@@ -11,12 +11,12 @@ namespace Core {
 		TextureParams pickParams(
 			GL_TEXTURE_2D,
 			0,
-			GL_RGB32UI,
+			GL_RGB32F,
 			_mWidth,
 			_mHeight,
 			0,
-			GL_RGB_INTEGER,
-			GL_UNSIGNED_INT,
+			GL_RGB,
+			GL_FLOAT,
 			nullptr
 		);
 
@@ -34,49 +34,47 @@ namespace Core {
 
 		_mPickTexture = std::make_shared<Texture>(
 			"Pick Texture",
-			TextureWrap::CLAMP_TO_BORDER,
-			TextureFilter::NEAREST,
+			TextureWrap::CALMP_TO_EDGE,
+			TextureFilter::LINEAR,
 			pickParams
 		);
 
 		_mDepthTexture = std::make_shared<Texture>(
 			"Depth Texture",
-			TextureWrap::CLAMP_TO_BORDER,
-			TextureFilter::NEAREST,
+			TextureWrap::CALMP_TO_EDGE,
+			TextureFilter::LINEAR,
 			depthParams
 		);
 
-		_mFB = std::make_shared<FrameBuffer>(Dimension::_2D);
-
 		FrameBufferParams FBCParams(
 			GL_FRAMEBUFFER,
-			GL_DEPTH_ATTACHMENT,
-			GL_TEXTURE_2D,
+			GL_COLOR_ATTACHMENT0,
 			_mPickTexture->getID(),
-			0
+			0,
+			GL_TEXTURE_2D
 		);
 
 		FrameBufferParams FBDParams(
 			GL_FRAMEBUFFER,
 			GL_DEPTH_ATTACHMENT,
-			GL_TEXTURE_2D,
-			_mPickTexture->getID(),
-			0
+			_mDepthTexture->getID(),
+			0,
+			GL_TEXTURE_2D
 		);
+
+		_mFB = std::make_shared<FrameBuffer>(Dimension::_2D);
 
 		_mFB->bind();
 
-		_mPickTexture->init();
-		_mPickTexture->bind();
+		_mPickTexture->bind(_mPickTexture->getID());
+		_mPickTexture->update();
 		_mFB->update(FBCParams);
 
-		_mDepthTexture->init();
-		_mDepthTexture->bind();
+		_mDepthTexture->bind(_mDepthTexture->getID());
+		_mDepthTexture->update();
 		_mFB->update(FBDParams);
 
 		_mFB->unbind();
-		_mPickTexture->unbind();
-		_mDepthTexture->unbind();
 	}
 
 	void PickTexture::enableWriting() const {
@@ -90,12 +88,13 @@ namespace Core {
 	PixelInfo PickTexture::readPixel(unsigned int x, unsigned int y) const {
 		_mFB->bind(GL_READ_FRAMEBUFFER);
 
-		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		_mFB->read(GL_COLOR_ATTACHMENT0);
 
 		PixelInfo pixel;
-		glReadPixels(x, y, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, &pixel);
 
-		glReadBuffer(GL_NONE);
+		MY_GL_CHECK(glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &pixel));
+
+		_mFB->read(GL_NONE);
 
 		_mFB->unbind(GL_READ_FRAMEBUFFER);
 

@@ -7,9 +7,9 @@
 
 namespace Core {
 	struct PixelInfo {
-		unsigned int objectID = 0;
-		unsigned int drawID   = 0;
-		unsigned int pirmID   = 0;
+		float objectID = 0.0f;
+		float primID   = 0.0f;
+		float nothing  = 0.0f;
 	};
 
 	class PickTexture {
