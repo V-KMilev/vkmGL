@@ -65,7 +65,19 @@ namespace Core {
 			printf("[ERROR:CORE] Shader path: '%s' is not existing!\n", _mPath.c_str());
 		}
 
-		_mSource = ShaderSource(path);
+#ifdef _WIN32
+		_mName = _mPath.substr(_mPath.find_last_of('\\') + 1);
+#else
+		_mName = _mPath.substr(_mPath.find_last_of('/') + 1);
+#endif
+
+#ifdef _WIN32
+		_mPath = _mPath + '\\';
+#else
+		_mPath = _mPath + '/';
+#endif
+
+		_mSource = ShaderSource(_mPath);
 
 		createShader();
 	}
@@ -93,6 +105,10 @@ namespace Core {
 
 	unsigned int Shader::getID() const {
 		return _mID;
+	}
+
+	const std::string& Shader::getName() const {
+		return _mName;
 	}
 
 	const std::string& Shader::getPath() const {
