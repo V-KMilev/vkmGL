@@ -96,6 +96,10 @@ namespace Core {
 		std::string texName = _mTexture->getName();
 		shader.setUniform1i(texName, _mTexture->getID());
 
-		renderer.draw(*_mVA, *_mIB, shader, drawType, indices);
+		if (indices != 0) {
+			renderer.draw(*_mVA, *_mIB, shader, drawType, indices);
+		} else {
+			renderer.draw(*_mVA, *_mIB, shader, drawType);
+		}
 	}
 };
