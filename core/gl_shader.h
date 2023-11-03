@@ -47,6 +47,8 @@ namespace Core {
 
 			unsigned int getID() const;
 
+			const std::string& getName() const;
+
 			const std::string& getPath() const;
 
 			void setUniform4f(const std::string& uniformName, float f0, float f1, float f2, float f3) const;
@@ -77,6 +79,7 @@ namespace Core {
 		private:
 			unsigned int _mID;
 
+			std::string _mName;
 			std::string _mPath;
 			ShaderSource _mSource;
 
