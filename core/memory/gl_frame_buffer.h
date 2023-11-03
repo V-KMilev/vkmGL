@@ -28,9 +28,9 @@ namespace Core {
 			FrameBufferParams(
 				unsigned int target,
 				unsigned int attachment,
+				unsigned int textureID,
+				unsigned int level,
 				unsigned int textarget = 0,
-				unsigned int textureID = 0,
-				unsigned int level     = 0,
 				unsigned int layer     = 0
 			);
 
@@ -48,21 +48,17 @@ namespace Core {
 			FrameBuffer() = delete;
 			~FrameBuffer();
 
-			FrameBuffer(
-				Dimension dimension,
-				FrameBufferParams params = FrameBufferParams()
-			);
+			FrameBuffer(Dimension dimension, FrameBufferParams params = FrameBufferParams());
 
 			FrameBuffer(
 				Dimension dimension,
 				unsigned int target,
 				unsigned int attachment,
+				unsigned int textureID,
+				unsigned int level,
 				unsigned int textarget = 0,
-				unsigned int textureID = 0,
-				unsigned int level     = 0,
 				unsigned int layer     = 0
 			);
-
 
 			FrameBuffer(const FrameBuffer& other) = delete;
 			FrameBuffer& operator = (const FrameBuffer& other) = delete;
@@ -75,11 +71,11 @@ namespace Core {
 
 			unsigned int getID() const;
 
+			void read(unsigned int targetBuffer = GL_COLOR_ATTACHMENT0);
+
 			bool init() const;
 
-			bool update(
-				FrameBufferParams params
-			);
+			bool update(FrameBufferParams params);
 
 			bool update(
 				unsigned int target,
