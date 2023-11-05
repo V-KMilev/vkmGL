@@ -86,7 +86,7 @@ namespace Core {
 		return _mTexture->update();
 	}
 
-	void Object::draw(const Renderer& renderer, const Shader& shader, unsigned int drawType, unsigned int indices) const {
+	void Object::draw(const Renderer& renderer, const Shader& shader, unsigned int drawType) const {
 		shader.bind();
 
 		_mTexture->bind(_mTexture->getID());
@@ -96,10 +96,6 @@ namespace Core {
 		std::string texName = _mTexture->getName();
 		shader.setUniform1i(texName, _mTexture->getID());
 
-		if (indices != 0) {
-			renderer.draw(*_mVA, *_mIB, shader, drawType, indices);
-		} else {
-			renderer.draw(*_mVA, *_mIB, shader, drawType);
-		}
+		renderer.draw(*_mVA, *_mIB, shader, drawType);
 	}
 };

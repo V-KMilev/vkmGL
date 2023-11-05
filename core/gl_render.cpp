@@ -61,11 +61,7 @@ namespace Core {
 		vertex_array.bind();
 		index_buffer.bind();
 
-		if (indices != 0) {
-			MY_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, (const void*) indices));
-		} else {
-			MY_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, nullptr));
-		}
+		MY_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, (const void*) indices));
 	}
 
 	void Renderer::draw(

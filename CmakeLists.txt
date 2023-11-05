@@ -22,5 +22,4 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/core)
 # Link the main target with external libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	OpenGL::GL
-	glfw
 )

@@ -72,7 +72,7 @@ namespace Core {
 			bool updateTexture(const std::string& file);
 			bool updateTexture(const Texture& texture);
 
-			void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType = GL_TRIANGLES, unsigned int indices = 0) const;
+			void draw(const Renderer &renderer, const Shader &shader, unsigned int drawType = GL_TRIANGLES) const;
 
 		protected:
 			virtual bool init() = 0;
