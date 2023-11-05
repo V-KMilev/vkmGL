@@ -3,8 +3,9 @@ message("[BUILDING:VKMGL] Submodules")
 set(VKMGL_MODULES_DIR ${PROJECT_SOURCE_DIR}/modules)
 
 set(GLFW_DIR  ${VKMGL_MODULES_DIR}/glfw)
-set(STB_DIR   ${VKMGL_MODULES_DIR}/stb_image)
 set(GLM_DIR   ${VKMGL_MODULES_DIR}/glm)
+set(IMGUI_DIR ${VKMGL_MODULES_DIR}/imgui)
+set(STB_DIR   ${VKMGL_MODULES_DIR}/stb_image)
 
 set(SOURCES
 	${GLFW_DIR}/deps/glad_gl.c
@@ -31,3 +32,24 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Add the source files to the target
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})
+
+set(IMGUI_SOURCES
+	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+
+	${IMGUI_DIR}/imgui_widgets.cpp
+	${IMGUI_DIR}/imgui_tables.cpp
+	${IMGUI_DIR}/imgui_demo.cpp
+	${IMGUI_DIR}/imgui_draw.cpp
+	${IMGUI_DIR}/imgui.cpp
+)
+
+add_library(ImGui STATIC ${IMGUI_SOURCES})
+
+target_include_directories(ImGui PUBLIC
+	${IMGUI_DIR}/backends
+	${IMGUI_DIR}
+)
+target_link_libraries(ImGui PUBLIC
+	glfw
+)
