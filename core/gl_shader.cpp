@@ -153,7 +153,7 @@ namespace Core {
 			MY_GL_CHECK(glDeleteShader(geometryShader));
 		}
 
-		printf("[INFO:CORE] Shader[ID:%u]: '%s' successfully created!\n", _mID, _mPath.c_str());
+		printf("[INFO:CORE] Shader: '%s' successfully created!\n", _mPath.c_str());
 	}
 
 	unsigned int Shader::CompileShader(unsigned int type, const std::string& source) const {

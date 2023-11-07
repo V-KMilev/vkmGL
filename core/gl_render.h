@@ -8,6 +8,11 @@
 #include "gl_index_buffer.h"
 #include "gl_shader.h"
 
+// To avoid including the full glad implementation, we redefine GL_TRIANGLES
+#ifndef GL_TRIANGLES
+	#define GL_TRIANGLES 0x0004
+#endif
+
 namespace Core {
 	class Renderer {
 		public:
@@ -27,7 +32,7 @@ namespace Core {
 				const VertexArray& vertex_array,
 				const IndexBuffer& index_buffer,
 				const Shader &shader,
-				unsigned int drawType,
+				unsigned int drawType = GL_TRIANGLES,
 				unsigned int indices = 0
 			) const;
 
