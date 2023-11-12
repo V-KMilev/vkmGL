@@ -100,9 +100,13 @@ namespace Core {
 		M_ASSERT(_mID != 0);
 	}
 
-	Texture::Texture(const std::string& file) :
+	Texture::Texture(
+		const std::string& file,
+		TextureShaderType shaderType
+	) :
 		_mPath(file),
-		_mSource(TextureSource::FILE)
+		_mSource(TextureSource::FILE),
+		_mInShaderType(shaderType)
 	{
 		// Generate a new texture
 		MY_GL_CHECK(glGenTextures(1, &_mID));
@@ -110,36 +114,40 @@ namespace Core {
 		M_ASSERT(_mID != 0);
 	}
 
-	Texture::Texture(Texture && other) {
-		_mID                 = std::move(other._mID);
-		_mPath               = std::move(other._mPath);
-		_mName               = std::move(other._mName);
+	Texture::Texture(Texture && other) noexcept {
+		_mID    = std::move(other._mID);
+		_mPath  = std::move(other._mPath);
+		_mName  = std::move(other._mName);
 
-		_mSource             = std::move(other._mSource);
-		_mWrap               = std::move(other._mWrap);
-		_mFilter             = std::move(other._mFilter);
+		_mSource = std::move(other._mSource);
+		_mWrap   = std::move(other._mWrap);
+		_mFilter = std::move(other._mFilter);
 
-		_mParams             = std::move(other._mParams);
+		_mInShaderType = std::move(other._mInShaderType);
+
+		_mParams = std::move(other._mParams);
 
 		other._mID   = 0;
-		other._mPath = "";
-		other._mName = "";
+		other._mPath.clear();
+		other._mName.clear();
 	}
 
-	Texture& Texture::operator = (Texture && other) {
+	Texture& Texture::operator = (Texture && other) noexcept  {
 		if(this == &other) {
 			return *this;
 		}
 
-		_mID                 = std::move(other._mID);
-		_mPath               = std::move(other._mPath);
-		_mName               = std::move(other._mName);
+		_mID   = std::move(other._mID);
+		_mPath = std::move(other._mPath);
+		_mName = std::move(other._mName);
 
-		_mSource             = std::move(other._mSource);
-		_mWrap               = std::move(other._mWrap);
-		_mFilter             = std::move(other._mFilter);
+		_mSource = std::move(other._mSource);
+		_mWrap   = std::move(other._mWrap);
+		_mFilter = std::move(other._mFilter);
 
-		_mParams             = std::move(other._mParams);
+		_mInShaderType = std::move(other._mInShaderType);
+
+		_mParams = std::move(other._mParams);
 
 		other._mID   = 0;
 		other._mPath = "";
@@ -167,6 +175,35 @@ namespace Core {
 
 	const std::string& Texture::getName() const {
 		return _mName;
+	}
+
+	std::string Texture::getShaderName() const {
+		std::string name = "";
+
+		if      (_mInShaderType == TextureShaderType::NONE)               { name = "None"; }
+		else if (_mInShaderType == TextureShaderType::AMBIENT)            { name = "Ambient"; }
+		else if (_mInShaderType == TextureShaderType::DIFFUSE)            { name = "Diffuse"; }
+		else if (_mInShaderType == TextureShaderType::SPECULAR)           { name = "Specular"; }
+		else if (_mInShaderType == TextureShaderType::SPECULAR_HIGHLIGHT) { name = "Specular_highlight"; }
+		else if (_mInShaderType == TextureShaderType::BUMP)               { name = "Bump"; }
+		else if (_mInShaderType == TextureShaderType::DISPLACEMENT)       { name = "Displacement"; }
+		else if (_mInShaderType == TextureShaderType::ALPHA)              { name = "Alpha"; }
+		else if (_mInShaderType == TextureShaderType::REFLECTION)         { name = "Reflection"; }
+		else if (_mInShaderType == TextureShaderType::ROUGHNESS)          { name = "Roughness"; }
+		else if (_mInShaderType == TextureShaderType::METALLIC)           { name = "Metallic"; }
+		else if (_mInShaderType == TextureShaderType::SHEEN)              { name = "Sheen"; }
+		else if (_mInShaderType == TextureShaderType::EMISSIVE)           { name = "Emissive"; }
+		else if (_mInShaderType == TextureShaderType::NORMAL)             { name = "Normal"; }
+
+		return name;
+	}
+
+	const TextureShaderType& Texture::getShaderType() const {
+		return _mInShaderType;
+	}
+
+	TextureShaderType& Texture::getShaderType() {
+		return _mInShaderType;
 	}
 
 	const TextureParams& Texture::getParams() const {
