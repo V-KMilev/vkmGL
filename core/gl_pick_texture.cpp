@@ -34,16 +34,16 @@ namespace Core {
 
 		_mPickTexture = std::make_shared<Texture>(
 			"Pick Texture",
+			pickParams,
 			TextureWrap::CALMP_TO_EDGE,
-			TextureFilter::LINEAR,
-			pickParams
+			TextureFilter::LINEAR
 		);
 
 		_mDepthTexture = std::make_shared<Texture>(
 			"Depth Texture",
+			depthParams,
 			TextureWrap::CALMP_TO_EDGE,
-			TextureFilter::LINEAR,
-			depthParams
+			TextureFilter::LINEAR
 		);
 
 		FrameBufferParams FBCParams(

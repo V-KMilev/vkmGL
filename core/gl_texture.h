@@ -79,9 +79,9 @@ namespace Core {
 
 			Texture(
 				const std::string& name,
-				TextureWrap        wrap,
-				TextureFilter      filter,
-				TextureParams      params
+				TextureParams      params,
+				TextureWrap        wrap   = TextureWrap::CALMP_TO_EDGE,
+				TextureFilter      filter = TextureFilter::LINEAR
 			);
 
 			Texture(
@@ -101,8 +101,8 @@ namespace Core {
 
 			Texture(const std::string& file);
 
-			Texture(const Texture& other);
-			Texture& operator = (const Texture& other);
+			Texture(const Texture& other) = delete;
+			Texture& operator = (const Texture& other) = delete;
 
 			Texture(Texture && other);
 			Texture& operator = (Texture && other);
@@ -110,10 +110,13 @@ namespace Core {
 			void bind(unsigned int slot = 0, unsigned int type = GL_TEXTURE_2D) const;
 			void unbind() const;
 
-			unsigned int       getID() const;
+			unsigned int getID() const;
 
 			const std::string& getPath() const;
 			const std::string& getName() const;
+
+			const TextureParams& getParams() const;
+			TextureParams& getParams();
 
 			unsigned char*     getData() const;
 			unsigned int       getWidth() const;
