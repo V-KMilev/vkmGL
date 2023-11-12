@@ -6,6 +6,7 @@ set(GLFW_DIR  ${VKMGL_MODULES_DIR}/glfw)
 set(GLM_DIR   ${VKMGL_MODULES_DIR}/glm)
 set(IMGUI_DIR ${VKMGL_MODULES_DIR}/imgui)
 set(STB_DIR   ${VKMGL_MODULES_DIR}/stb_image)
+set(TOL_DIR   ${VKMGL_MODULES_DIR}/tinyobjloader)
 
 set(SOURCES
 	${GLFW_DIR}/deps/glad_gl.c
@@ -28,6 +29,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	${GLM_DIR}/glm
 
 	${STB_DIR}
+
+	${TOL_DIR}
 )
 
 # Add the source files to the target
