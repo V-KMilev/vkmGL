@@ -46,15 +46,15 @@ namespace Core {
 
 	Texture::Texture(
 		const std::string& name,
+		TextureParams      params,
 		TextureWrap        wrap,
-		TextureFilter      filter,
-		TextureParams      params
+		TextureFilter      filter
 	) :
 		_mName(name),
 		_mSource(TextureSource::RAW),
+		_mParams(params),
 		_mWrap(wrap),
-		_mFilter(filter),
-		_mParams(params)
+		_mFilter(filter)
 	{
 		// Generate a new texture
 		MY_GL_CHECK(glGenTextures(1, &_mID));
@@ -110,34 +110,6 @@ namespace Core {
 		M_ASSERT(_mID != 0);
 	}
 
-	Texture::Texture(const Texture& other) {
-		_mPath               = other._mPath;
-		_mName               = other._mName;
-
-		_mSource             = other._mSource;
-		_mWrap               = other._mWrap;
-		_mFilter             = other._mFilter;
-
-		_mParams             = other._mParams;
-	}
-
-	Texture& Texture::operator = (const Texture& other) {
-		if(this == &other) {
-			return *this;
-		}
-
-		_mPath               = other._mPath;
-		_mName               = other._mName;
-
-		_mSource             = other._mSource;
-		_mWrap               = other._mWrap;
-		_mFilter             = other._mFilter;
-
-		_mParams             = other._mParams;
-
-		return *this;
-	}
-
 	Texture::Texture(Texture && other) {
 		_mID                 = std::move(other._mID);
 		_mPath               = std::move(other._mPath);
@@ -149,7 +121,9 @@ namespace Core {
 
 		_mParams             = std::move(other._mParams);
 
-		other._mID = 0;
+		other._mID   = 0;
+		other._mPath = "";
+		other._mName = "";
 	}
 
 	Texture& Texture::operator = (Texture && other) {
@@ -167,7 +141,9 @@ namespace Core {
 
 		_mParams             = std::move(other._mParams);
 
-		other._mID = 0;
+		other._mID   = 0;
+		other._mPath = "";
+		other._mName = "";
 
 		return *this;
 	}
@@ -191,6 +167,14 @@ namespace Core {
 
 	const std::string& Texture::getName() const {
 		return _mName;
+	}
+
+	const TextureParams& Texture::getParams() const {
+		return _mParams;
+	}
+
+	TextureParams& Texture::getParams() {
+		return _mParams;
 	}
 
 	unsigned char* Texture::getData() const {
