@@ -20,23 +20,6 @@
 #endif
 
 namespace Core {
-	enum class TextureShaderType {
-		NONE               = 0,
-		AMBIENT            = 1,
-		DIFFUSE            = 2,
-		SPECULAR           = 3,
-		SPECULAR_HIGHLIGHT = 4,
-		BUMP               = 5,
-		DISPLACEMENT       = 6,
-		ALPHA              = 7,
-		REFLECTION         = 8,
-		ROUGHNESS          = 9,
-		METALLIC           = 10,
-		SHEEN              = 11,
-		EMISSIVE           = 12,
-		NORMAL             = 13
-	};
-
 	enum class TextureSource {
 		NONE     = 0,
 		FILE     = 1,
@@ -116,10 +99,7 @@ namespace Core {
 				unsigned int type           = GL_UNSIGNED_BYTE
 			);
 
-			Texture(
-				const std::string& file,
-				TextureShaderType shaderType = TextureShaderType::NONE
-			);
+			Texture(const std::string& file);
 
 			Texture(const Texture& other) = delete;
 			Texture& operator = (const Texture& other) = delete;
@@ -134,11 +114,6 @@ namespace Core {
 
 			const std::string& getPath() const;
 			const std::string& getName() const;
-
-			std::string getShaderName() const;
-
-			const TextureShaderType& getShaderType() const;
-			TextureShaderType& getShaderType();
 
 			const TextureParams& getParams() const;
 			TextureParams& getParams();
@@ -172,8 +147,6 @@ namespace Core {
 			TextureSource _mSource = TextureSource::NONE;
 			TextureWrap   _mWrap   = TextureWrap::CALMP_TO_EDGE;
 			TextureFilter _mFilter = TextureFilter::LINEAR;
-
-			TextureShaderType _mInShaderType = TextureShaderType::NONE;
 
 			TextureParams _mParams;
 
