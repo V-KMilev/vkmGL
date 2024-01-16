@@ -53,6 +53,3 @@ namespace Core {
 			glm::vec4 _mClearColor;
 	};
 };
-
-// Optional use
-extern Core::Renderer renderer;
