@@ -1,6 +1,7 @@
 #include "gl_error_handle.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void printGLErrors(
 	const char* file,

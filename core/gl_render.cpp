@@ -85,6 +85,3 @@ namespace Core {
 		MY_GL_CHECK(glDrawBuffers(count, buffers));
 	}
 };
-
-// Optional use
-Core::Renderer renderer;

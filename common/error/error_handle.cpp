@@ -1,6 +1,7 @@
 #include "error_handle.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void __m_assert(
 	bool expected,
