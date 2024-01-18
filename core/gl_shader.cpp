@@ -199,8 +199,11 @@ namespace Core {
 
 	int Shader::getUniformLocation(const std::string& name) const {
 		// If location already exist we just return it
-		if(_mUniformLocationCache.find(name) != _mUniformLocationCache.end()) {
-			return _mUniformLocationCache[name];
+		// TODO: Optimize this
+		const auto& it = _mUniformLocationCache.find(name);
+
+		if (it != _mUniformLocationCache.end()) {
+			return it->second;
 		}
 
 		int location = glGetUniformLocation(_mID, &name[0]);
