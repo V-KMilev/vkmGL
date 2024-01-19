@@ -95,6 +95,9 @@ namespace Core {
 	}
 
 	void Shader::reCompleShader() {
+		// Update the source files
+		_mSource = ShaderSource(_mPath);
+
 		// Clear the old cache
 		_mUniformLocationCache.clear();
 
@@ -117,7 +120,7 @@ namespace Core {
 
 	void Shader::createShader() {
 		// Create a new program
-		_mID = glCreateProgram();
+		_mID = MY_GL_CHECK(glCreateProgram());
 
 		// Ensure the shader ID is valid
 		M_ASSERT(_mID != 0);
