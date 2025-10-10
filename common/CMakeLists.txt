@@ -3,6 +3,7 @@ message("[BUILDING:VKMGL] Common")
 set(VKMGL_COMMON_DIR ${PROJECT_SOURCE_DIR}/common)
 
 set(SOURCES
+	${VKMGL_COMMON_DIR}/glad_impl.c
 	${VKMGL_COMMON_DIR}/error/error_handle.cpp
 	${VKMGL_COMMON_DIR}/files/file_read.cpp
 )

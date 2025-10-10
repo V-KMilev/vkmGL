@@ -16,7 +16,7 @@ You can find the lib in the build folder as `vkmGL.lib`
 git submodule add https://github.com/V-KMilev/vkmGL.git third-party/vkmGL
 ```
 
-## Third party
+## Modules
 1. [`glfw`](https://github.com/glfw/glfw)
 2. [`glm`](https://github.com/g-truc/glm)
 3. [`stb_image`](https://github.com/nothings/stb)
