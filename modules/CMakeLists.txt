@@ -1,24 +1,31 @@
-message("[BUILDING:VKMGL] Submodules")
+set(MODULES_DIR ${PROJECT_SOURCE_DIR}/modules)
 
-set(VKMGL_MODULES_DIR ${PROJECT_SOURCE_DIR}/modules)
+set(GLFW_DIR  ${MODULES_DIR}/glfw)
+set(GLM_DIR   ${MODULES_DIR}/glm)
+set(STB_DIR   ${MODULES_DIR}/stb)
 
-set(GLFW_DIR  ${VKMGL_MODULES_DIR}/glfw)
-set(GLM_DIR   ${VKMGL_MODULES_DIR}/glm)
-set(IMGUI_DIR ${VKMGL_MODULES_DIR}/imgui)
-set(STB_DIR   ${VKMGL_MODULES_DIR}/stb_image)
-set(TOL_DIR   ${VKMGL_MODULES_DIR}/tinyobjloader)
+message("[VKMGL] Modules:")
+message("\t- glfw | Path: ${GLFW_DIR} (https://github.com/glfw/glfw)")
+message("\t- glm  | Path: ${GLM_DIR} (https://github.com/g-truc/glm)")
+message("\t- stb  | Path: ${STB_DIR} (https://github.com/nothings/stb)")
 
-set(SOURCES
-	${GLFW_DIR}/deps/glad_gl.c
-)
+# GLAD is header-only, no source file needed
+# set(SOURCES
+# 	${GLFW_DIR}/deps/glad_gl.c
+# )
 set(HEADERS
 	${GLFW_DIR}/deps/glad/gl.h
 
-	${GLM_DIR}/glm
 	${STB_DIR}
 )
 
+# Define compile definitions
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+	GLM_ENABLE_EXPERIMENTAL
+)
+
 add_subdirectory(${GLFW_DIR})
+add_subdirectory(${GLM_DIR})
 
 # Set the target's include directories
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -29,31 +36,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	${GLM_DIR}/glm
 
 	${STB_DIR}
-
-	${TOL_DIR}
 )
 
-# Add the source files to the target
-target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})
-
-set(IMGUI_SOURCES
-	${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-	${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-
-	${IMGUI_DIR}/imgui_widgets.cpp
-	${IMGUI_DIR}/imgui_tables.cpp
-	${IMGUI_DIR}/imgui_demo.cpp
-	${IMGUI_DIR}/imgui_draw.cpp
-	${IMGUI_DIR}/imgui.cpp
-)
-
-add_library(imgui STATIC ${IMGUI_SOURCES})
-
-target_include_directories(imgui PUBLIC
-	${IMGUI_DIR}/backends
-	${IMGUI_DIR}
-)
-
-target_link_libraries(imgui PRIVATE
-	glfw
-)
+# Add the header files to the target (for IDE visibility)
+target_sources(${PROJECT_NAME} PRIVATE ${HEADERS})
