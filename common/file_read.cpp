@@ -2,17 +2,18 @@
 
 #include <fstream>
 
-#include "error_handle.h"
+#include "logger.h"
 
 std::string fileToString(const std::string &fileName) {
 	std::ifstream file(fileName);
 
 	if(fileName.empty()) {
-		printf("[VKMGL] WARNING: File: '%s' is empty!\n", fileName.c_str());
-		return ""; }
+		LOG_WARNING("File: '%s' is empty!", fileName.c_str());
+		return "";
+	}
 
 	if(!file.is_open()) {
-		printf("[VKMGL] ERROR: File: '%s' is not open!\n", fileName.c_str());
+		LOG_WARNING("File: '%s' is not open!", fileName.c_str());
 		return "";
 	}
 
@@ -22,7 +23,7 @@ std::string fileToString(const std::string &fileName) {
 	);
 
 	if (!buffer.empty()) {
-		printf("[VKMGL] WARNING: File: '%s' is empty!\n", fileName.c_str());
+		LOG_WARNING("File: '%s' is empty!", fileName.c_str());
 	}
 
 	return buffer;

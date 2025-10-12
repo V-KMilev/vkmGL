@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "gl_error_handle.h"
-#include "error_handle.h"
+#include "l_assert.h"
 
 namespace Core {
 	FrameBufferParams::FrameBufferParams(
@@ -22,7 +22,7 @@ namespace Core {
 		layer(layer) {}
 
 	FrameBuffer::~FrameBuffer() {
-		MY_GL_CHECK(glDeleteFramebuffers(1, &_mID));
+		VKM_GL_CHECK(glDeleteFramebuffers(1, &_mID));
 	}
 
 	FrameBuffer::FrameBuffer(Dimension dimension, FrameBufferParams params) :
@@ -30,9 +30,9 @@ namespace Core {
 		_mParams(params)
 	{
 		// Generate a new Frame Buffer
-		MY_GL_CHECK(glGenFramebuffers(1, &_mID));
+		VKM_GL_CHECK(glGenFramebuffers(1, &_mID));
 
-		M_ASSERT(_mID != 0);
+		VKM_ASSERT(_mID != 0);
 	}
 
 	FrameBuffer::FrameBuffer(
@@ -57,17 +57,17 @@ namespace Core {
 		)
 	{
 		// Generate a new Frame Buffer
-		MY_GL_CHECK(glGenFramebuffers(1, &_mID));
+		VKM_GL_CHECK(glGenFramebuffers(1, &_mID));
 
-		M_ASSERT(_mID != 0);
+		VKM_ASSERT(_mID != 0);
 	}
 
 	void FrameBuffer::bind(unsigned int target) const {
-		MY_GL_CHECK(glBindFramebuffer(target, _mID));
+		VKM_GL_CHECK(glBindFramebuffer(target, _mID));
 	}
 
 	void FrameBuffer::unbind(unsigned int target) const {
-		MY_GL_CHECK(glBindFramebuffer(target, 0));
+		VKM_GL_CHECK(glBindFramebuffer(target, 0));
 	}
 
 	unsigned int FrameBuffer::getID() const {
@@ -75,14 +75,14 @@ namespace Core {
 	}
 
 	void FrameBuffer::read(unsigned int targetBuffer) {
-		MY_GL_CHECK(glReadBuffer(targetBuffer));
+		VKM_GL_CHECK(glReadBuffer(targetBuffer));
 	}
 
 	bool FrameBuffer::init() const {
 		bind();
 
 		if (_mDimensions == Dimension::_ND) {
-			MY_GL_CHECK(glFramebufferTexture(
+			VKM_GL_CHECK(glFramebufferTexture(
 				_mParams.target,
 				_mParams.attachment,
 				_mParams.textureID,
@@ -90,7 +90,7 @@ namespace Core {
 			));
 		}
 		else if (_mDimensions == Dimension::_1D) {
-			MY_GL_CHECK(glFramebufferTexture1D(
+			VKM_GL_CHECK(glFramebufferTexture1D(
 				_mParams.target,
 				_mParams.attachment,
 				_mParams.textarget,
@@ -99,7 +99,7 @@ namespace Core {
 			));
 		}
 		else if (_mDimensions == Dimension::_2D) {
-			MY_GL_CHECK(glFramebufferTexture2D(
+			VKM_GL_CHECK(glFramebufferTexture2D(
 				_mParams.target,
 				_mParams.attachment,
 				_mParams.textarget,
@@ -108,7 +108,7 @@ namespace Core {
 			));
 		}
 		else if (_mDimensions == Dimension::_3D) {
-			MY_GL_CHECK(glFramebufferTexture3D(
+			VKM_GL_CHECK(glFramebufferTexture3D(
 				_mParams.target,
 				_mParams.attachment,
 				_mParams.textarget,
@@ -125,7 +125,7 @@ namespace Core {
 		}
 
 		unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		M_ASSERT(status == GL_FRAMEBUFFER_COMPLETE);
+		VKM_ASSERT(status == GL_FRAMEBUFFER_COMPLETE);
 
 		unbind();
 		return true;
@@ -165,9 +165,9 @@ namespace Core {
 	) const {
 		bind();
 
-		MY_GL_CHECK(glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbufferID));
+		VKM_GL_CHECK(glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbufferID));
 
 		unsigned int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		M_ASSERT(status == GL_FRAMEBUFFER_COMPLETE);
+		VKM_ASSERT(status == GL_FRAMEBUFFER_COMPLETE);
 	}
 };

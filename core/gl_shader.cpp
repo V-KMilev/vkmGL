@@ -4,8 +4,7 @@
 #include <filesystem>
 
 #include "gl_error_handle.h"
-#include "error_handle.h"
-
+#include "l_assert.h"
 #include "file_read.h"
 
 namespace fs = std::filesystem;
@@ -83,15 +82,15 @@ namespace Core {
 	}
 
 	Shader::~Shader() {
-		MY_GL_CHECK(glDeleteProgram(_mID));
+		VKM_GL_CHECK(glDeleteProgram(_mID));
 	}
 
 	void Shader::bind() const {
-		MY_GL_CHECK(glUseProgram(_mID));
+		VKM_GL_CHECK(glUseProgram(_mID));
 	}
 
 	void Shader::unbind() const {
-		MY_GL_CHECK(glUseProgram(0));
+		VKM_GL_CHECK(glUseProgram(0));
 	}
 
 	void Shader::reCompleShader() {
@@ -101,7 +100,7 @@ namespace Core {
 		// Clear the old cache
 		_mUniformLocationCache.clear();
 
-		MY_GL_CHECK(glDeleteProgram(_mID));
+		VKM_GL_CHECK(glDeleteProgram(_mID));
 
 		createShader();
 	}
@@ -120,10 +119,10 @@ namespace Core {
 
 	void Shader::createShader() {
 		// Create a new program
-		_mID = MY_GL_CHECK(glCreateProgram());
+		_mID = VKM_GL_CHECK(glCreateProgram());
 
 		// Ensure the shader ID is valid
-		M_ASSERT(_mID != 0);
+		VKM_ASSERT(_mID != 0);
 
 		unsigned int vertexShader   = 0;
 		unsigned int fragmentShader = 0;
@@ -138,22 +137,22 @@ namespace Core {
 		}
 
 		// Attach the shaders
-		MY_GL_CHECK(glAttachShader(_mID, vertexShader));
-		MY_GL_CHECK(glAttachShader(_mID, fragmentShader));
+		VKM_GL_CHECK(glAttachShader(_mID, vertexShader));
+		VKM_GL_CHECK(glAttachShader(_mID, fragmentShader));
 
 		if (!_mSource.geometryShader.empty()) {
-			MY_GL_CHECK(glAttachShader(_mID, geometryShader));
+			VKM_GL_CHECK(glAttachShader(_mID, geometryShader));
 		}
 
-		MY_GL_CHECK(glLinkProgram(_mID));
-		MY_GL_CHECK(glValidateProgram(_mID));
+		VKM_GL_CHECK(glLinkProgram(_mID));
+		VKM_GL_CHECK(glValidateProgram(_mID));
 
 		// Delete the shaders
-		MY_GL_CHECK(glDeleteShader(vertexShader));
-		MY_GL_CHECK(glDeleteShader(fragmentShader));
+		VKM_GL_CHECK(glDeleteShader(vertexShader));
+		VKM_GL_CHECK(glDeleteShader(fragmentShader));
 
 		if (!_mSource.geometryShader.empty()) {
-			MY_GL_CHECK(glDeleteShader(geometryShader));
+			VKM_GL_CHECK(glDeleteShader(geometryShader));
 		}
 
 		printf("[INFO:CORE] Shader: '%s' successfully created!\n", _mPath.c_str());
@@ -164,11 +163,11 @@ namespace Core {
 		// The same as source.c_str();
 		const char* src = &source[0];
 
-		MY_GL_CHECK(glShaderSource(id, 1, &src, nullptr));
-		MY_GL_CHECK(glCompileShader(id));
+		VKM_GL_CHECK(glShaderSource(id, 1, &src, nullptr));
+		VKM_GL_CHECK(glCompileShader(id));
 
 		int result = 0;
-		MY_GL_CHECK(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
+		VKM_GL_CHECK(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
 
 		if(result != GL_TRUE) {
 			return printError(type, id);
@@ -188,14 +187,14 @@ namespace Core {
 
 		// Get error message
 		int infoLogLength;
-		MY_GL_CHECK(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &infoLogLength));
+		VKM_GL_CHECK(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &infoLogLength));
 
 		char* errorMessage = (char*)alloca(infoLogLength * sizeof(char));
-		MY_GL_CHECK(glGetShaderInfoLog(id, infoLogLength, &infoLogLength, errorMessage));
+		VKM_GL_CHECK(glGetShaderInfoLog(id, infoLogLength, &infoLogLength, errorMessage));
 
 		printf("[ERROR:CORE] Error message: %s\n", errorMessage);
 
-		MY_GL_CHECK(glDeleteShader(id));
+		VKM_GL_CHECK(glDeleteShader(id));
 
 		return 0;
 	}
@@ -223,56 +222,56 @@ namespace Core {
 
 	void Shader::setUniform4f(const std::string& uniformName, float f0, float f1, float f2, float f3) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniform4f(location, f0, f1, f2, f3));
+		VKM_GL_CHECK(glUniform4f(location, f0, f1, f2, f3));
 	}
 
 	void Shader::setUniform3f(const std::string& uniformName, float f0, float f1, float f2) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniform3f(location, f0, f1, f2));
+		VKM_GL_CHECK(glUniform3f(location, f0, f1, f2));
 	}
 
 	void Shader::setUniform2f(const std::string& uniformName, float f0, float f1) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniform2f(location, f0, f1));
+		VKM_GL_CHECK(glUniform2f(location, f0, f1));
 	}
 
 	void Shader::setUniform1f(const std::string& uniformName, float f0) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniform1f(location, f0));
+		VKM_GL_CHECK(glUniform1f(location, f0));
 	}
 
 	void Shader::setUniform4fv(const std::string& uniformName, const glm::vec4& v) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniform4fv(location, 1, &v[0]));
+		VKM_GL_CHECK(glUniform4fv(location, 1, &v[0]));
 	}
 
 	void Shader::setUniform3fv(const std::string& uniformName, const glm::vec3& v) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniform3fv(location, 1, &v[0]));
+		VKM_GL_CHECK(glUniform3fv(location, 1, &v[0]));
 	}
 
 	void Shader::setUniform2fv(const std::string& uniformName, const glm::vec2& v) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniform2fv(location, 1, &v[0]));
+		VKM_GL_CHECK(glUniform2fv(location, 1, &v[0]));
 	}
 
 	void Shader::setUniformMatrix4fv(const std::string& uniformName, const glm::mat4& matrix) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]));
+		VKM_GL_CHECK(glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]));
 	}
 
 	void Shader::setUniformMatrix3fv(const std::string& uniformName, const glm::mat3& matrix) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniformMatrix3fv(location, 1, GL_FALSE, &matrix[0][0]));
+		VKM_GL_CHECK(glUniformMatrix3fv(location, 1, GL_FALSE, &matrix[0][0]));
 	}
 
 	void Shader::setUniform1ui(const std::string& uniformName, unsigned int ui0) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniform1ui(location, ui0));
+		VKM_GL_CHECK(glUniform1ui(location, ui0));
 	}
 
 	void Shader::setUniform1i(const std::string& uniformName, int i0) const {
 		int location = getUniformLocation(uniformName);
-		MY_GL_CHECK(glUniform1i(location, i0));
+		VKM_GL_CHECK(glUniform1i(location, i0));
 	}
 };

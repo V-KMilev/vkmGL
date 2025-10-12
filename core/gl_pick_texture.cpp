@@ -1,7 +1,6 @@
 #include "gl_pick_texture.h"
 
 #include "gl_error_handle.h"
-#include "error_handle.h"
 
 namespace Core {
 	PickTexture::PickTexture(unsigned int width, unsigned int height) : 
@@ -92,7 +91,7 @@ namespace Core {
 
 		PixelInfo pixel;
 
-		MY_GL_CHECK(glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &pixel));
+		VKM_GL_CHECK(glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &pixel));
 
 		_mFB->read(GL_NONE);
 

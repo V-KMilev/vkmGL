@@ -3,7 +3,6 @@
 #include <utility>
 
 #include "gl_error_handle.h"
-#include "error_handle.h"
 
 namespace Core {
 	Renderer::Renderer() : _mClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) {}
@@ -35,11 +34,11 @@ namespace Core {
 	}
 
 	void Renderer::clear() const {
-		MY_GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+		VKM_GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 	}
 
 	void Renderer::clearColor() const {
-		MY_GL_CHECK(
+		VKM_GL_CHECK(
 			glClearColor(
 				_mClearColor[0],
 				_mClearColor[1],
@@ -61,7 +60,7 @@ namespace Core {
 		vertex_array.bind();
 		index_buffer.bind();
 
-		MY_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, (const void*) indices));
+		VKM_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, (const void*) indices));
 	}
 
 	void Renderer::draw(
@@ -75,13 +74,13 @@ namespace Core {
 
 		vertex_array.bind();
 
-		MY_GL_CHECK(glDrawArrays(drawType, first, count));
+		VKM_GL_CHECK(glDrawArrays(drawType, first, count));
 	}
 
 	void Renderer::draw(
 		unsigned int count,
 		const unsigned int* buffers
 	) const {
-		MY_GL_CHECK(glDrawBuffers(count, buffers));
+		VKM_GL_CHECK(glDrawBuffers(count, buffers));
 	}
 };
