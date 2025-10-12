@@ -20,7 +20,13 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/modules)
 add_subdirectory(${PROJECT_SOURCE_DIR}/common)
 add_subdirectory(${PROJECT_SOURCE_DIR}/core)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE
+	vkmLog
+)
+
 # Link the main target with external libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	OpenGL::GL
+	glfw
+	glm
 )

@@ -1,10 +1,8 @@
-message("[BUILDING:VKMGL] OpenGL Core")
+message("[VKMGL] Core:")
 
 set(VKMGL_CORE_DIR ${PROJECT_SOURCE_DIR}/core)
 
 set(SOURCES
-	${VKMGL_CORE_DIR}/error/gl_error_handle.cpp
-
 	${VKMGL_CORE_DIR}/memory/gl_frame_buffer.cpp
 	${VKMGL_CORE_DIR}/memory/gl_index_buffer.cpp
 	${VKMGL_CORE_DIR}/memory/gl_render_buffer.cpp

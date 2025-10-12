@@ -8,7 +8,7 @@
 #define STBI_ONLY_PNM
 
 #include "gl_error_handle.h"
-#include "error_handle.h"
+#include "l_assert.h"
 
 namespace Core {
 	TextureParams::TextureParams(
@@ -40,7 +40,7 @@ namespace Core {
 
 	Texture::~Texture() {
 		if(_mID != 0) {
-			MY_GL_CHECK(glDeleteTextures(1, &_mID));
+			VKM_GL_CHECK(glDeleteTextures(1, &_mID));
 		}
 	}
 
@@ -57,9 +57,9 @@ namespace Core {
 		_mFilter(filter)
 	{
 		// Generate a new texture
-		MY_GL_CHECK(glGenTextures(1, &_mID));
+		VKM_GL_CHECK(glGenTextures(1, &_mID));
 
-		M_ASSERT(_mID != 0);
+		VKM_ASSERT(_mID != 0);
 	}
 
 	Texture::Texture(
@@ -95,9 +95,9 @@ namespace Core {
 		)
 	{
 		// Generate a new texture
-		MY_GL_CHECK(glGenTextures(1, &_mID));
+		VKM_GL_CHECK(glGenTextures(1, &_mID));
 
-		M_ASSERT(_mID != 0);
+		VKM_ASSERT(_mID != 0);
 	}
 
 	Texture::Texture(const std::string& file) :
@@ -105,9 +105,9 @@ namespace Core {
 		_mSource(TextureSource::FILE)
 	{
 		// Generate a new texture
-		MY_GL_CHECK(glGenTextures(1, &_mID));
+		VKM_GL_CHECK(glGenTextures(1, &_mID));
 
-		M_ASSERT(_mID != 0);
+		VKM_ASSERT(_mID != 0);
 	}
 
 	Texture::Texture(Texture && other) noexcept {
@@ -149,12 +149,12 @@ namespace Core {
 	}
 
 	void Texture::bind(uint32_t slot, uint32_t type) const {
-		MY_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
-		MY_GL_CHECK(glBindTexture(type, _mID));
+		VKM_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+		VKM_GL_CHECK(glBindTexture(type, _mID));
 	};
 
 	void Texture::unbind() const {
-		MY_GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
+		VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
 	};
 
 	unsigned int Texture::getID() const {
@@ -235,7 +235,7 @@ namespace Core {
 
 		bind();
 
-		MY_GL_CHECK(glTexImage2D(
+		VKM_GL_CHECK(glTexImage2D(
 			_mParams.target,
 			_mParams.level,
 			_mParams.internalFormat,
@@ -267,7 +267,7 @@ namespace Core {
 
 	void Texture::clear() {
 		if(_mID != 0) {
-			MY_GL_CHECK(glDeleteTextures(1, &_mID));
+			VKM_GL_CHECK(glDeleteTextures(1, &_mID));
 			_mID = 0;
 		}
 	}
@@ -356,10 +356,10 @@ namespace Core {
 		}
 
 		// Set texture parameters for minification and magnification filters, and wrapping behavior
-		MY_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter));
-		MY_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter));
-		MY_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap)); // GL_TEXTURE_WRAP_S: horizontal
-		MY_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap)); // GL_TEXTURE_WRAP_T: vertical
+		VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter));
+		VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter));
+		VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap)); // GL_TEXTURE_WRAP_S: horizontal
+		VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap)); // GL_TEXTURE_WRAP_T: vertical
 
 		return true;
 	}

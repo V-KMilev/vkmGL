@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "gl_error_handle.h"
-#include "error_handle.h"
+#include "l_assert.h"
 
 namespace Core {
 	VertexBufferLayout::VertexBufferLayout() :  _mStride(0), _mElements({}) {}
@@ -41,7 +41,7 @@ namespace Core {
 	template<typename T>
 	void push(unsigned int count) {
 		// Error message indicating that push function should be used
-		M_ASSERT(false);
+		VKM_ASSERT(false);
 	}
 
 	unsigned int VertexBufferLayout::getStride() const {
