@@ -23,25 +23,25 @@ message("[VKMGL] Building vkmGL v${PROJECT_VERSION}")
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/gl_object.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/gl_object.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/gl_vertex_buffer_layout.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_vertex_buffer_layout.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/memory/gl_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/memory/gl_vertex_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/memory/gl_index_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/memory/gl_uniform_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/memory/gl_shader_storage_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_vertex_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_index_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_uniform_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_shader_storage_buffer.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/state/gl_vertex_array.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/state/gl_frame_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/state/gl_render_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state/gl_vertex_array.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state/gl_frame_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state/gl_render_buffer.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/core/gl_render.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_render.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/shader/gl_shader.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/texture/gl_texture.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_texture.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/utils/gl_error_handle.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/utils/gl_debug.cpp
@@ -51,14 +51,15 @@ set(SOURCES
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/memory
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer/state
-	${CMAKE_CURRENT_SOURCE_DIR}/core
-	${CMAKE_CURRENT_SOURCE_DIR}/shader
-	${CMAKE_CURRENT_SOURCE_DIR}/texture
-	${CMAKE_CURRENT_SOURCE_DIR}/components
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state
+	${CMAKE_CURRENT_SOURCE_DIR}/src/core
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader
+	${CMAKE_CURRENT_SOURCE_DIR}/src/texture
+	${CMAKE_CURRENT_SOURCE_DIR}/src/components
+
 	${CMAKE_CURRENT_SOURCE_DIR}/utils
 )
 
