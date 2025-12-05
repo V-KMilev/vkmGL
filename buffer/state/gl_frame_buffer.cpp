@@ -1,7 +1,5 @@
 #include "gl_frame_buffer.h"
 
-#include <cassert>
-
 #include "gl_error_handle.h"
 #include "l_assert.h"
 #include "logger.h"
@@ -16,7 +14,7 @@ FrameBuffer::FrameBuffer() : GLObject(GL_FRAMEBUFFER, GL_FRAMEBUFFER, 0) {
 FrameBuffer::~FrameBuffer() {
     if (m_id == 0) {
         LOG_FATAL("Attempting to delete invalid framebuffer [ID:%u]", m_id);
-        assert(false && "Attempting to delete invalid framebuffer");
+        VKM_ASSERT(false);
         return;
     }
 

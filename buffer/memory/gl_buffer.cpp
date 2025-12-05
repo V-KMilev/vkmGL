@@ -1,7 +1,5 @@
 #include "gl_buffer.h"
 
-#include <cassert>
-
 #include "gl_error_handle.h"
 #include "l_assert.h"
 #include "logger.h"

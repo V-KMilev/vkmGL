@@ -1,7 +1,5 @@
 #include "gl_render_buffer.h"
 
-#include <cassert>
-
 #include "gl_error_handle.h"
 #include "l_assert.h"
 #include "logger.h"
@@ -19,7 +17,7 @@ RenderBuffer::RenderBuffer()
 RenderBuffer::~RenderBuffer() {
     if (m_id == 0) {
         LOG_FATAL("Attempting to delete invalid render buffer [ID:%u]", m_id);
-        assert(false && "Attempting to delete invalid render buffer");
+        VKM_ASSERT(false);
         return;
     }
 

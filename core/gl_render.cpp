@@ -1,86 +1,67 @@
 #include "gl_render.h"
 
-#include <utility>
-
 #include "gl_error_handle.h"
 
 namespace Core {
-	Renderer::Renderer() : _mClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) {}
+    Renderer::Renderer()
+        : m_clearColor(0.0f, 0.0f, 0.0f, 1.0f) {}
 
-	Renderer::Renderer(const Renderer& other) {
-		this->_mClearColor = other._mClearColor;
-	}
+    void Renderer::clear() const {
+        VKM_GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    }
 
-	Renderer& Renderer::operator = (const Renderer& other) {
-		if (this == &other) {
-			return *this;
-		}
+    void Renderer::clearColor() const {
+        VKM_GL_CHECK(glClearColor(
+            m_clearColor[0],
+            m_clearColor[1],
+            m_clearColor[2],
+            m_clearColor[3]
+        ));
+    }
 
-		this->_mClearColor = other._mClearColor;
-		return *this;
-	}
+    void Renderer::draw(
+        const VertexArray& vertexArray,
+        const IndexBuffer& indexBuffer,
+        const Shader& shader,
+        uint32_t drawType,
+        uint32_t indicesOffset
+    ) const {
+        shader.bind();
+        vertexArray.bind();
+        indexBuffer.bind();
 
-	Renderer::Renderer(Renderer && other) {
-		this->_mClearColor = std::move(other._mClearColor);
-	}
+        VKM_GL_CHECK(glDrawElements(
+            drawType,
+            static_cast<GLsizei>(indexBuffer.getCount()),
+            GL_UNSIGNED_INT,
+            reinterpret_cast<const void*>(static_cast<uintptr_t>(indicesOffset))
+        ));
+    }
 
-	Renderer& Renderer::operator = (Renderer && other) {
-		if (this == &other) {
-			return *this;
-		}
+    void Renderer::draw(
+        const VertexArray& vertexArray,
+        const Shader& shader,
+        uint32_t drawType,
+        uint32_t first,
+        uint32_t count
+    ) const {
+        shader.bind();
+        vertexArray.bind();
 
-		this->_mClearColor = std::move(other._mClearColor);
-		return *this;
-	}
+        VKM_GL_CHECK(glDrawArrays(
+            drawType,
+            static_cast<GLint>(first),
+            static_cast<GLsizei>(count)
+        ));
+    }
 
-	void Renderer::clear() const {
-		VKM_GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-	}
-
-	void Renderer::clearColor() const {
-		VKM_GL_CHECK(
-			glClearColor(
-				_mClearColor[0],
-				_mClearColor[1],
-				_mClearColor[2],
-				_mClearColor[3]
-			)
-		);
-	}
-
-	void Renderer::draw(
-		const VertexArray& vertex_array,
-		const IndexBuffer& index_buffer,
-		const Shader &shader,
-		unsigned int drawType,
-		unsigned int indices
-	) const {
-		shader.bind();
-
-		vertex_array.bind();
-		index_buffer.bind();
-
-		VKM_GL_CHECK(glDrawElements(drawType, index_buffer.getCount(), GL_UNSIGNED_INT, (const void*) indices));
-	}
-
-	void Renderer::draw(
-		const VertexArray& vertex_array,
-		const Shader& shader,
-		unsigned int drawType,
-		unsigned int first,
-		unsigned int count
-	) const {
-		shader.bind();
-
-		vertex_array.bind();
-
-		VKM_GL_CHECK(glDrawArrays(drawType, first, count));
-	}
-
-	void Renderer::draw(
-		unsigned int count,
-		const unsigned int* buffers
-	) const {
-		VKM_GL_CHECK(glDrawBuffers(count, buffers));
-	}
+    void Renderer::drawBuffers(
+        uint32_t count,
+        const uint32_t* buffers
+    ) const {
+        VKM_GL_CHECK(glDrawBuffers(
+            static_cast<GLsizei>(count),
+            reinterpret_cast<const GLenum*>(buffers)
+        ));
+    }
 };
