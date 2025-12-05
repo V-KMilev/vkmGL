@@ -1,7 +1,5 @@
 #include "gl_vertex_array.h"
 
-#include <cassert>
-
 #include "gl_error_handle.h"
 #include "l_assert.h"
 #include "logger.h"
@@ -16,7 +14,7 @@ VertexArray::VertexArray() : GLObject(0, GL_VERTEX_ARRAY, 0), m_attributeIndex(0
 VertexArray::~VertexArray() {
     if (m_id == 0) {
         LOG_FATAL("Attempting to delete invalid vertex array [ID:%u]", m_id);
-        assert(false && "Attempting to delete invalid vertex array");
+        VKM_ASSERT(false);
         return;
     }
 
