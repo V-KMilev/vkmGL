@@ -28,13 +28,14 @@ struct ShaderSource {
 
     /**
      * @brief Check existence of the shader source files.
-     *        If the geometry shader is missing, its path is cleared (optional stage).
+     *        If vertex/fragment is missing, returns false. Geometry is optional; if missing, returns true and clears the path.
      *
      * @param vertexShaderName   Full path to the vertex shader file.
      * @param fragmentShaderName Full path to the fragment shader file.
      * @param geometryShaderName Full path to the geometry shader file (modified if file missing).
+     * @return True if all paths are valid, false otherwise.
      */
-    void validatePaths(
+    bool validatePaths(
         const std::string& vertexShaderName,
         const std::string& fragmentShaderName,
         std::string& geometryShaderName
@@ -57,17 +58,18 @@ class Shader : public GLObject {
         Shader() = delete;
         ~Shader() override;
 
-        /**
-         * @brief Construct and load shaders from the directory at path.
-         * @param path Path to the directory containing shader files (vertex/fragment/geometry).
-         */
-        explicit Shader(const std::string& path);
-
         Shader(const Shader& shader) = delete;
         Shader& operator=(const Shader& shader) = delete;
 
         Shader(Shader && shader) = delete;
         Shader& operator=(Shader && shader) = delete;
+
+        /**
+         * @brief Construct and load shaders from the directory at path.
+         * @param path Path to the directory containing shader files (vertex/fragment/geometry).
+         * @throws std::runtime_error if shader source validation fails.
+         */
+        explicit Shader(const std::string& path);
 
     public:
         /**
@@ -83,7 +85,7 @@ class Shader : public GLObject {
         void unbind(GLenum target = GL_NONE) const override;
 
         /**
-         * @brief Reload shader sources from disk and recreate the program.
+         * @brief Reload shader sources from disk and recreate the program (throws on failure).
          */
         void reCompleShader();
 
