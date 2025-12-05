@@ -19,6 +19,91 @@ namespace Core {
         ));
     }
 
+    void Renderer::setClearColor(const glm::vec4& color) {
+        m_clearColor = color;
+    }
+
+    void Renderer::enableDepthTest(bool enable) const {
+        if (enable) {
+            VKM_GL_CHECK(glEnable(GL_DEPTH_TEST));
+        } else {
+            VKM_GL_CHECK(glDisable(GL_DEPTH_TEST));
+        }
+    }
+
+    void Renderer::setDepthFunc(GLenum func) const {
+        VKM_GL_CHECK(glDepthFunc(func));
+    }
+
+    void Renderer::enableDepthWrite(bool enable) const {
+        VKM_GL_CHECK(glDepthMask(enable ? GL_TRUE : GL_FALSE));
+    }
+
+    void Renderer::enableFaceCulling(bool enable) const {
+        if (enable) {
+            VKM_GL_CHECK(glEnable(GL_CULL_FACE));
+        } else {
+            VKM_GL_CHECK(glDisable(GL_CULL_FACE));
+        }
+    }
+
+    void Renderer::setCullFace(GLenum face) const {
+        VKM_GL_CHECK(glCullFace(face));
+    }
+
+    void Renderer::setFrontFace(GLenum winding) const {
+        VKM_GL_CHECK(glFrontFace(winding));
+    }
+
+    void Renderer::enableBlending(bool enable) const {
+        if (enable) {
+            VKM_GL_CHECK(glEnable(GL_BLEND));
+        } else {
+            VKM_GL_CHECK(glDisable(GL_BLEND));
+        }
+    }
+
+    void Renderer::setBlendFunc(GLenum src, GLenum dst) const {
+        VKM_GL_CHECK(glBlendFunc(src, dst));
+    }
+
+    void Renderer::setBlendEquation(GLenum mode) const {
+        VKM_GL_CHECK(glBlendEquation(mode));
+    }
+
+    void Renderer::setViewport(int32_t x, int32_t y, int32_t width, int32_t height) const {
+        VKM_GL_CHECK(glViewport(x, y, width, height));
+    }
+
+    void Renderer::enableScissor(bool enable) const {
+        if (enable) {
+            VKM_GL_CHECK(glEnable(GL_SCISSOR_TEST));
+        } else {
+            VKM_GL_CHECK(glDisable(GL_SCISSOR_TEST));
+        }
+    }
+
+    void Renderer::setScissor(int32_t x, int32_t y, int32_t width, int32_t height) const {
+        VKM_GL_CHECK(glScissor(x, y, width, height));
+    }
+
+    void Renderer::setPolygonMode(GLenum face, GLenum mode) const {
+        VKM_GL_CHECK(glPolygonMode(face, mode));
+    }
+
+    void Renderer::setDefaultState() const {
+        enableDepthTest(true);
+        setDepthFunc(GL_LEQUAL);
+        enableDepthWrite(true);
+
+        enableFaceCulling(true);
+        setCullFace(GL_BACK);
+        setFrontFace(GL_CCW);
+
+        enableBlending(false);
+        setPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
     void Renderer::draw(
         const VertexArray& vertexArray,
         const IndexBuffer& indexBuffer,
@@ -33,7 +118,7 @@ namespace Core {
         VKM_GL_CHECK(glDrawElements(
             drawType,
             static_cast<GLsizei>(indexBuffer.getCount()),
-            GL_UNSIGNED_INT,
+            indexBuffer.getType(),
             reinterpret_cast<const void*>(static_cast<uintptr_t>(indicesOffset))
         ));
     }

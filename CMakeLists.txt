@@ -44,6 +44,7 @@ set(SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/texture/gl_texture.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/utils/gl_error_handle.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/utils/gl_debug.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/utils/glad_impl.c
 )
 

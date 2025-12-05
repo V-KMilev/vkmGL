@@ -27,11 +27,13 @@ namespace Core {
         const std::string fragmentShaderName = (fs::path(m_path) / "fragmentShader.shader").string();
         std::string geometryShaderName = (fs::path(m_path) / "geometryShader.shader").string();
 
-        validatePaths(
+        if (!validatePaths(
             vertexShaderName,
             fragmentShaderName,
             geometryShaderName
-        );
+        )) {
+            throw std::runtime_error("Shader source validation failed");
+        }
 
         vertexShader = fileToString(vertexShaderName);
         fragmentShader = fileToString(fragmentShaderName);
@@ -41,21 +43,24 @@ namespace Core {
         }
     }
 
-    void ShaderSource::validatePaths(
+    bool ShaderSource::validatePaths(
         const std::string& vertexShaderName,
         const std::string& fragmentShaderName,
         std::string& geometryShaderName
     ) {
         if (!fs::exists(vertexShaderName)) {
-            LOG_ERROR("Shader '%s' missing vertex shader at '%s'", m_path.c_str(), vertexShaderName.c_str());
+            LOG_FATAL("Shader '%s' missing vertex shader at '%s'", m_path.c_str(), vertexShaderName.c_str());
+            return false;
         }
         if (!fs::exists(fragmentShaderName)) {
-            LOG_ERROR("Shader '%s' missing fragment shader at '%s'", m_path.c_str(), fragmentShaderName.c_str());
+            LOG_FATAL("Shader '%s' missing fragment shader at '%s'", m_path.c_str(), fragmentShaderName.c_str());
+            return false;
         }
         if (!fs::exists(geometryShaderName)) {
             LOG_INFO("Shader '%s' running without geometry shader", m_path.c_str());
             geometryShaderName.clear();
         }
+        return true;
     }
 
     Shader::Shader(const std::string& path)
@@ -147,6 +152,9 @@ namespace Core {
             LOG_FATAL("Shader program link failed [%s]: %s", m_name.c_str(), errorMessage.c_str());
             throw std::runtime_error("Shader program link failed");
         }
+
+        // Apply a debug label for easier GPU debugging.
+        setLabel(m_name.c_str());
 
         VKM_GL_CHECK(glDeleteShader(vertexShader));
         VKM_GL_CHECK(glDeleteShader(fragmentShader));
