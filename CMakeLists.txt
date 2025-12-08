@@ -63,7 +63,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/utils
 )
 
-# External dependencies (submodules in modules/)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -72,12 +71,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/modules/stb
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-	vkmLog
-)
-
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	OpenGL::GL
 	glfw
 	glm
+	vkmLog
 )

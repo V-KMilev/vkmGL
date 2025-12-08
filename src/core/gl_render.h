@@ -11,14 +11,29 @@
 
 namespace Core {
 
+struct DepthState {
+    bool enabled      = false;
+    GLenum func       = GL_LESS;
+    bool writeEnabled = true;
+};
+
+struct FaceCullState {
+    bool enabled     = false;
+    GLenum cullFace  = GL_BACK;
+    GLenum frontFace = GL_CCW;
+};
+
+struct BlendState {
+    bool enabled     = false;
+    GLenum srcFactor = GL_ONE;
+    GLenum dstFactor = GL_ZERO;
+    GLenum equation  = GL_FUNC_ADD;
+};
+
 /**
  * @brief High-level OpenGL renderer abstraction.
  *
  * The Renderer class encapsulates basic drawing, clearing, and buffer management
- * operations for OpenGL. It provides utility methods for rendering indexed and 
- * non-indexed geometry through user-supplied VertexArray, IndexBuffer, and Shader 
- * abstractions. Renderer is non-copyable and non-movable to ensure unique 
- * management of its state.
  */
 class Renderer {
     public:
@@ -52,56 +67,56 @@ class Renderer {
          * @brief Enables or disables depth testing (GL_DEPTH_TEST).
          * @param enable Set to true to enable, false to disable.
          */
-        void enableDepthTest(bool enable) const;
+        void enableDepthTest(bool enable);
 
         /**
          * @brief Sets the depth comparison function (e.g., GL_LESS, GL_LEQUAL, etc).
          * @param func GLenum specifying depth function.
          */
-        void setDepthFunc(GLenum func) const;
+        void setDepthFunc(GLenum func);
 
         /**
          * @brief Enables or disables writing to the depth buffer (via glDepthMask).
          * @param enable Set to true to enable depth writes, false to disable.
          */
-        void enableDepthWrite(bool enable) const;
+        void enableDepthWrite(bool enable);
 
         /**
          * @brief Enables or disables face culling (GL_CULL_FACE).
          * @param enable Set to true to enable face culling, false to disable.
          */
-        void enableFaceCulling(bool enable) const;
+        void enableFaceCulling(bool enable);
 
         /**
          * @brief Specifies which face to cull (e.g., GL_BACK, GL_FRONT, GL_FRONT_AND_BACK).
          * @param face GLenum specifying face.
          */
-        void setCullFace(GLenum face) const;
+        void setCullFace(GLenum face);
 
         /**
          * @brief Sets the winding order to determine front-facing polygons (GL_CW or GL_CCW).
          * @param winding GLenum specifying winding order.
          */
-        void setFrontFace(GLenum winding) const;
+        void setFrontFace(GLenum winding);
 
         /**
          * @brief Enables or disables blending (GL_BLEND).
          * @param enable Set to true to enable blending, false to disable.
          */
-        void enableBlending(bool enable) const;
+        void enableBlending(bool enable);
 
         /**
          * @brief Sets the blend function factors for source and destination.
          * @param src Source factor (e.g., GL_SRC_ALPHA).
          * @param dst Destination factor (e.g., GL_ONE_MINUS_SRC_ALPHA).
          */
-        void setBlendFunc(GLenum src, GLenum dst) const;
+        void setBlendFunc(GLenum src, GLenum dst);
 
         /**
          * @brief Sets the blend equation mode (e.g., GL_FUNC_ADD, GL_FUNC_SUBTRACT).
          * @param mode GLenum specifying blend equation.
          */
-        void setBlendEquation(GLenum mode) const;
+        void setBlendEquation(GLenum mode);
 
         /**
          * @brief Sets the viewport dimensions and position for rendering.
@@ -116,7 +131,7 @@ class Renderer {
          * @brief Enables or disables the scissor test (GL_SCISSOR_TEST).
          * @param enable Set to true to enable scissor test, false to disable.
          */
-        void enableScissor(bool enable) const;
+        void enableScissor(bool enable);
 
         /**
          * @brief Sets the scissor box dimensions for the scissor test.
@@ -132,13 +147,13 @@ class Renderer {
          * @param face  Specifies front and/or back facing polygons (GL_FRONT, GL_BACK, GL_FRONT_AND_BACK).
          * @param mode  Polygon mode (GL_FILL, GL_LINE, GL_POINT).
          */
-        void setPolygonMode(GLenum face, GLenum mode) const;
+        void setPolygonMode(GLenum face, GLenum mode);
 
         /**
          * @brief Apply a sane default pipeline state (depth test on/lequal, depth write on,
          *        backface cull CCW, polygon fill).
          */
-        void setDefaultState() const;
+        void setDefaultState();
 
         /**
          * @brief Draws indexed geometry using the provided vertex array, index buffer, and shader.
@@ -182,7 +197,29 @@ class Renderer {
             const uint32_t* buffers
         ) const;
 
+        // State getters for querying current render state
+        const glm::vec4& getClearColor() const { return m_clearColor; }
+        // Individual getters for convenience
+        bool isDepthTestEnabled() const { return depth.enabled; }
+        GLenum getDepthFunc() const { return depth.func; }
+        bool isDepthWriteEnabled() const { return depth.writeEnabled; }
+        bool isFaceCullingEnabled() const { return faceCulling.enabled; }
+        GLenum getCullFace() const { return faceCulling.cullFace; }
+        GLenum getFrontFace() const { return faceCulling.frontFace; }
+        bool isBlendingEnabled() const { return blending.enabled; }
+        GLenum getBlendSrc() const { return blending.srcFactor; }
+        GLenum getBlendDst() const { return blending.dstFactor; }
+        GLenum getBlendEquation() const { return blending.equation; }
+        GLenum getPolygonMode() const { return polygonMode; }
+        bool isScissorEnabled() const { return scissorEnabled; }
+
     private:
         glm::vec4 m_clearColor;
+
+        DepthState depth;
+        FaceCullState faceCulling;
+        BlendState blending;
+        GLenum polygonMode = GL_FILL;
+        bool scissorEnabled = false;
 };
 };
