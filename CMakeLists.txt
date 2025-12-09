@@ -37,7 +37,7 @@ set(SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state/gl_frame_buffer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state/gl_render_buffer.cpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_render.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_context.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader.cpp
 
