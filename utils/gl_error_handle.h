@@ -25,8 +25,16 @@ void checkGLError(
  * any errors that may have occurred during its execution. If an error is found,
  * a detailed log message is produced including the file name, line number, and function name.
  *
+ * In release builds (NDEBUG defined), error checking is disabled for performance.
+ *
  * @param MyFunction The OpenGL function to be executed and checked.
  */
-#define VKM_GL_CHECK(MyFunction)                  \
-	MyFunction;                                   \
-	checkGLError(__FILE__, __LINE__, __FUNCTION__)
+#ifdef NDEBUG
+	// Release build: disable error checking for performance
+	#define VKM_GL_CHECK(MyFunction) MyFunction
+#else
+	// Debug build: enable error checking
+	#define VKM_GL_CHECK(MyFunction)                  \
+		MyFunction;                                   \
+		checkGLError(__FILE__, __LINE__, __FUNCTION__)
+#endif

@@ -152,5 +152,9 @@ class Shader : public GLObject {
         ShaderSource m_source;
 
         mutable std::unordered_map<std::string, int32_t> m_uniformLocationCache;
+
+        // Static state cache to track currently bound shader program
+        static uint32_t s_boundProgram;
 };
+
 };

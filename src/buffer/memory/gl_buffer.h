@@ -1,6 +1,8 @@
 #pragma once
 
 #include "gl_object.h"
+#include <unordered_map>
+#include <cstdint>
 
 namespace Core {
 
@@ -75,5 +77,9 @@ class GLBuffer : public GLObject {
     protected:
         uint32_t m_size;
         GLenum m_usage;
+
+        // Static state cache to track currently bound buffers per target
+        static std::unordered_map<GLenum, uint32_t> s_boundBuffers;
 };
+
 };
