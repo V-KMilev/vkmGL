@@ -15,7 +15,7 @@ class UniformBuffer : public GLBuffer {
         UniformBuffer(
             const void* data,
             uint32_t size,
-            GLenum usage = GL_DYNAMIC_DRAW
+            GLenum usage = GL_STATIC_DRAW
         );
 
     public:
@@ -40,4 +40,5 @@ class UniformBuffer : public GLBuffer {
          */
         void bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) const;
 };
+
 };

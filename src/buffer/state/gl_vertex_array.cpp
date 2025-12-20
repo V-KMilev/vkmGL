@@ -6,6 +6,9 @@
 
 namespace Core {
 
+// Initialize static member
+uint32_t VertexArray::s_boundVAO = 0;
+
 VertexArray::VertexArray() : GLObject(0, GL_VERTEX_ARRAY, 0), m_attributeIndex(0) {
     VKM_GL_CHECK(glGenVertexArrays(1, &m_id));
     VKM_ASSERT(m_id != 0);
@@ -22,11 +25,17 @@ VertexArray::~VertexArray() {
 }
 
 void VertexArray::bind(GLenum target) const {
-    VKM_GL_CHECK(glBindVertexArray(m_id));
+    if (s_boundVAO != m_id) {
+        VKM_GL_CHECK(glBindVertexArray(m_id));
+        s_boundVAO = m_id;
+    }
 }
 
 void VertexArray::unbind(GLenum target) const {
-    VKM_GL_CHECK(glBindVertexArray(0));
+    if (s_boundVAO == m_id) {
+        VKM_GL_CHECK(glBindVertexArray(0));
+        s_boundVAO = 0;
+    }
 }
 
 void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout) {
@@ -92,4 +101,5 @@ void VertexArray::setAttributeDivisor(uint32_t index, uint32_t divisor) {
     bind();
     VKM_GL_CHECK(glVertexAttribDivisor(index, divisor));
 }
+
 };

@@ -6,6 +6,8 @@
 
 namespace Core {
 
+std::unordered_map<GLenum, uint32_t> GLBuffer::s_boundBuffers;
+
 GLBuffer::GLBuffer(
     GLenum target,
     const void* data,
@@ -32,11 +34,19 @@ GLBuffer::~GLBuffer() {
 }
 
 void GLBuffer::bind(GLenum target) const {
-    VKM_GL_CHECK(glBindBuffer(m_target, m_id));
+    const auto it = s_boundBuffers.find(m_target);
+    if (it == s_boundBuffers.end() || it->second != m_id) {
+        VKM_GL_CHECK(glBindBuffer(m_target, m_id));
+        s_boundBuffers[m_target] = m_id;
+    }
 }
 
 void GLBuffer::unbind(GLenum target) const {
-    VKM_GL_CHECK(glBindBuffer(m_target, 0));
+    const auto it = s_boundBuffers.find(m_target);
+    if (it != s_boundBuffers.end() && it->second == m_id) {
+        VKM_GL_CHECK(glBindBuffer(m_target, 0));
+        s_boundBuffers[m_target] = 0;
+    }
 }
 
 uint32_t GLBuffer::getSize() const {
@@ -62,4 +72,5 @@ void GLBuffer::unmap() {
     bind();
     VKM_GL_CHECK(glUnmapBuffer(m_target));
 }
+
 };

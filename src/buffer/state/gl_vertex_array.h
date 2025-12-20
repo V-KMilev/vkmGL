@@ -3,6 +3,7 @@
 #include "gl_object.h"
 #include "gl_vertex_buffer_layout.h"
 #include "gl_vertex_buffer.h"
+#include <cstdint>
 
 namespace Core {
 
@@ -70,5 +71,8 @@ class VertexArray : public GLObject {
 
     private:
         uint32_t m_attributeIndex;
+
+        static uint32_t s_boundVAO;
 };
+
 };
