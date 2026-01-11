@@ -60,7 +60,7 @@ bool ShaderSource::validatePaths(
         return false;
     }
     if (!fs::exists(geometryShaderName)) {
-        LOG_INFO("Shader '%s' running without geometry shader", m_path.c_str());
+        LOG_WARNING("Shader '%s' running without geometry shader", m_path.c_str());
         geometryShaderName.clear();
     }
     return true;
@@ -180,7 +180,7 @@ void Shader::createShader() {
         VKM_GL_CHECK(glDeleteShader(geometryShader));
     }
 
-    LOG_INFO("Shader '%s' successfully created", m_path.c_str());
+    LOG_TRACE("Shader '%s' successfully created", m_path.c_str());
 }
 
 uint32_t Shader::compileShader(uint32_t type, const std::string& source) const {

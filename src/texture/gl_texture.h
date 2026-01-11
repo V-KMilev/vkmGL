@@ -82,7 +82,8 @@ class Texture2D : public GLObject {
 
         explicit Texture2D(
             const std::string& filePath,
-            bool flipVertically = true
+            bool flipVertically = true,
+            bool srgb = false
         );
 
     public:
@@ -149,9 +150,22 @@ class Texture2D : public GLObject {
          * @brief Load the texture from a file.
          * @param filePath        Path to file.
          * @param flipVertically  Optionally flip vertically.
+         * @param srgb            Whether to use sRGB color space (default: false).
          * @return True on success, false otherwise.
          */
-        bool loadFromFile(const std::string& filePath, bool flipVertically = true);
+        bool loadFromFile(const std::string& filePath, bool flipVertically = true, bool srgb = false);
+
+        /**
+         * @brief Get the width of the texture.
+         * @return Texture width in pixels.
+         */
+        uint32_t getWidth() const { return m_params.width; }
+
+        /**
+         * @brief Get the height of the texture.
+         * @return Texture height in pixels.
+         */
+        uint32_t getHeight() const { return m_params.height; }
 
     private:
         void applyParameters() const;
