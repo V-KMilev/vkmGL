@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#include <glad/gl.h>
+#include <GL/glew.h>
 
 namespace Core {
 /**

@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <glad/gl.h>
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 
 namespace Core {

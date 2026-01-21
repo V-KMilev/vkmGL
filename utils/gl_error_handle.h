@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glad/gl.h>
+#include <GL/glew.h>
 
 /**
  * @brief Checks for any OpenGL errors and logs detailed information.

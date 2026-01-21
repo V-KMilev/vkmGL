@@ -1,6 +1,6 @@
 #include "gl_shader_storage_buffer.h"
 
-#include <glad/gl.h>
+#include <GL/glew.h>
 
 // GL_SHADER_STORAGE_BUFFER requires OpenGL 4.3+
 #ifndef GL_SHADER_STORAGE_BUFFER
