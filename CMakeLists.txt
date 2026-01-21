@@ -39,13 +39,14 @@ set(SOURCES
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_context.cpp
 
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader_base.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_compute_shader.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_texture.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/utils/gl_error_handle.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/utils/gl_debug.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/utils/glad_impl.c
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
@@ -65,15 +66,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
-target_include_directories(${PROJECT_NAME} PUBLIC
-	${CMAKE_CURRENT_SOURCE_DIR}/modules/glfw/include
-	${CMAKE_CURRENT_SOURCE_DIR}/modules/glm
-	${CMAKE_CURRENT_SOURCE_DIR}/modules/stb
-)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	OpenGL::GL
 	glfw
 	glm
 	vkmLog
+	glew
 )

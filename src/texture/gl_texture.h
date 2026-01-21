@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <string>
-#include <glad/gl.h>
+#include <GL/glew.h>
 
 #include "gl_object.h"
 
