@@ -12,13 +12,21 @@ FrameBuffer::FrameBuffer() : GLObject(GL_FRAMEBUFFER, GL_FRAMEBUFFER, 0) {
 }
 
 FrameBuffer::~FrameBuffer() {
-    if (m_id == 0) {
-        LOG_FATAL("Attempting to delete invalid framebuffer [ID:%u]", m_id);
-        VKM_ASSERT(false);
-        return;
-    }
+    release();
+}
 
+FrameBuffer& FrameBuffer::operator=(FrameBuffer&& other) noexcept {
+    if (this != &other) {
+        release();
+        GLObject::operator=(std::move(other));
+    }
+    return *this;
+}
+
+void FrameBuffer::release() noexcept {
+    if (m_id == 0) return;
     VKM_GL_CHECK(glDeleteFramebuffers(1, &m_id));
+    m_id = 0;
 }
 
 void FrameBuffer::bind(GLenum target) const {

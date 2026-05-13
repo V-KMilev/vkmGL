@@ -1,12 +1,11 @@
 #include "gl_buffer.h"
 
+#include <utility>
+
 #include "gl_error_handle.h"
 #include "l_assert.h"
-#include "logger.h"
 
 namespace Core {
-
-std::unordered_map<GLenum, uint32_t> GLBuffer::s_boundBuffers;
 
 GLBuffer::GLBuffer(
     GLenum target,
@@ -25,28 +24,31 @@ GLBuffer::GLBuffer(
 }
 
 GLBuffer::~GLBuffer() {
-    if (m_id == 0) {
-        LOG_FATAL("Attempting to delete invalid buffer [ID:%u]", m_id);
-        VKM_ASSERT(false);
-    }
+    release();
+}
 
+GLBuffer& GLBuffer::operator=(GLBuffer&& other) noexcept {
+    if (this != &other) {
+        release();
+        GLObject::operator=(std::move(other));
+        m_size  = other.m_size;
+        m_usage = other.m_usage;
+    }
+    return *this;
+}
+
+void GLBuffer::release() noexcept {
+    if (m_id == 0) return;
     VKM_GL_CHECK(glDeleteBuffers(1, &m_id));
+    m_id = 0;
 }
 
 void GLBuffer::bind(GLenum target) const {
-    const auto it = s_boundBuffers.find(m_target);
-    if (it == s_boundBuffers.end() || it->second != m_id) {
-        VKM_GL_CHECK(glBindBuffer(m_target, m_id));
-        s_boundBuffers[m_target] = m_id;
-    }
+    VKM_GL_CHECK(glBindBuffer(m_target, m_id));
 }
 
 void GLBuffer::unbind(GLenum target) const {
-    const auto it = s_boundBuffers.find(m_target);
-    if (it != s_boundBuffers.end() && it->second == m_id) {
-        VKM_GL_CHECK(glBindBuffer(m_target, 0));
-        s_boundBuffers[m_target] = 0;
-    }
+    VKM_GL_CHECK(glBindBuffer(m_target, 0));
 }
 
 uint32_t GLBuffer::getSize() const {

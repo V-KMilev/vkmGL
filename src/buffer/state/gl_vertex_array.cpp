@@ -1,13 +1,11 @@
 #include "gl_vertex_array.h"
 
+#include <utility>
+
 #include "gl_error_handle.h"
 #include "l_assert.h"
-#include "logger.h"
 
 namespace Core {
-
-// Initialize static member
-uint32_t VertexArray::s_boundVAO = 0;
 
 VertexArray::VertexArray() : GLObject(0, GL_VERTEX_ARRAY, 0), m_attributeIndex(0) {
     VKM_GL_CHECK(glGenVertexArrays(1, &m_id));
@@ -15,27 +13,30 @@ VertexArray::VertexArray() : GLObject(0, GL_VERTEX_ARRAY, 0), m_attributeIndex(0
 }
 
 VertexArray::~VertexArray() {
-    if (m_id == 0) {
-        LOG_FATAL("Attempting to delete invalid vertex array [ID:%u]", m_id);
-        VKM_ASSERT(false);
-        return;
-    }
+    release();
+}
 
+VertexArray& VertexArray::operator=(VertexArray&& other) noexcept {
+    if (this != &other) {
+        release();
+        GLObject::operator=(std::move(other));
+        m_attributeIndex = other.m_attributeIndex;
+    }
+    return *this;
+}
+
+void VertexArray::release() noexcept {
+    if (m_id == 0) return;
     VKM_GL_CHECK(glDeleteVertexArrays(1, &m_id));
+    m_id = 0;
 }
 
 void VertexArray::bind(GLenum target) const {
-    if (s_boundVAO != m_id) {
-        VKM_GL_CHECK(glBindVertexArray(m_id));
-        s_boundVAO = m_id;
-    }
+    VKM_GL_CHECK(glBindVertexArray(m_id));
 }
 
 void VertexArray::unbind(GLenum target) const {
-    if (s_boundVAO == m_id) {
-        VKM_GL_CHECK(glBindVertexArray(0));
-        s_boundVAO = 0;
-    }
+    VKM_GL_CHECK(glBindVertexArray(0));
 }
 
 void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout) {
@@ -55,12 +56,10 @@ void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBuffer
 
         VKM_GL_CHECK(glEnableVertexAttribArray(index));
 
-        // Use glVertexAttribIPointer for integer types (no normalization)
         if (element.type == GL_INT || element.type == GL_UNSIGNED_INT ||
             element.type == GL_BYTE || element.type == GL_UNSIGNED_BYTE ||
             element.type == GL_SHORT || element.type == GL_UNSIGNED_SHORT) {
             if (element.normalized == GL_FALSE) {
-                // Integer attributes (passed as-is to shader)
                 VKM_GL_CHECK(glVertexAttribIPointer(
                     index,
                     element.count,
@@ -69,7 +68,6 @@ void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBuffer
                     reinterpret_cast<const void*>(offset)
                 ));
             } else {
-                // Normalized integer (converted to float 0.0-1.0)
                 VKM_GL_CHECK(glVertexAttribPointer(
                     index,
                     element.count,
@@ -80,7 +78,6 @@ void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBuffer
                 ));
             }
         } else {
-            // Float attributes
             VKM_GL_CHECK(glVertexAttribPointer(
                 index,
                 element.count,

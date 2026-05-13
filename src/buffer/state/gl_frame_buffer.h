@@ -79,8 +79,8 @@ class FrameBuffer : public GLObject {
         FrameBuffer(const FrameBuffer& other) = delete;
         FrameBuffer& operator=(const FrameBuffer& other) = delete;
 
-        FrameBuffer(FrameBuffer&& other) = delete;
-        FrameBuffer& operator=(FrameBuffer&& other) = delete;
+        FrameBuffer(FrameBuffer&& other) noexcept = default;
+        FrameBuffer& operator=(FrameBuffer&& other) noexcept;
 
     public:
         /**
@@ -175,5 +175,10 @@ class FrameBuffer : public GLObject {
             int32_t dstX0, int32_t dstY0, int32_t dstX1, int32_t dstY1,
             GLbitfield mask, GLenum filter
         );
+
+    private:
+        /// Delete the FBO and zero m_id. Idempotent — safe on a moved-from
+        /// framebuffer or after a previous release().
+        void release() noexcept;
 };
 };

@@ -47,7 +47,7 @@ struct GraphicsShaderSource {
  * Automatically loads shaders from directory containing vertexShader.shader, fragmentShader.shader,
  * and optionally geometryShader.shader.
  *
- * Disallows copy and move.
+ * Non-copyable, movable (inherits move semantics from ShaderBase).
  */
 class Shader : public ShaderBase {
     public:
@@ -57,8 +57,8 @@ class Shader : public ShaderBase {
         Shader(const Shader& shader) = delete;
         Shader& operator=(const Shader& shader) = delete;
 
-        Shader(Shader && shader) = delete;
-        Shader& operator=(Shader && shader) = delete;
+        Shader(Shader && shader) noexcept = default;
+        Shader& operator=(Shader && shader) noexcept = default;
 
         /**
          * @brief Construct and load graphics shaders from the directory at path.
