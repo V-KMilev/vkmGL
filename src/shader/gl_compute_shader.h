@@ -38,7 +38,7 @@ struct ComputeShaderSource {
  *
  * Provides compute-specific functionality like dispatch() for executing compute operations.
  *
- * Disallows copy and move.
+ * Non-copyable, movable (inherits move semantics from ShaderBase).
  */
 class ComputeShader : public ShaderBase {
     public:
@@ -48,8 +48,8 @@ class ComputeShader : public ShaderBase {
         ComputeShader(const ComputeShader& shader) = delete;
         ComputeShader& operator=(const ComputeShader& shader) = delete;
 
-        ComputeShader(ComputeShader && shader) = delete;
-        ComputeShader& operator=(ComputeShader && shader) = delete;
+        ComputeShader(ComputeShader && shader) noexcept = default;
+        ComputeShader& operator=(ComputeShader && shader) noexcept = default;
 
         /**
          * @brief Construct and load compute shader from the directory at path.

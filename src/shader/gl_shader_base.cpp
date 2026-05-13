@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <stdexcept>
+#include <utility>
 
 #include "gl_error_handle.h"
 #include "l_assert.h"
@@ -10,8 +11,6 @@
 namespace fs = std::filesystem;
 
 namespace Core {
-
-uint32_t ShaderBase::s_boundProgram = 0;
 
 ShaderBase::ShaderBase(const std::string& path)
     : GLObject(GL_NONE, GL_PROGRAM, 0)
@@ -27,46 +26,38 @@ ShaderBase::ShaderBase(const std::string& path)
 }
 
 ShaderBase::~ShaderBase() {
-    if (m_id == 0) {
-        LOG_FATAL("Attempting to delete invalid shader program [ID:%u]", m_id);
-        VKM_ASSERT(false);
-    }
+    release();
+}
 
-    // If this shader was bound, reset the bound program state
-    if (s_boundProgram == m_id) {
-        s_boundProgram = 0;
+ShaderBase& ShaderBase::operator=(ShaderBase&& other) noexcept {
+    if (this != &other) {
+        release();
+        GLObject::operator=(std::move(other));
+        m_name                 = std::move(other.m_name);
+        m_path                 = std::move(other.m_path);
+        m_uniformLocationCache = std::move(other.m_uniformLocationCache);
     }
+    return *this;
+}
 
+void ShaderBase::release() noexcept {
+    if (m_id == 0) return;
     VKM_GL_CHECK(glDeleteProgram(m_id));
+    m_id = 0;
 }
 
 void ShaderBase::bind(GLenum target) const {
-    if (s_boundProgram != m_id) {
-        VKM_GL_CHECK(glUseProgram(m_id));
-        s_boundProgram = m_id;
-    }
+    VKM_GL_CHECK(glUseProgram(m_id));
 }
 
 void ShaderBase::unbind(GLenum target) const {
-    if (s_boundProgram != 0) {
-        VKM_GL_CHECK(glUseProgram(0));
-        s_boundProgram = 0;
-    }
+    VKM_GL_CHECK(glUseProgram(0));
 }
 
 void ShaderBase::recompile() {
     reloadSource();
     m_uniformLocationCache.clear();
-
-    if (m_id != 0) {
-        // If this shader was bound, reset the bound program state
-        if (s_boundProgram == m_id) {
-            s_boundProgram = 0;
-        }
-        VKM_GL_CHECK(glDeleteProgram(m_id));
-        m_id = 0;
-    }
-
+    release();
     createProgram();
 }
 

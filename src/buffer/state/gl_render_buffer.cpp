@@ -15,13 +15,23 @@ RenderBuffer::RenderBuffer()
 }
 
 RenderBuffer::~RenderBuffer() {
-    if (m_id == 0) {
-        LOG_FATAL("Attempting to delete invalid render buffer [ID:%u]", m_id);
-        VKM_ASSERT(false);
-        return;
-    }
+    release();
+}
 
+RenderBuffer& RenderBuffer::operator=(RenderBuffer&& other) noexcept {
+    if (this != &other) {
+        release();
+        GLObject::operator=(std::move(other));
+        m_width  = other.m_width;
+        m_height = other.m_height;
+    }
+    return *this;
+}
+
+void RenderBuffer::release() noexcept {
+    if (m_id == 0) return;
     VKM_GL_CHECK(glDeleteRenderbuffers(1, &m_id));
+    m_id = 0;
 }
 
 void RenderBuffer::bind(GLenum target) const {

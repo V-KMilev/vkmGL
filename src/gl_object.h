@@ -11,8 +11,10 @@ namespace Core {
  * GLObject serves as the foundational interface for OpenGL objects that are
  * identified by an integer handle. It ensures objects provide basic operations
  * such as binding, unbinding, querying their OpenGL ID, and setting debug labels.
- * Copy and move construction are explicitly disabled to prevent accidental
- * resource duplication or invalidation.
+ *
+ * Non-copyable (a GL handle has a single owner); movable so wrappers can be
+ * returned by value or stored in containers. Move zeros the source's m_id so
+ * the moved-from object's destructor becomes a no-op.
  */
 class GLObject {
     public:
@@ -21,8 +23,8 @@ class GLObject {
         GLObject(const GLObject& other) = delete;
         GLObject& operator=(const GLObject& other) = delete;
 
-        GLObject(GLObject && other) = delete;
-        GLObject& operator=(GLObject && other) = delete;
+        GLObject(GLObject && other) noexcept;
+        GLObject& operator=(GLObject && other) noexcept;
 
         virtual ~GLObject() = default;
 

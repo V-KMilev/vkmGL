@@ -17,7 +17,7 @@ namespace Core {
  * @brief Base class for OpenGL shader programs.
  *
  * Provides common functionality for all shader types:
- * - Program binding/unbinding with state caching
+ * - Program binding/unbinding
  * - Uniform value setting (all types)
  * - Shader compilation
  * - Program linking and validation
@@ -34,8 +34,8 @@ class ShaderBase : public GLObject {
         ShaderBase(const ShaderBase& shader) = delete;
         ShaderBase& operator=(const ShaderBase& shader) = delete;
 
-        ShaderBase(ShaderBase && shader) = delete;
-        ShaderBase& operator=(ShaderBase && shader) = delete;
+        ShaderBase(ShaderBase && shader) noexcept = default;
+        ShaderBase& operator=(ShaderBase && shader) noexcept;
 
     public:
         /**
@@ -139,8 +139,10 @@ class ShaderBase : public GLObject {
 
         mutable std::unordered_map<std::string, int32_t> m_uniformLocationCache;
 
-        // Static state cache to track currently bound shader program
-        static uint32_t s_boundProgram;
+    private:
+        /// Delete the GL program and zero m_id. Idempotent — safe on a
+        /// moved-from shader or after a previous release().
+        void release() noexcept;
 };
 
 };

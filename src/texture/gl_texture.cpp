@@ -91,9 +91,24 @@ namespace Core {
     }
 
     Texture2D::~Texture2D() {
-        if (m_id != 0) {
-            VKM_GL_CHECK(glDeleteTextures(1, &m_id));
+        release();
+    }
+
+    Texture2D& Texture2D::operator=(Texture2D&& other) noexcept {
+        if (this != &other) {
+            release();
+            GLObject::operator=(std::move(other));
+            m_name   = std::move(other.m_name);
+            m_path   = std::move(other.m_path);
+            m_params = other.m_params;
         }
+        return *this;
+    }
+
+    void Texture2D::release() noexcept {
+        if (m_id == 0) return;
+        VKM_GL_CHECK(glDeleteTextures(1, &m_id));
+        m_id = 0;
     }
 
     void Texture2D::bind(GLenum target) const {

@@ -19,8 +19,8 @@ class RenderBuffer : public GLObject {
         RenderBuffer(const RenderBuffer& other) = delete;
         RenderBuffer& operator=(const RenderBuffer& other) = delete;
 
-        RenderBuffer(RenderBuffer&& other) = delete;
-        RenderBuffer& operator=(RenderBuffer&& other) = delete;
+        RenderBuffer(RenderBuffer&& other) noexcept = default;
+        RenderBuffer& operator=(RenderBuffer&& other) noexcept;
 
     public:
         /**
@@ -64,8 +64,12 @@ class RenderBuffer : public GLObject {
          */
         void storageMultisample(int32_t samples, GLenum internalFormat, int32_t width, int32_t height);
 
-        private:
-            int32_t m_width;
-            int32_t m_height;
-    };
+    private:
+        /// Delete the renderbuffer and zero m_id. Idempotent — safe on a
+        /// moved-from renderbuffer or after a previous release().
+        void release() noexcept;
+
+        int32_t m_width;
+        int32_t m_height;
+};
 };

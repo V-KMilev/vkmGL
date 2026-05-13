@@ -72,8 +72,8 @@ class Texture2D : public GLObject {
         Texture2D(const Texture2D& other) = delete;
         Texture2D& operator=(const Texture2D& other) = delete;
 
-        Texture2D(Texture2D && other) = delete;
-        Texture2D& operator=(Texture2D && other) = delete;
+        Texture2D(Texture2D && other) noexcept = default;
+        Texture2D& operator=(Texture2D && other) noexcept;
 
         explicit Texture2D(
             const std::string& name,
@@ -168,6 +168,10 @@ class Texture2D : public GLObject {
         uint32_t getHeight() const { return m_params.height; }
 
     private:
+        /// Delete the texture and zero m_id. Idempotent — safe on a
+        /// moved-from texture or after a previous release().
+        void release() noexcept;
+
         void applyParameters() const;
 
         // Convert to underlying OpenGL enums
