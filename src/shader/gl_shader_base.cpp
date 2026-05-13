@@ -129,93 +129,93 @@ void ShaderBase::printCompilationError(uint32_t type, uint32_t id) const {
     throw std::runtime_error("Shader compilation failed");
 }
 
-int32_t ShaderBase::getUniformLocation(const std::string& name) const {
-    const auto it = m_uniformLocationCache.find(name);
+int32_t ShaderBase::getUniformLocation(const char* name) const {
+    auto it = m_uniformLocationCache.find(name);
     if (it != m_uniformLocationCache.end()) {
         return it->second;
     }
 
-    int32_t location = glGetUniformLocation(m_id, name.c_str());
+    int32_t location = glGetUniformLocation(m_id, name);
 
     if (location == -1) {
-        LOG_WARNING("Shader '%s' uniform '%s' does not exist", m_name.c_str(), name.c_str());
+        LOG_WARNING("Shader '%s' uniform '%s' does not exist", m_name.c_str(), name);
     }
 
-    m_uniformLocationCache[name] = location;
+    m_uniformLocationCache.emplace(name, location);
     return location;
 }
 
-void ShaderBase::setUniform4f(const std::string& uniformName, float f0, float f1, float f2, float f3) const {
+void ShaderBase::setUniform4f(const char* uniformName, float f0, float f1, float f2, float f3) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniform4f(location, f0, f1, f2, f3));
     }
 }
 
-void ShaderBase::setUniform3f(const std::string& uniformName, float f0, float f1, float f2) const {
+void ShaderBase::setUniform3f(const char* uniformName, float f0, float f1, float f2) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniform3f(location, f0, f1, f2));
     }
 }
 
-void ShaderBase::setUniform2f(const std::string& uniformName, float f0, float f1) const {
+void ShaderBase::setUniform2f(const char* uniformName, float f0, float f1) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniform2f(location, f0, f1));
     }
 }
 
-void ShaderBase::setUniform1f(const std::string& uniformName, float f0) const {
+void ShaderBase::setUniform1f(const char* uniformName, float f0) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniform1f(location, f0));
     }
 }
 
-void ShaderBase::setUniform4fv(const std::string& uniformName, const glm::vec4& v) const {
+void ShaderBase::setUniform4fv(const char* uniformName, const glm::vec4& v) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniform4fv(location, 1, &v[0]));
     }
 }
 
-void ShaderBase::setUniform3fv(const std::string& uniformName, const glm::vec3& v) const {
+void ShaderBase::setUniform3fv(const char* uniformName, const glm::vec3& v) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniform3fv(location, 1, &v[0]));
     }
 }
 
-void ShaderBase::setUniform2fv(const std::string& uniformName, const glm::vec2& v) const {
+void ShaderBase::setUniform2fv(const char* uniformName, const glm::vec2& v) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniform2fv(location, 1, &v[0]));
     }
 }
 
-void ShaderBase::setUniformMatrix4fv(const std::string& uniformName, const glm::mat4& matrix) const {
+void ShaderBase::setUniformMatrix4fv(const char* uniformName, const glm::mat4& matrix) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]));
     }
 }
 
-void ShaderBase::setUniformMatrix3fv(const std::string& uniformName, const glm::mat3& matrix) const {
+void ShaderBase::setUniformMatrix3fv(const char* uniformName, const glm::mat3& matrix) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniformMatrix3fv(location, 1, GL_FALSE, &matrix[0][0]));
     }
 }
 
-void ShaderBase::setUniform1ui(const std::string& uniformName, uint32_t ui0) const {
+void ShaderBase::setUniform1ui(const char* uniformName, uint32_t ui0) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniform1ui(location, ui0));
     }
 }
 
-void ShaderBase::setUniform1i(const std::string& uniformName, int32_t i0) const {
+void ShaderBase::setUniform1i(const char* uniformName, int32_t i0) const {
     const int32_t location = getUniformLocation(uniformName);
     if (location != -1) {
         VKM_GL_CHECK(glUniform1i(location, i0));
