@@ -68,21 +68,22 @@ class ShaderBase : public GLObject {
          */
         const std::string& getPath() const;
 
-        // Uniform setters
-        void setUniform4f(const std::string& uniformName, float f0, float f1, float f2, float f3) const;
-        void setUniform3f(const std::string& uniformName, float f0, float f1, float f2) const;
-        void setUniform2f(const std::string& uniformName, float f0, float f1) const;
-        void setUniform1f(const std::string& uniformName, float f0) const;
+        // Uniform setters. The cache is content-hashed; any source of the name
+        // works (string literal, std::string::c_str(), runtime-constructed).
+        void setUniform4f(const char* uniformName, float f0, float f1, float f2, float f3) const;
+        void setUniform3f(const char* uniformName, float f0, float f1, float f2) const;
+        void setUniform2f(const char* uniformName, float f0, float f1) const;
+        void setUniform1f(const char* uniformName, float f0) const;
 
-        void setUniform4fv(const std::string& uniformName, const glm::vec4& v) const;
-        void setUniform3fv(const std::string& uniformName, const glm::vec3& v) const;
-        void setUniform2fv(const std::string& uniformName, const glm::vec2& v) const;
+        void setUniform4fv(const char* uniformName, const glm::vec4& v) const;
+        void setUniform3fv(const char* uniformName, const glm::vec3& v) const;
+        void setUniform2fv(const char* uniformName, const glm::vec2& v) const;
 
-        void setUniformMatrix4fv(const std::string& uniformName, const glm::mat4& matrix) const;
-        void setUniformMatrix3fv(const std::string& uniformName, const glm::mat3& matrix) const;
+        void setUniformMatrix4fv(const char* uniformName, const glm::mat4& matrix) const;
+        void setUniformMatrix3fv(const char* uniformName, const glm::mat3& matrix) const;
 
-        void setUniform1ui(const std::string& uniformName, uint32_t ui0) const;
-        void setUniform1i(const std::string& uniformName, int32_t i0) const;
+        void setUniform1ui(const char* uniformName, uint32_t ui0) const;
+        void setUniform1i(const char* uniformName, int32_t i0) const;
 
     protected:
         /**
@@ -127,11 +128,12 @@ class ShaderBase : public GLObject {
         [[noreturn]] void printCompilationError(uint32_t type, uint32_t id) const;
 
         /**
-         * @brief Get the uniform location for a uniform variable (cached).
+         * @brief Get the uniform location for a uniform variable (content-cached).
+         *
          * @param name Uniform name in shader.
          * @return Location, or -1 if not found.
          */
-        int32_t getUniformLocation(const std::string& name) const;
+        int32_t getUniformLocation(const char* name) const;
 
     protected:
         std::string m_name;
