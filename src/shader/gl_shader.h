@@ -17,7 +17,33 @@ struct GraphicsShaderSource {
     GraphicsShaderSource();
     ~GraphicsShaderSource() = default;
 
+    /**
+     * @brief Load shader source files from a directory.
+     *
+     * Reads vertexShader.shader, fragmentShader.shader, and optionally
+     * geometryShader.shader. No preprocessing is performed; if the caller
+     * needs to resolve includes or substitute constants, construct the
+     * struct directly with prepared source strings instead.
+     */
     explicit GraphicsShaderSource(const std::string& path);
+
+    /**
+     * @brief Direct construction with already-prepared source strings.
+     *
+     * Used when the caller has run its own preprocessing (e.g., resolved
+     * `#include` directives) and wants to hand the final source straight
+     * to compilation, bypassing the from-disk file reads.
+     *
+     * @param path Logical directory the source was loaded from. Used only
+     *             for diagnostics and hot-reload reloadSource() lookups.
+     * @param vertexShader   Final vertex shader source string.
+     * @param fragmentShader Final fragment shader source string.
+     * @param geometryShader Optional geometry shader source (empty = none).
+     */
+    GraphicsShaderSource(std::string path,
+                         std::string vertexShader,
+                         std::string fragmentShader,
+                         std::string geometryShader = {});
 
     /**
      * @brief Check existence of the shader source files.
@@ -67,6 +93,16 @@ class Shader : public ShaderBase {
          */
         explicit Shader(const std::string& path);
 
+        /**
+         * @brief Construct from already-prepared source strings.
+         *
+         * Skips the from-disk file read; the source is taken as-is. The
+         * @p path is still recorded so reloadSource() and diagnostics work;
+         * a derived class is expected to override reloadSource() if hot
+         * reload should re-run the caller's preprocessor.
+         */
+        explicit Shader(GraphicsShaderSource source);
+
     protected:
         /**
          * @brief Creates the graphics shader program (vertex + fragment + optional geometry).
@@ -78,7 +114,10 @@ class Shader : public ShaderBase {
          */
         void reloadSource() override;
 
-    private:
+    protected:
+        /// Visible to subclasses so they can override reloadSource() and
+        /// install a freshly-prepared source (e.g. re-running an include
+        /// preprocessor) without going through the base path-based loader.
         GraphicsShaderSource m_source;
 };
 
