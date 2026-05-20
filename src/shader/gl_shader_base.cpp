@@ -129,6 +129,16 @@ void ShaderBase::printCompilationError(uint32_t type, uint32_t id) const {
     throw std::runtime_error("Shader compilation failed");
 }
 
+bool ShaderBase::hasUniform(const char* name) const {
+    auto it = m_uniformLocationCache.find(name);
+    if (it != m_uniformLocationCache.end()) {
+        return it->second != -1;
+    }
+    const int32_t location = glGetUniformLocation(m_id, name);
+    m_uniformLocationCache.emplace(name, location);
+    return location != -1;
+}
+
 int32_t ShaderBase::getUniformLocation(const char* name) const {
     auto it = m_uniformLocationCache.find(name);
     if (it != m_uniformLocationCache.end()) {
