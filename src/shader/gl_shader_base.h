@@ -85,6 +85,18 @@ class ShaderBase : public GLObject {
         void setUniform1ui(const char* uniformName, uint32_t ui0) const;
         void setUniform1i(const char* uniformName, int32_t i0) const;
 
+        /**
+         * @brief Quietly query whether the linked program has @p name as an
+         *        active uniform.
+         *
+         * Same lookup + cache as getUniformLocation but does NOT log a
+         * warning on miss. Use when "absent" is expected - shader variants
+         * legitimately strip samplers/uniforms whose feature wasn't enabled,
+         * and the caller wants to skip the bind silently instead of being
+         * spammed by the strict warning.
+         */
+        bool hasUniform(const char* name) const;
+
     protected:
         /**
          * @brief Protected constructor for derived classes.
