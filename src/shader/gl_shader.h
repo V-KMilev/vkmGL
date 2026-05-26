@@ -20,8 +20,8 @@ struct GraphicsShaderSource {
     /**
      * @brief Load shader source files from a directory.
      *
-     * Reads vertexShader.shader, fragmentShader.shader, and optionally
-     * geometryShader.shader. No preprocessing is performed; if the caller
+     * Reads vertex.shader, fragment.shader, and optionally
+     * geometry.shader. No preprocessing is performed; if the caller
      * needs to resolve includes or substitute constants, construct the
      * struct directly with prepared source strings instead.
      */
@@ -70,8 +70,8 @@ struct GraphicsShaderSource {
  * @brief OpenGL graphics shader program wrapper (vertex + fragment + optional geometry).
  *
  * Handles compilation, linkage, binding/unbinding, and uniform value setting for graphics shaders.
- * Automatically loads shaders from directory containing vertexShader.shader, fragmentShader.shader,
- * and optionally geometryShader.shader.
+ * Automatically loads shaders from directory containing vertex.shader, fragment.shader,
+ * and optionally geometry.shader.
  *
  * Non-copyable, movable (inherits move semantics from ShaderBase).
  */
@@ -88,7 +88,7 @@ class Shader : public ShaderBase {
 
         /**
          * @brief Construct and load graphics shaders from the directory at path.
-         * @param path Path to the directory containing vertexShader.shader, fragmentShader.shader, and optionally geometryShader.shader.
+         * @param path Path to the directory containing vertex.shader, fragment.shader, and optionally geometry.shader.
          * @throws std::runtime_error if shader source validation or compilation fails.
          */
         explicit Shader(const std::string& path);
