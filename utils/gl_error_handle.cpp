@@ -1,3 +1,6 @@
+#define VKM_LOG_SUFFIX "VKM-GL"
+#define VKM_LOG_CATEGORY "DEBUG"
+
 #include "gl_error_handle.h"
 
 #include <stdio.h>
@@ -14,7 +17,7 @@ void checkGLError(
     GLenum error = glGetError();
 
     if (error != GL_NO_ERROR) {
-        LOG_ERROR("VKM GL CHECK Failed!\t[%s:%d][F:%s] Error: %ud", file, line, function, error);
+        LOG_ERROR("VKM_GL_CHECK failed at %s:%d in %s: GL error 0x%X", file, line, function, error);
 
 #ifdef _WIN32
         __debugbreak();

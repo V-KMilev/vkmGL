@@ -1,3 +1,6 @@
+#define VKM_LOG_SUFFIX "VKM-GL"
+#define VKM_LOG_CATEGORY "TEXTURE"
+
 #include "gl_texture.h"
 
 #include "gl_error_handle.h"
