@@ -1,3 +1,6 @@
+#define VKM_LOG_SUFFIX "VKM-GL"
+#define VKM_LOG_CATEGORY "DEBUG"
+
 #include "gl_debug.h"
 
 #include <string>
@@ -54,15 +57,23 @@ namespace {
             case GL_DEBUG_TYPE_OTHER:               typeStr = "OTHER"; break;
         }
 
-        const char* sevStr = "NOTIFICATION";
+        // Severity maps to log level so HIGH GL errors log as ERROR and
+        // MEDIUM as WARNING. Previously everything came out as ERROR, which
+        // turned routine driver hints into noise.
         switch (severity) {
-            case GL_DEBUG_SEVERITY_HIGH:         sevStr = "HIGH"; break;
-            case GL_DEBUG_SEVERITY_MEDIUM:       sevStr = "MEDIUM"; break;
-            case GL_DEBUG_SEVERITY_LOW:          sevStr = "LOW"; break;
-            case GL_DEBUG_SEVERITY_NOTIFICATION: sevStr = "NOTIFICATION"; break;
+            case GL_DEBUG_SEVERITY_HIGH:
+                LOG_ERROR("[%s/%s/HIGH][ID:%u] %s", srcStr, typeStr, id, message);
+                break;
+            case GL_DEBUG_SEVERITY_MEDIUM:
+                LOG_WARNING("[%s/%s/MED][ID:%u] %s", srcStr, typeStr, id, message);
+                break;
+            case GL_DEBUG_SEVERITY_LOW:
+                LOG_INFO("[%s/%s/LOW][ID:%u] %s", srcStr, typeStr, id, message);
+                break;
+            default:
+                LOG_VERBOSE("[%s/%s][ID:%u] %s", srcStr, typeStr, id, message);
+                break;
         }
-
-        LOG_ERROR("[GL DEBUG][%s][%s][%s][ID:%u] %s", srcStr, typeStr, sevStr, id, message);
     }
 } // namespace
 
@@ -82,7 +93,7 @@ void enableGLDebugLogging(bool synchronous) {
     // Optionally filter messages: here we keep all severities except we early-return notifications above.
     LOG_INFO("GL debug output enabled%s", synchronous ? " (synchronous)" : "");
 #else
-    LOG_WARN("GL_DEBUG_OUTPUT not supported at compile time");
+    LOG_WARNING("GL_DEBUG_OUTPUT not supported at compile time");
     (void)synchronous;
 #endif
 }

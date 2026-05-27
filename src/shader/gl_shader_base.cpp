@@ -1,3 +1,6 @@
+#define VKM_LOG_SUFFIX "VKM-GL"
+#define VKM_LOG_CATEGORY "SHADER"
+
 #include "gl_shader_base.h"
 
 #include <filesystem>

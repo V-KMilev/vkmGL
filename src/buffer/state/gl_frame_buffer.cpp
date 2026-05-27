@@ -1,3 +1,6 @@
+#define VKM_LOG_SUFFIX "VKM-GL"
+#define VKM_LOG_CATEGORY "BUFFER"
+
 #include "gl_frame_buffer.h"
 
 #include "gl_error_handle.h"
