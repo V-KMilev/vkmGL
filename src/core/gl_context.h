@@ -36,12 +36,40 @@ struct BlendState {
 };
 
 /**
+ * @brief Stencil test + write configuration. Defaults mirror the GL spec
+ *        so a freshly-constructed Context tracks the same state the
+ *        driver starts in.
+ */
+struct StencilState {
+    bool   enabled   = false;               ///< Enable/disable stencil test.
+    GLenum func      = GL_ALWAYS;           ///< Comparison function.
+    GLint  ref       = 0;                   ///< Reference value.
+    GLuint funcMask  = 0xFFFFFFFFu;         ///< Mask AND-ed with ref and stencil during test.
+    GLenum sfail     = GL_KEEP;             ///< Op when stencil test fails.
+    GLenum dpfail    = GL_KEEP;             ///< Op when stencil passes, depth fails.
+    GLenum dppass    = GL_KEEP;             ///< Op when stencil and depth pass.
+    GLuint writeMask = 0xFFFFFFFFu;         ///< Bits writable in the stencil buffer.
+};
+
+/**
+ * @brief Per-channel color write mask.
+ */
+struct ColorMaskState {
+    bool r = true;
+    bool g = true;
+    bool b = true;
+    bool a = true;
+};
+
+/**
  * @brief Raster (pipeline) state configuration, encompassing depth, culling, blending, and some additional features.
  */
 struct RasterState {
-    DepthState depth;                ///< Depth state.
-    FaceCullState cull;              ///< Face culling state.
-    BlendState blend;                ///< Blending state.
+    DepthState     depth;            ///< Depth state.
+    FaceCullState  cull;             ///< Face culling state.
+    BlendState     blend;            ///< Blending state.
+    StencilState   stencil;          ///< Stencil test + write state.
+    ColorMaskState colorMask;        ///< Per-channel color write mask.
     GLenum polygonMode = GL_FILL;    ///< Polygon mode (e.g., GL_FILL, GL_LINE).
     bool scissorEnabled = false;     ///< Enable/disable scissor test.
 };
@@ -232,6 +260,49 @@ class Context {
          * @return OpenGL blend equation enum.
          */
         GLenum getBlendEquation() const { return m_state.blend.equation; }
+
+        /**
+         * @brief Enable or disable the stencil test.
+         * @param enable True to enable, false to disable.
+         */
+        void setStencilTest(bool enable);
+
+        /**
+         * @brief Check if the stencil test is enabled.
+         * @return True if enabled.
+         */
+        bool isStencilTestEnabled() const { return m_state.stencil.enabled; }
+
+        /**
+         * @brief Set the stencil comparison function, reference, and read mask.
+         * @param func Comparison function (e.g., GL_ALWAYS, GL_NOTEQUAL).
+         * @param ref  Reference value AND-ed with @p mask for the comparison.
+         * @param mask Bits AND-ed with @p ref and the stencil value during test.
+         */
+        void setStencilFunc(GLenum func, GLint ref, GLuint mask);
+
+        /**
+         * @brief Set the stencil ops applied on test outcomes.
+         * @param sfail  Op when the stencil test fails.
+         * @param dpfail Op when stencil passes and depth fails.
+         * @param dppass Op when stencil and depth both pass.
+         */
+        void setStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
+
+        /**
+         * @brief Set the bits writable in the stencil buffer.
+         * @param mask Write mask (0 = read-only, 0xFF = full 8-bit writes).
+         */
+        void setStencilMask(GLuint mask);
+
+        /**
+         * @brief Enable/disable per-channel writes to the color buffer.
+         * @param r Enable writes to the red channel.
+         * @param g Enable writes to the green channel.
+         * @param b Enable writes to the blue channel.
+         * @param a Enable writes to the alpha channel.
+         */
+        void setColorMask(bool r, bool g, bool b, bool a);
 
         /**
          * @brief Set the polygon rendering mode (fill/line/point).
