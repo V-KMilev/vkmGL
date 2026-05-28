@@ -106,6 +106,49 @@ void Context::setBlendEquation(GLenum mode) {
 }
 
 
+void Context::setStencilTest(bool enable) {
+    if (m_state.stencil.enabled == enable) return;
+    m_state.stencil.enabled = enable;
+
+    if (enable) { VKM_GL_CHECK(glEnable(GL_STENCIL_TEST)); }
+    else        { VKM_GL_CHECK(glDisable(GL_STENCIL_TEST)); }
+}
+
+void Context::setStencilFunc(GLenum func, GLint ref, GLuint mask) {
+    auto& s = m_state.stencil;
+    if (s.func == func && s.ref == ref && s.funcMask == mask) return;
+    s.func     = func;
+    s.ref      = ref;
+    s.funcMask = mask;
+    VKM_GL_CHECK(glStencilFunc(func, ref, mask));
+}
+
+void Context::setStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass) {
+    auto& s = m_state.stencil;
+    if (s.sfail == sfail && s.dpfail == dpfail && s.dppass == dppass) return;
+    s.sfail  = sfail;
+    s.dpfail = dpfail;
+    s.dppass = dppass;
+    VKM_GL_CHECK(glStencilOp(sfail, dpfail, dppass));
+}
+
+void Context::setStencilMask(GLuint mask) {
+    if (m_state.stencil.writeMask == mask) return;
+    m_state.stencil.writeMask = mask;
+    VKM_GL_CHECK(glStencilMask(mask));
+}
+
+void Context::setColorMask(bool r, bool g, bool b, bool a) {
+    auto& c = m_state.colorMask;
+    if (c.r == r && c.g == g && c.b == b && c.a == a) return;
+    c.r = r; c.g = g; c.b = b; c.a = a;
+    VKM_GL_CHECK(glColorMask(
+        r ? GL_TRUE : GL_FALSE,
+        g ? GL_TRUE : GL_FALSE,
+        b ? GL_TRUE : GL_FALSE,
+        a ? GL_TRUE : GL_FALSE));
+}
+
 void Context::setPolygonMode(GLenum face, GLenum mode) {
     // Track only the common case (FRONT_AND_BACK) so callers can still set per-face if desired
     if (face == GL_FRONT_AND_BACK) m_state.polygonMode = mode;
