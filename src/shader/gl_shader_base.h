@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <deque>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 #include <GL/glew.h>
@@ -151,9 +153,25 @@ class ShaderBase : public GLObject {
         std::string m_name;
         std::string m_path;
 
-        mutable std::unordered_map<std::string, int32_t> m_uniformLocationCache;
+        /// Owns the chars backing the cache keys below. A std::deque keeps
+        /// existing elements at stable addresses as it grows, so the
+        /// string_view keys never dangle.
+        mutable std::deque<std::string> m_uniformNames;
+
+        /// Uniform-location cache keyed on string_view into m_uniformNames, so
+        /// a const char* / literal lookup hashes in place with no allocation.
+        /// (A std::string key would construct + hash a temporary every call,
+        /// heap-allocating for names past the small-string buffer - and C++17
+        /// has no heterogeneous unordered_map lookup to avoid it.)
+        mutable std::unordered_map<std::string_view, int32_t> m_uniformLocationCache;
 
     private:
+        /// Shared body of hasUniform()/getUniformLocation(): cache probe,
+        /// glGetUniformLocation on miss, then own the name + cache the result.
+        /// warnIfMissing logs the not-found case (getUniformLocation) or stays
+        /// quiet (hasUniform).
+        int32_t resolveUniform(const char* name, bool warnIfMissing) const;
+
         /// Delete the GL program and zero m_id. Idempotent — safe on a
         /// moved-from shader or after a previous release().
         void release() noexcept;

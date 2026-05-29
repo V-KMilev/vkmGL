@@ -19,6 +19,7 @@ ShaderBase::ShaderBase(const std::string& path)
     : GLObject(GL_NONE, GL_PROGRAM, 0)
     , m_name()
     , m_path(path)
+    , m_uniformNames()
     , m_uniformLocationCache() {
     if (!fs::exists(m_path)) {
         LOG_ERROR("Shader path '%s' does not exist", m_path.c_str());
@@ -38,6 +39,10 @@ ShaderBase& ShaderBase::operator=(ShaderBase&& other) noexcept {
         GLObject::operator=(std::move(other));
         m_name                 = std::move(other.m_name);
         m_path                 = std::move(other.m_path);
+        // GLObject::operator= above moved other's program id into this, so the
+        // cached locations still match. Move the backing names first: deque
+        // move preserves element addresses, keeping the view keys valid.
+        m_uniformNames         = std::move(other.m_uniformNames);
         m_uniformLocationCache = std::move(other.m_uniformLocationCache);
     }
     return *this;
@@ -59,7 +64,10 @@ void ShaderBase::unbind(GLenum target) const {
 
 void ShaderBase::recompile() {
     reloadSource();
+    // The relinked program reassigns uniform locations, so drop the cache and
+    // its backing names; both repopulate lazily on the next lookup.
     m_uniformLocationCache.clear();
+    m_uniformNames.clear();
     release();
     createProgram();
 }
@@ -132,30 +140,30 @@ void ShaderBase::printCompilationError(uint32_t type, uint32_t id) const {
     throw std::runtime_error("Shader compilation failed");
 }
 
-bool ShaderBase::hasUniform(const char* name) const {
-    auto it = m_uniformLocationCache.find(name);
-    if (it != m_uniformLocationCache.end()) {
-        return it->second != -1;
-    }
-    const int32_t location = glGetUniformLocation(m_id, name);
-    m_uniformLocationCache.emplace(name, location);
-    return location != -1;
-}
-
-int32_t ShaderBase::getUniformLocation(const char* name) const {
-    auto it = m_uniformLocationCache.find(name);
+int32_t ShaderBase::resolveUniform(const char* name, bool warnIfMissing) const {
+    const auto it = m_uniformLocationCache.find(std::string_view(name));
     if (it != m_uniformLocationCache.end()) {
         return it->second;
     }
 
-    int32_t location = glGetUniformLocation(m_id, name);
-
-    if (location == -1) {
+    const int32_t location = glGetUniformLocation(m_id, name);
+    if (location == -1 && warnIfMissing) {
         LOG_WARNING("Shader '%s' uniform '%s' does not exist", m_name.c_str(), name);
     }
 
-    m_uniformLocationCache.emplace(name, location);
+    // Own the name so the cache's view key stays valid for the shader's
+    // lifetime; the deque leaves existing entries' addresses untouched.
+    const std::string& owned = m_uniformNames.emplace_back(name);
+    m_uniformLocationCache.emplace(std::string_view(owned), location);
     return location;
+}
+
+bool ShaderBase::hasUniform(const char* name) const {
+    return resolveUniform(name, /*warnIfMissing=*/false) != -1;
+}
+
+int32_t ShaderBase::getUniformLocation(const char* name) const {
+    return resolveUniform(name, /*warnIfMissing=*/true);
 }
 
 void ShaderBase::setUniform4f(const char* uniformName, float f0, float f1, float f2, float f3) const {
