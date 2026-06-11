@@ -1,5 +1,7 @@
 #include "gl_index_buffer.h"
 
+#include "gl_error_handle.h"
+
 namespace Core {
 
 namespace {
@@ -29,5 +31,20 @@ uint32_t IndexBuffer::getCount() const {
 
 GLenum IndexBuffer::getType() const {
     return m_type;
+}
+
+void IndexBuffer::draw(GLenum mode) const {
+    VKM_GL_CHECK(glDrawElements(mode, static_cast<GLsizei>(m_count), m_type, nullptr));
+}
+
+void IndexBuffer::drawInstanced(uint32_t instanceCount, uint32_t baseInstance, GLenum mode) const {
+    VKM_GL_CHECK(glDrawElementsInstancedBaseInstance(
+        mode,
+        static_cast<GLsizei>(m_count),
+        m_type,
+        nullptr,
+        static_cast<GLsizei>(instanceCount),
+        baseInstance
+    ));
 }
 };

@@ -96,6 +96,14 @@ class FrameBuffer : public GLObject {
         void unbind(GLenum target = GL_NONE) const override;
 
         /**
+        * @brief Bind the default framebuffer (the window backbuffer, FBO 0).
+        *
+        * The default framebuffer is not a GL object, so it has no instance to
+        * bind through - this static stands in so callers never touch raw GL.
+        */
+        static void bindDefault();
+
+        /**
         * @brief Attach a texture to the framebuffer using a FrameBufferAttachment.
         * @param dim The dimensionality/type of the texture.
         * @param attachment The attachment data.

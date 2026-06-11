@@ -168,4 +168,14 @@ void Context::setDefaultState() {
     setPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
+std::string Context::versionString() const {
+    const GLubyte* v = glGetString(GL_VERSION);
+    return v ? reinterpret_cast<const char*>(v) : std::string();
+}
+
+std::string Context::rendererString() const {
+    const GLubyte* r = glGetString(GL_RENDERER);
+    return r ? reinterpret_cast<const char*>(r) : std::string();
+}
+
 } // namespace Core
