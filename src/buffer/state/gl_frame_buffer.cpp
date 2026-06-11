@@ -40,6 +40,10 @@ void FrameBuffer::unbind(GLenum target) const {
     VKM_GL_CHECK(glBindFramebuffer(target == GL_NONE ? GL_FRAMEBUFFER : target, 0));
 }
 
+void FrameBuffer::bindDefault() {
+    VKM_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+}
+
 void FrameBuffer::attachTexture(FrameBufferDimension dim, const FrameBufferAttachment& attachment) {
     bind();
 

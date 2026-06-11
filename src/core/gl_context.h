@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -321,6 +322,16 @@ class Context {
          * @brief Reset context state to sensible defaults (depth test on, culling on, blending off, etc).
          */
         void setDefaultState();
+
+        /**
+         * @brief GL_VERSION string (e.g. "4.6.0 ..."), empty if unavailable.
+         */
+        std::string versionString() const;
+
+        /**
+         * @brief GL_RENDERER string (the GPU / device), empty if unavailable.
+         */
+        std::string rendererString() const;
 
     private:
         glm::vec4 m_clearColor;
