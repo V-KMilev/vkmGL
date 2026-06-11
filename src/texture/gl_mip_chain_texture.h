@@ -6,6 +6,8 @@
 
 #include <GL/glew.h>
 
+#include "gl_error_handle.h"
+
 namespace Core {
 
 /**
@@ -59,21 +61,21 @@ class MipChainTexture {
             m_baseH = baseH;
             m_mips  = mips;
 
-            glGenTextures(1, &m_tex);
-            glBindTexture(GL_TEXTURE_2D, m_tex);
+            VKM_GL_CHECK(glGenTextures(1, &m_tex));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_tex));
             for (int mip = 0; mip < mips; ++mip) {
-                glTexImage2D(GL_TEXTURE_2D, mip, internalFormat,
-                    mipWidth(mip), mipHeight(mip), 0, format, type, nullptr);
+                VKM_GL_CHECK(glTexImage2D(GL_TEXTURE_2D, mip, internalFormat,
+                    mipWidth(mip), mipHeight(mip), 0, format, type, nullptr));
             }
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mips - 1);
-            glBindTexture(GL_TEXTURE_2D, 0);
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mips - 1));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
 
-            glGenFramebuffers(1, &m_fbo);
+            VKM_GL_CHECK(glGenFramebuffers(1, &m_fbo));
         }
 
         bool   isReady()  const { return m_tex != 0; }
@@ -85,24 +87,24 @@ class MipChainTexture {
 
         /// Bind the chain texture for sampling (shader selects a level via textureLod).
         void bindSlot(uint32_t slot) const {
-            glActiveTexture(GL_TEXTURE0 + slot);
-            glBindTexture(GL_TEXTURE_2D, m_tex);
+            VKM_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_tex));
         }
 
         /// Bind / unbind the chain's framebuffer for the per-mip loop.
-        void bindFbo()   const { glBindFramebuffer(GL_FRAMEBUFFER, m_fbo); }
-        void unbindFbo() const { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+        void bindFbo()   const { VKM_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, m_fbo)); }
+        void unbindFbo() const { VKM_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0)); }
 
         /// Point COLOR_ATTACHMENT0 at one chain mip and size the viewport to it.
         void attachMip(int mip) const {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tex, mip);
-            glViewport(0, 0, mipWidth(mip), mipHeight(mip));
+            VKM_GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tex, mip));
+            VKM_GL_CHECK(glViewport(0, 0, mipWidth(mip), mipHeight(mip)));
         }
 
     private:
         void release() noexcept {
-            if (m_fbo) glDeleteFramebuffers(1, &m_fbo);
-            if (m_tex) glDeleteTextures(1, &m_tex);
+            if (m_fbo) { VKM_GL_CHECK(glDeleteFramebuffers(1, &m_fbo)); }
+            if (m_tex) { VKM_GL_CHECK(glDeleteTextures(1, &m_tex)); }
             m_fbo = 0;
             m_tex = 0;
         }

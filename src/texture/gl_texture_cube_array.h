@@ -5,6 +5,8 @@
 
 #include <GL/glew.h>
 
+#include "gl_error_handle.h"
+
 namespace Core {
 
 /**
@@ -54,28 +56,28 @@ class TextureCubeArray {
             m_mips     = mips;
             m_capacity = capacity;
 
-            glGenTextures(1, &m_id);
-            glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, m_id);
-            glTexStorage3D(GL_TEXTURE_CUBE_MAP_ARRAY, mips, internalFormat, size, size, capacity * 6);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER,
-                mips > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAX_LEVEL, mips - 1);
-            glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0);
+            VKM_GL_CHECK(glGenTextures(1, &m_id));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, m_id));
+            VKM_GL_CHECK(glTexStorage3D(GL_TEXTURE_CUBE_MAP_ARRAY, mips, internalFormat, size, size, capacity * 6));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER,
+                mips > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAX_LEVEL, mips - 1));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, 0));
         }
 
         void bindSlot(uint32_t slot) const {
-            glActiveTexture(GL_TEXTURE0 + slot);
-            glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, m_id);
+            VKM_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, m_id));
         }
 
         /// Attach one layer/face/mip to the currently bound FBO. The flat index is
         /// `layer * 6 + face`, matching the cube-array layer-face layout.
         void attachFace(GLenum attachment, int layer, int face, int mip) const {
-            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, m_id, mip, layer * 6 + face);
+            VKM_GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, m_id, mip, layer * 6 + face));
         }
 
         GLuint id()       const { return m_id; }
@@ -87,7 +89,7 @@ class TextureCubeArray {
     private:
         void release() noexcept {
             if (m_id) {
-                glDeleteTextures(1, &m_id);
+                VKM_GL_CHECK(glDeleteTextures(1, &m_id));
                 m_id = 0;
             }
         }

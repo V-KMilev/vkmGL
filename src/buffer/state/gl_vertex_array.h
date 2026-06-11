@@ -52,6 +52,17 @@ class VertexArray : public GLObject {
          */
         void setAttributeDivisor(uint32_t index, uint32_t divisor);
 
+        /**
+         * @brief Draw @p count non-indexed vertices from this VAO with glDrawArrays.
+         *
+         * For geometry that has no index buffer (debug lines, point clouds). The
+         * caller binds this VAO first.
+         * @param mode  Primitive type (GL_LINES, GL_TRIANGLES, ...).
+         * @param first First vertex to draw.
+         * @param count Number of vertices.
+         */
+        void drawArrays(GLenum mode, int32_t first, int32_t count) const;
+
     private:
         /// Delete the VAO and zero m_id. Idempotent — safe on a moved-from
         /// VAO or after a previous release().

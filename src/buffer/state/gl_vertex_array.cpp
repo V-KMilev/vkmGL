@@ -99,4 +99,8 @@ void VertexArray::setAttributeDivisor(uint32_t index, uint32_t divisor) {
     VKM_GL_CHECK(glVertexAttribDivisor(index, divisor));
 }
 
+void VertexArray::drawArrays(GLenum mode, int32_t first, int32_t count) const {
+    VKM_GL_CHECK(glDrawArrays(mode, first, count));
+}
+
 };
