@@ -4,17 +4,73 @@
 #include "gl_shader.h"
 
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <stdexcept>
+#include <unordered_set>
 
 #include "gl_error_handle.h"
 #include "l_assert.h"
 #include "logger.h"
 
-#include "file_read.h"
-
 namespace fs = std::filesystem;
 
 namespace Core {
+
+namespace {
+
+// Resolve `#include "relative/path"` directives in GLSL source (GLSL has none
+// natively). Inlines referenced files relative to each including file's
+// directory, cycle-safe via `visited`; the directive is preserved as a comment
+// so compile errors in the inlined body stay navigable. A stage with no
+// #include is returned verbatim. Only GraphicsShaderSource needs this.
+std::string resolveIncludes(const fs::path& filePath, std::unordered_set<std::string>& visited) {
+    std::error_code ec;
+    const fs::path canonical = fs::weakly_canonical(filePath, ec);
+    const std::string key = ec ? filePath.string() : canonical.string();
+    if (!visited.insert(key).second) {
+        return "// (skipped duplicate include: " + filePath.string() + ")\n";
+    }
+
+    std::ifstream in(filePath);
+    if (!in) {
+        LOG_ERROR("Shader preprocessor: cannot open '%s'", filePath.string().c_str());
+        return "// (failed to open: " + filePath.string() + ")\n";
+    }
+
+    const fs::path basedir = filePath.parent_path();
+    std::ostringstream out;
+    std::string line;
+    while (std::getline(in, line)) {
+        // Only a leading `#include` token is a directive (not one in a comment).
+        size_t firstNonWS = 0;
+        while (firstNonWS < line.size() &&
+               (line[firstNonWS] == ' ' || line[firstNonWS] == '\t')) {
+            ++firstNonWS;
+        }
+        if (line.compare(firstNonWS, 8, "#include") == 0) {
+            const size_t q1 = line.find('"', firstNonWS + 8);
+            const size_t q2 = q1 != std::string::npos ? line.find('"', q1 + 1) : std::string::npos;
+            if (q1 != std::string::npos && q2 != std::string::npos && q2 > q1) {
+                out << "// " << line << "\n";
+                out << resolveIncludes(basedir / line.substr(q1 + 1, q2 - q1 - 1), visited);
+                continue;
+            }
+            LOG_WARNING("Shader preprocessor: malformed #include in '%s': %s",
+                filePath.string().c_str(), line.c_str());
+        }
+        out << line << "\n";
+    }
+    return out.str();
+}
+
+// Load a shader stage from disk with #include directives resolved.
+std::string preprocessShaderSource(const std::string& filePath) {
+    std::unordered_set<std::string> visited;
+    return resolveIncludes(fs::path(filePath), visited);
+}
+
+} // namespace
 
 GraphicsShaderSource::GraphicsShaderSource()
     : m_path()
@@ -39,11 +95,12 @@ GraphicsShaderSource::GraphicsShaderSource(const std::string& path)
         throw std::runtime_error("Graphics shader source validation failed");
     }
 
-    vertexShader = fileToString(vertexShaderName);
-    fragmentShader = fileToString(fragmentShaderName);
+    // Resolve #include directives as each stage is loaded.
+    vertexShader = preprocessShaderSource(vertexShaderName);
+    fragmentShader = preprocessShaderSource(fragmentShaderName);
 
     if (!geometryShaderName.empty()) {
-        geometryShader = fileToString(geometryShaderName);
+        geometryShader = preprocessShaderSource(geometryShaderName);
     }
 }
 
