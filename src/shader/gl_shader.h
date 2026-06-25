@@ -18,12 +18,13 @@ struct GraphicsShaderSource {
     ~GraphicsShaderSource() = default;
 
     /**
-     * @brief Load shader source files from a directory.
+     * @brief Load shader source files from a directory, resolving `#include`.
      *
-     * Reads vertex.shader, fragment.shader, and optionally
-     * geometry.shader. No preprocessing is performed; if the caller
-     * needs to resolve includes or substitute constants, construct the
-     * struct directly with prepared source strings instead.
+     * Reads vertex.shader, fragment.shader, and optionally geometry.shader,
+     * running each through preprocessShaderSource so `#include "rel.glsl"`
+     * directives are inlined (relative to the including file). A stage with no
+     * #include is read verbatim. For other preprocessing (e.g. injecting variant
+     * #defines) construct the struct directly with prepared source strings.
      */
     explicit GraphicsShaderSource(const std::string& path);
 
