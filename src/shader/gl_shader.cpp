@@ -19,6 +19,11 @@ namespace Core {
 
 namespace {
 
+// GLSL `#version` injected at the top of every graphics stage (see
+// setGraphicsShaderVersion). Defaults to 430 (GL 4.3); the application overrides
+// it at startup from its requested GL context version - one source of truth.
+int g_glslVersion = 430;
+
 // Resolve `#include "relative/path"` directives in GLSL source (GLSL has none
 // natively). Inlines referenced files relative to each including file's
 // directory, cycle-safe via `visited`; the directive is preserved as a comment
@@ -67,10 +72,17 @@ std::string resolveIncludes(const fs::path& filePath, std::unordered_set<std::st
 // Load a shader stage from disk with #include directives resolved.
 std::string preprocessShaderSource(const std::string& filePath) {
     std::unordered_set<std::string> visited;
-    return resolveIncludes(fs::path(filePath), visited);
+    // Prepend the #version directive (shaders omit their own), then the resolved
+    // source. #version must be the first line; #included files never carry one.
+    return "#version " + std::to_string(g_glslVersion) + " core\n"
+         + resolveIncludes(fs::path(filePath), visited);
 }
 
 } // namespace
+
+void setGraphicsShaderVersion(int glslVersion) {
+    g_glslVersion = glslVersion;
+}
 
 GraphicsShaderSource::GraphicsShaderSource()
     : m_path()

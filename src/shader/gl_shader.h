@@ -8,6 +8,16 @@
 namespace Core {
 
 /**
+ * @brief Set the GLSL `#version` the loader injects atop every graphics stage.
+ *
+ * Graphics shader files omit their own `#version`; the loader prepends
+ * "#version <v> core" so the value lives in one place (the GL context version
+ * requested at window creation) instead of being copied into every shader. Call
+ * once at startup, before any Shader is constructed. Defaults to 430.
+ */
+void setGraphicsShaderVersion(int glslVersion);
+
+/**
  * @brief Holds the source code for graphics shader stages (vertex, fragment, geometry).
  *
  * Can be constructed with a path to automatically load shader source files from disk.
