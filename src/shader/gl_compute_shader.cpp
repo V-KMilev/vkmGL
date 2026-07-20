@@ -10,6 +10,7 @@
 #include "l_assert.h"
 #include "logger.h"
 
+#include "gl_shader.h"
 #include "file_read.h"
 
 namespace fs = std::filesystem;
@@ -29,7 +30,9 @@ ComputeShaderSource::ComputeShaderSource(const std::string& path)
         throw std::runtime_error("Compute shader source validation failed");
     }
 
-    computeShader = fileToString(computeShaderName);
+    // Same loader as graphics stages: prepend #version and resolve #include, so
+    // compute shaders share the engine's generated constants (engine_config.glsl).
+    computeShader = preprocessShaderSource(computeShaderName);
 }
 
 bool ComputeShaderSource::validatePath(const std::string& computeShaderName) {
