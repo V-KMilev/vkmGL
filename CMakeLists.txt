@@ -44,6 +44,7 @@ set(SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_compute_shader.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_texture.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_texture_3d.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_sampler.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/utils/gl_error_handle.cpp
