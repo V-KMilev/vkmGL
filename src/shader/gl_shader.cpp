@@ -28,7 +28,8 @@ int g_glslVersion = 430;
 // natively). Inlines referenced files relative to each including file's
 // directory, cycle-safe via `visited`; the directive is preserved as a comment
 // so compile errors in the inlined body stay navigable. A stage with no
-// #include is returned verbatim. Only GraphicsShaderSource needs this.
+// #include is returned verbatim. Used via preprocessShaderSource by both the
+// graphics and compute shader sources.
 std::string resolveIncludes(const fs::path& filePath, std::unordered_set<std::string>& visited) {
     std::error_code ec;
     const fs::path canonical = fs::weakly_canonical(filePath, ec);
@@ -69,7 +70,8 @@ std::string resolveIncludes(const fs::path& filePath, std::unordered_set<std::st
     return out.str();
 }
 
-// Load a shader stage from disk with #include directives resolved.
+} // namespace
+
 std::string preprocessShaderSource(const std::string& filePath) {
     std::unordered_set<std::string> visited;
     // Prepend the #version directive (shaders omit their own), then the resolved
@@ -77,8 +79,6 @@ std::string preprocessShaderSource(const std::string& filePath) {
     return "#version " + std::to_string(g_glslVersion) + " core\n"
          + resolveIncludes(fs::path(filePath), visited);
 }
-
-} // namespace
 
 void setGraphicsShaderVersion(int glslVersion) {
     g_glslVersion = glslVersion;
