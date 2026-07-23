@@ -17,6 +17,11 @@ void Context::clearColor() const {
 }
 
 void Context::clear(bool color, bool depth, bool stencil) const {
+    // A colour clear applies the stored clear colour first - setClearColor
+    // alone never touches GL, so set + clear always clears with the caller's
+    // colour instead of whatever glClearColor state was left behind.
+    if (color) clearColor();
+
     GLbitfield mask = 0;
     if (color)   mask |= GL_COLOR_BUFFER_BIT;
     if (depth)   mask |= GL_DEPTH_BUFFER_BIT;
