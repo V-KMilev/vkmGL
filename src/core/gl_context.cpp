@@ -168,6 +168,15 @@ void Context::setDefaultState() {
     setPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
+int32_t Context::maxSamples() const {
+    if (m_maxSamples < 0) {
+        GLint v = 1;
+        glGetIntegerv(GL_MAX_SAMPLES, &v);
+        m_maxSamples = v > 0 ? v : 1;
+    }
+    return m_maxSamples;
+}
+
 std::string Context::versionString() const {
     VKM_GL_CHECK(const GLubyte* v = glGetString(GL_VERSION));
     return v ? reinterpret_cast<const char*>(v) : std::string();
