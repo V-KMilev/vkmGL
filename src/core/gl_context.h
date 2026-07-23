@@ -94,6 +94,10 @@ class Context {
 
         /**
          * @brief Set the color used when clearing the framebuffer.
+         *
+         * Stored only; applied to GL by the next clear() with the color bit
+         * set (or an explicit clearColor() call).
+         *
          * @param color RGBA color vector.
          */
         void setClearColor(const glm::vec4& color);
@@ -342,7 +346,7 @@ class Context {
         std::string rendererString() const;
 
     private:
-        glm::vec4 m_clearColor;
+        glm::vec4 m_clearColor{0.0f, 0.0f, 0.0f, 0.0f};  ///< Matches the GL default.
         RasterState m_state;
         mutable int32_t m_maxSamples = -1;  ///< Cached GL_MAX_SAMPLES (-1 = not yet queried).
 };
