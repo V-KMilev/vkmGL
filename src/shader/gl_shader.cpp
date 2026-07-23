@@ -139,7 +139,8 @@ bool GraphicsShaderSource::validatePaths(
         return false;
     }
     if (!fs::exists(geometryShaderName)) {
-        LOG_WARNING("Graphics shader '%s' running without geometry shader", m_path.c_str());
+        // Normal operation for nearly every program - not a warning.
+        LOG_TRACE("Graphics shader '%s' has no geometry stage", m_path.c_str());
         geometryShaderName.clear();
     }
     return true;

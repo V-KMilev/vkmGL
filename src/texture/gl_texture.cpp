@@ -13,6 +13,24 @@
 
 namespace Core {
 
+Texture2DParams renderTargetParams(
+    uint32_t width, uint32_t height, GLenum internalFormat, GLenum format,
+    TextureMinFilter minFilter, TextureMagFilter magFilter) {
+    Texture2DParams p;
+    p.width           = width;
+    p.height          = height;
+    p.internalFormat  = internalFormat;
+    p.format          = format;
+    p.type            = GL_FLOAT;
+    p.minFilter       = minFilter;
+    p.magFilter       = magFilter;
+    p.wrapS           = TextureWrap::ClampToEdge;
+    p.wrapT           = TextureWrap::ClampToEdge;
+    p.generateMipmaps = false;
+    return p;
+}
+
+
     namespace {
         GLint inferInternalFormat(int channels, bool srgb) {
             if (srgb) {

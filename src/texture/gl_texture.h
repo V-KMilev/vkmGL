@@ -59,6 +59,17 @@ struct Texture2DParams {
 };
 
 /**
+ * @brief Params preset for an off-screen render-target texture: clamped, no
+ * mipmaps, GL_FLOAT source type, no initial data. Filtering defaults to
+ * nearest (depth / data targets); colour targets pass linear.
+ */
+Texture2DParams renderTargetParams(
+    uint32_t width, uint32_t height, GLenum internalFormat, GLenum format,
+    TextureMinFilter minFilter = TextureMinFilter::Nearest,
+    TextureMagFilter magFilter = TextureMagFilter::Nearest);
+
+
+/**
  * @brief Represents a 2D OpenGL texture object.
  * 
  * Provides methods for binding, setting parameters, updating data,

@@ -324,6 +324,14 @@ class Context {
         void setDefaultState();
 
         /**
+         * @brief Maximum MSAA sample count the driver supports (GL_MAX_SAMPLES).
+         *
+         * Queried once on first use and cached - per-frame callers can clamp
+         * requested sample counts without a driver round-trip.
+         */
+        int32_t maxSamples() const;
+
+        /**
          * @brief GL_VERSION string (e.g. "4.6.0 ..."), empty if unavailable.
          */
         std::string versionString() const;
@@ -336,6 +344,7 @@ class Context {
     private:
         glm::vec4 m_clearColor;
         RasterState m_state;
+        mutable int32_t m_maxSamples = -1;  ///< Cached GL_MAX_SAMPLES (-1 = not yet queried).
 };
 
 } // namespace Core
