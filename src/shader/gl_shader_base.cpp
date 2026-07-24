@@ -243,4 +243,11 @@ void ShaderBase::setUniform1i(const char* uniformName, int32_t i0) const {
     }
 }
 
+void ShaderBase::setUniform3iv(const char* uniformName, const glm::ivec3& v) const {
+    const int32_t location = getUniformLocation(uniformName);
+    if (location != -1) {
+        VKM_GL_CHECK(glUniform3iv(location, 1, &v[0]));
+    }
+}
+
 };

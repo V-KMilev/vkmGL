@@ -86,6 +86,7 @@ class ShaderBase : public GLObject {
 
         void setUniform1ui(const char* uniformName, uint32_t ui0) const;
         void setUniform1i(const char* uniformName, int32_t i0) const;
+        void setUniform3iv(const char* uniformName, const glm::ivec3& v) const;
 
         /**
          * @brief Quietly query whether the linked program has @p name as an
