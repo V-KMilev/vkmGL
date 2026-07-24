@@ -37,7 +37,7 @@ endif()
 if (TARGET vkmLog)
   message(STATUS "Target vkmLog exists, will link to it.")
 else()
-  add_subdirectory(modules/vkmLog)
+  add_subdirectory(${VKMLOG_DIR})
 endif()
 
 # GLEW - Auto-download pre-built release if needed
