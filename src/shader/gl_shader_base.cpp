@@ -3,6 +3,8 @@
 
 #include "gl_shader_base.h"
 
+#include "gl_shader_reload.h"
+
 #include <filesystem>
 #include <stdexcept>
 #include <utility>
@@ -27,9 +29,12 @@ ShaderBase::ShaderBase(const std::string& path)
 
     fs::path p = fs::path(m_path);
     m_name = p.filename().string();
+
+    registerShader(this);
 }
 
 ShaderBase::~ShaderBase() {
+    unregisterShader(this);
     release();
 }
 
@@ -60,6 +65,35 @@ void ShaderBase::bind(GLenum target) const {
 
 void ShaderBase::unbind(GLenum target) const {
     VKM_GL_CHECK(glUseProgram(0));
+}
+
+bool ShaderBase::tryRecompile() {
+    const uint32_t previous = m_id;
+
+    try {
+        reloadSource();
+        // createProgram() assigns a fresh name; clearing this first means a
+        // throw cannot leave us pointing at the old program's id.
+        m_id = 0;
+        createProgram();
+    } catch (const std::exception& e) {
+        // Drop whatever half-built program we made, restore the one that works.
+        if (m_id != 0 && m_id != previous) {
+            VKM_GL_CHECK(glDeleteProgram(m_id));
+        }
+        m_id = previous;
+        LOG_ERROR_C("SHADER", "Reload of '%s' failed, keeping the previous program: %s",
+                    m_name.c_str(), e.what());
+        return false;
+    }
+
+    // Linked: the old program is now unreferenced, and the caches describe it.
+    if (previous != 0) {
+        VKM_GL_CHECK(glDeleteProgram(previous));
+    }
+    m_uniformLocationCache.clear();
+    m_uniformNames.clear();
+    return true;
 }
 
 void ShaderBase::recompile() {
