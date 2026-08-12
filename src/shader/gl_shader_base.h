@@ -59,6 +59,23 @@ class ShaderBase : public GLObject {
         void recompile();
 
         /**
+         * @brief Reload and recompile, keeping the working program on failure.
+         *
+         * recompile() releases the live program before building the new one, so
+         * a source file that no longer compiles leaves the shader with nothing
+         * and throws. That is the right behaviour at startup, where a broken
+         * shader should stop the program, and the wrong one for hot reload,
+         * where a half-typed edit must not take the renderer down with it.
+         *
+         * Builds the replacement first and adopts it only once it has linked.
+         * On failure the previous program stays bound-able and the error is
+         * logged, so the next save can fix it.
+         *
+         * @return True if the new program linked and is now in use.
+         */
+        bool tryRecompile();
+
+        /**
          * @brief Get user-friendly shader name (the filename of the shader directory).
          * @return The name of the shader program.
          */
