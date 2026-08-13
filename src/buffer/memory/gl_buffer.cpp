@@ -44,11 +44,14 @@ void GLBuffer::release() noexcept {
 }
 
 void GLBuffer::bind(GLenum target) const {
-    VKM_GL_CHECK(glBindBuffer(m_target, m_id));
+    // The override is what lets one buffer serve two roles - storage a compute
+    // stage writes and, say, the indirect commands a draw reads. Ignoring it
+    // silently bound to the wrong target and left the intended one empty.
+    VKM_GL_CHECK(glBindBuffer(target == GL_NONE ? m_target : target, m_id));
 }
 
 void GLBuffer::unbind(GLenum target) const {
-    VKM_GL_CHECK(glBindBuffer(m_target, 0));
+    VKM_GL_CHECK(glBindBuffer(target == GL_NONE ? m_target : target, 0));
 }
 
 uint32_t GLBuffer::getSize() const {

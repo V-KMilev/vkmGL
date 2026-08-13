@@ -95,6 +95,27 @@ class MipChainTexture {
         void bindFbo()   const { VKM_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, m_fbo)); }
         void unbindFbo() const { VKM_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0)); }
 
+        /**
+         * @brief Restrict which levels sampling may read.
+         *
+         * Rendering into one level of a texture while sampling another is only
+         * defined if the sampled range excludes the attached level. Callers
+         * walking the chain (write mip N, read mip N-1) set this to N-1 so the
+         * two never overlap.
+         *
+         * @param maxLevel Highest level sampling may read.
+         */
+        void restrictSampling(int maxLevel) const {
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_tex));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, maxLevel));
+        }
+
+        /// Undo restrictSampling: the whole chain is readable again.
+        void allowAllSampling() const {
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_tex));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, m_mips - 1));
+        }
+
         /// Point COLOR_ATTACHMENT0 at one chain mip and size the viewport to it.
         void attachMip(int mip) const {
             VKM_GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tex, mip));
