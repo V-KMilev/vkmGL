@@ -8,14 +8,14 @@ GLObject::GLObject(
     GLenum target,
     GLenum identifier,
     uint32_t id
-) : m_target(target),
-    m_identifier(identifier),
-    m_id(id) {}
+) : m_target(target)
+  , m_identifier(identifier)
+  , m_id(id) {}
 
 GLObject::GLObject(GLObject&& other) noexcept
-    : m_target(other.m_target),
-      m_identifier(other.m_identifier),
-      m_id(other.m_id) {
+    : m_target(other.m_target)
+    , m_identifier(other.m_identifier)
+    , m_id(other.m_id) {
     other.m_id = 0;
 }
 
@@ -37,4 +37,5 @@ bool GLObject::isValid() const { return m_id != 0; }
 void GLObject::setLabel(const char* label) {
     VKM_GL_CHECK(glObjectLabel(m_identifier, m_id, -1, label));
 }
-}
+
+} // namespace Core
