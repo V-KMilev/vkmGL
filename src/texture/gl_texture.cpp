@@ -7,9 +7,10 @@
 #include "l_assert.h"
 #include "logger.h"
 
+// Both defines must precede the include - stb_image is header-only, so anything
+// set after it has already missed the expansion it was meant to configure.
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#define STBI_ONLY_PNM
 
 namespace Core {
 
@@ -95,13 +96,18 @@ Texture2DParams renderTargetParams(
         : GLObject(GL_TEXTURE_2D, GL_TEXTURE, 0)
         , m_path(filePath)
     {
-        // Extract name from file path (filename without extension)
-        size_t lastSlash = filePath.find_last_of("/\\");
-        size_t lastDot = filePath.find_last_of('.');
-        if (lastDot != std::string::npos && lastDot > lastSlash) {
-            m_name = filePath.substr(lastSlash + 1, lastDot - lastSlash - 1);
+        // Stem of the path: filename without directory or extension. npos + 1
+        // is 0, so a bare filename correctly starts at the beginning - but the
+        // extension test has to treat "no directory" as position 0 rather than
+        // comparing against npos, which no dot position can exceed.
+        const size_t lastSlash = filePath.find_last_of("/\\");
+        const size_t nameStart = (lastSlash == std::string::npos) ? 0 : lastSlash + 1;
+        const size_t lastDot   = filePath.find_last_of('.');
+
+        if (lastDot != std::string::npos && lastDot > nameStart) {
+            m_name = filePath.substr(nameStart, lastDot - nameStart);
         } else {
-            m_name = filePath.substr(lastSlash + 1);
+            m_name = filePath.substr(nameStart);
         }
 
         if (!loadFromFile(filePath, flipVertically, srgb)) {

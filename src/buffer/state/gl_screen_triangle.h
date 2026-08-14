@@ -20,8 +20,8 @@ namespace Core {
  *                                   for passes that loop over FBO mips /
  *                                   shaders while keeping the VAO bound.
  *
- * Header-only to mirror gl_blit.h / gl_texture_cube.h; Core::VertexArray's
- * machinery already lives in the vkmGL shared library.
+ * Header-only: it is a thin composition over Core::VertexArray, whose machinery
+ * already lives in the vkmGL shared library.
  */
 class ScreenTriangle {
     public:

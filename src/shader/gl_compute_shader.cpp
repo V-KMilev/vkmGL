@@ -10,8 +10,7 @@
 #include "l_assert.h"
 #include "logger.h"
 
-#include "gl_shader.h"
-#include "file_read.h"
+#include "gl_shader_preprocess.h"
 
 namespace fs = std::filesystem;
 
@@ -54,7 +53,7 @@ void ComputeShader::reloadSource() {
 }
 
 void ComputeShader::createProgram() {
-    m_id = VKM_GL_CHECK(glCreateProgram());
+    VKM_GL_CHECK(m_id = glCreateProgram());
     VKM_ASSERT(m_id != 0);
 
     const uint32_t computeShader = compileShader(GL_COMPUTE_SHADER, m_source.computeShader);

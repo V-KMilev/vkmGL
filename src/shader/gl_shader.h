@@ -8,28 +8,6 @@
 namespace Core {
 
 /**
- * @brief Set the GLSL `#version` the loader injects atop every graphics stage.
- *
- * Graphics shader files omit their own `#version`; the loader prepends
- * "#version <v> core" so the value lives in one place (the GL context version
- * requested at window creation) instead of being copied into every shader. Call
- * once at startup, before any Shader is constructed. Defaults to 430.
- */
-void setGraphicsShaderVersion(int glslVersion);
-
-/**
- * @brief Load a shader stage from disk with the `#version` prepended and
- * `#include "rel.glsl"` directives resolved (GLSL has neither natively).
- *
- * The single loader for every shader stage - graphics and compute alike - so
- * compute shaders share the same `#include` support and version source of truth.
- *
- * @param filePath Path to the shader stage file on disk.
- * @return The stage source with `#version` prepended and includes inlined.
- */
-std::string preprocessShaderSource(const std::string& filePath);
-
-/**
  * @brief Holds the source code for graphics shader stages (vertex, fragment, geometry).
  *
  * Can be constructed with a path to automatically load shader source files from disk.

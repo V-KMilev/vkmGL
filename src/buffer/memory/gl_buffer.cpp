@@ -59,8 +59,15 @@ uint32_t GLBuffer::getSize() const {
 }
 
 void GLBuffer::update(const void* data, uint32_t size, uint32_t offset) {
+    VKM_ASSERT(offset + size <= m_size);
     bind();
     VKM_GL_CHECK(glBufferSubData(m_target, offset, size, data));
+}
+
+void GLBuffer::allocate(uint32_t size, const void* data) {
+    bind();
+    VKM_GL_CHECK(glBufferData(m_target, size, data, m_usage));
+    m_size = size;
 }
 
 void* GLBuffer::map(GLenum access) {
