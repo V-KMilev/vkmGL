@@ -12,5 +12,6 @@ namespace Core {
  * @param synchronous If true, enables GL_DEBUG_OUTPUT_SYNCHRONOUS for immediate callbacks.
  */
 void enableGLDebugLogging(bool synchronous = true);
+
 } // namespace Core
 

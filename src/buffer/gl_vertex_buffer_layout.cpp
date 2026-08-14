@@ -41,4 +41,5 @@ void VertexBufferLayout::push<uint8_t>(uint32_t count) {
     m_elements.push_back({GL_UNSIGNED_BYTE, count, GL_TRUE});
     m_stride += count * VertexBufferElement::getSizeOfType(GL_UNSIGNED_BYTE);
 }
-};
+
+} // namespace Core

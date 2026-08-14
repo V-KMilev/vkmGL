@@ -122,4 +122,4 @@ class Shader : public ShaderBase {
         GraphicsShaderSource m_source;
 };
 
-};
+} // namespace Core

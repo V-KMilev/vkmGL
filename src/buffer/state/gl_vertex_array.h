@@ -64,11 +64,12 @@ class VertexArray : public GLObject {
         void drawArrays(GLenum mode, int32_t first, int32_t count) const;
 
     private:
-        /// Delete the VAO and zero m_id. Idempotent — safe on a moved-from
+        /// Delete the VAO and zero m_id. Idempotent - safe on a moved-from
         /// VAO or after a previous release().
         void release() noexcept;
 
+    private:
         uint32_t m_attributeIndex;
 };
 
-};
+} // namespace Core

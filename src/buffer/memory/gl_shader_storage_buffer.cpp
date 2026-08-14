@@ -21,4 +21,5 @@ void ShaderStorageBuffer::bindBase(uint32_t bindingPoint) const {
 void ShaderStorageBuffer::bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) const {
     VKM_GL_CHECK(glBindBufferRange(GL_SHADER_STORAGE_BUFFER, bindingPoint, m_id, offset, size));
 }
-};
+
+} // namespace Core

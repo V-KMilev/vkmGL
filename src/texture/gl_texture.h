@@ -179,7 +179,7 @@ class Texture2D : public GLObject {
         uint32_t getHeight() const { return m_params.height; }
 
     private:
-        /// Delete the texture and zero m_id. Idempotent — safe on a
+        /// Delete the texture and zero m_id. Idempotent - safe on a
         /// moved-from texture or after a previous release().
         void release() noexcept;
 
@@ -196,4 +196,5 @@ class Texture2D : public GLObject {
 
         Texture2DParams m_params;
 };
-};
+
+} // namespace Core

@@ -18,4 +18,5 @@ class VertexBuffer : public GLBuffer {
             GLenum usage = GL_STATIC_DRAW
         );
 };
-};
+
+} // namespace Core

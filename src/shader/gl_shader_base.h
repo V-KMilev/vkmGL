@@ -173,32 +173,38 @@ class ShaderBase : public GLObject {
          */
         int32_t getUniformLocation(const char* name) const;
 
+    private:
+        /**
+         * @brief Shared body of hasUniform() and getUniformLocation().
+         *
+         * Probes the cache, calls glGetUniformLocation on a miss, then takes
+         * ownership of the name so the cache's view key cannot dangle.
+         *
+         * @param name          Uniform name to resolve.
+         * @param warnIfMissing Log the not-found case (getUniformLocation), or
+         *                      stay quiet for the expected-absent one
+         *                      (hasUniform).
+         * @return The location, or -1 when the program has no such active uniform.
+         */
+        int32_t resolveUniform(const char* name, bool warnIfMissing) const;
+
+        /**
+         * @brief Delete the GL program and zero m_id.
+         *
+         * Idempotent, so it is safe on a moved-from shader or after a previous
+         * release().
+         */
+        void release() noexcept;
+
     protected:
         std::string m_name;
         std::string m_path;
 
-        /// Owns the chars backing the cache keys below. A std::deque keeps
-        /// existing elements at stable addresses as it grows, so the
-        /// string_view keys never dangle.
+        /// Backs the cache keys; a deque's addresses stay put as it grows.
         mutable std::deque<std::string> m_uniformNames;
 
-        /// Uniform-location cache keyed on string_view into m_uniformNames, so
-        /// a const char* / literal lookup hashes in place with no allocation.
-        /// (A std::string key would construct + hash a temporary every call,
-        /// heap-allocating for names past the small-string buffer - and C++17
-        /// has no heterogeneous unordered_map lookup to avoid it.)
+        /// Name -> location, keyed by view so a literal hashes without allocating.
         mutable std::unordered_map<std::string_view, int32_t> m_uniformLocationCache;
-
-    private:
-        /// Shared body of hasUniform()/getUniformLocation(): cache probe,
-        /// glGetUniformLocation on miss, then own the name + cache the result.
-        /// warnIfMissing logs the not-found case (getUniformLocation) or stays
-        /// quiet (hasUniform).
-        int32_t resolveUniform(const char* name, bool warnIfMissing) const;
-
-        /// Delete the GL program and zero m_id. Idempotent — safe on a
-        /// moved-from shader or after a previous release().
-        void release() noexcept;
 };
 
-};
+} // namespace Core

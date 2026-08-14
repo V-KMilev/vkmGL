@@ -75,6 +75,7 @@ class Texture3D : public GLObject {
         static GLenum toGL(TextureMinFilter filter);
         static GLenum toGL(TextureMagFilter filter);
 
+    private:
         std::string     m_name;
         Texture3DParams m_params;
 };

@@ -51,7 +51,7 @@ Sampler::~Sampler() {
     VKM_GL_CHECK(glDeleteSamplers(1, &m_id));
 }
 
-Sampler& Sampler::operator=(Sampler&& other) noexcept {
+Sampler& Sampler::operator=(Sampler && other) noexcept {
     if (this != &other) {
         if (m_id != 0) {
             VKM_GL_CHECK(glDeleteSamplers(1, &m_id));

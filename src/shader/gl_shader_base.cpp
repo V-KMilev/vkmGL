@@ -38,7 +38,7 @@ ShaderBase::~ShaderBase() {
     release();
 }
 
-ShaderBase& ShaderBase::operator=(ShaderBase&& other) noexcept {
+ShaderBase& ShaderBase::operator=(ShaderBase && other) noexcept {
     if (this != &other) {
         release();
         GLObject::operator=(std::move(other));
@@ -292,4 +292,4 @@ void ShaderBase::setUniform3iv(const char* uniformName, const glm::ivec3& v) con
     }
 }
 
-};
+} // namespace Core

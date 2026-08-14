@@ -81,4 +81,4 @@ class ComputeShader : public ShaderBase {
         ComputeShaderSource m_source;
 };
 
-};
+} // namespace Core

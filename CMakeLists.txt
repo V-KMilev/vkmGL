@@ -55,14 +55,13 @@ set(SOURCES
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 # Warnings are on for our own sources only - the submodules under modules/ keep
-# their own level. Kept deliberately close to the engine's set so a file reads
-# the same on either side of the boundary; unused parameters stay enabled here
-# because the GLObject interface is the main source of them and they are worth
-# seeing rather than silencing.
+# their own level. The set matches the engine's vkm_warnings so a file reads the
+# same on either side of the boundary, per docs/guides/code-style.md.
 set(_vkmgl_warnings
 	-Wall
 	-Wextra
-	-Wno-unused-value    # VKM_ASSERT expands to `true` in release
+	-Wno-unused-value      # VKM_ASSERT expands to `true` in release
+	-Wno-unused-parameter  # interface stubs, placeholders
 )
 target_compile_options(${PROJECT_NAME} PRIVATE
 	$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:${_vkmgl_warnings}>

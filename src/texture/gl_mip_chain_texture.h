@@ -130,6 +130,7 @@ class MipChainTexture {
             m_tex = 0;
         }
 
+    private:
         GLuint m_tex   = 0;
         GLuint m_fbo   = 0;
         int    m_baseW = 0;
