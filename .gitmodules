@@ -1,9 +1,15 @@
-[submodule "third-party/glfw"]
-	path = third-party/glfw
+[submodule "modules/vkmLog"]
+	path = modules/vkmLog
+	url = https://github.com/V-KMilev/vkmLog.git
+[submodule "modules/glfw"]
+	path = modules/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "third-party/glm"]
-	path = third-party/glm
+[submodule "modules/glm"]
+	path = modules/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "third-party/imgui"]
-	path = third-party/imgui
-	url = https://github.com/ocornut/imgui.git
+[submodule "modules/stb"]
+	path = modules/stb
+	url = https://github.com/nothings/stb.git
+[submodule "modules/glew"]
+	path = modules/glew
+	url = https://github.com/nigels-com/glew.git
