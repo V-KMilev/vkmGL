@@ -58,6 +58,10 @@ uint32_t GLBuffer::getSize() const {
     return m_size;
 }
 
+GLenum GLBuffer::getTarget() const {
+    return m_target;
+}
+
 void GLBuffer::update(const void* data, uint32_t size, uint32_t offset) {
     VKM_ASSERT(offset + size <= m_size);
     bind();
@@ -78,19 +82,44 @@ void GLBuffer::bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) 
     VKM_GL_CHECK(glBindBufferRange(m_target, bindingPoint, m_id, offset, size));
 }
 
-void* GLBuffer::map(GLenum access) {
-    bind();
-    return glMapBuffer(m_target, access);
+MappedBuffer::MappedBuffer(const GLBuffer& buffer, void* data)
+    : m_buffer(&buffer)
+    , m_data(data) {}
+
+MappedBuffer::~MappedBuffer() {
+    if (m_data == nullptr) return;
+    m_buffer->bind();
+    VKM_GL_CHECK(glUnmapBuffer(m_buffer->getTarget()));
 }
 
-void* GLBuffer::mapRange(uint32_t offset, uint32_t length, GLbitfield access) {
-    bind();
-    return glMapBufferRange(m_target, offset, length, access);
+MappedBuffer::MappedBuffer(MappedBuffer && other) noexcept
+    : m_buffer(other.m_buffer)
+    , m_data(other.m_data) {
+    other.m_data = nullptr;
 }
 
-void GLBuffer::unmap() {
+MappedBuffer& MappedBuffer::operator=(MappedBuffer && other) noexcept {
+    if (this != &other) {
+        m_buffer     = other.m_buffer;
+        m_data       = other.m_data;
+        other.m_data = nullptr;
+    }
+    return *this;
+}
+
+MappedBuffer GLBuffer::map(GLenum access) {
     bind();
-    VKM_GL_CHECK(glUnmapBuffer(m_target));
+    void* data = nullptr;
+    VKM_GL_CHECK(data = glMapBuffer(m_target, access));
+    return MappedBuffer(*this, data);
+}
+
+MappedBuffer GLBuffer::mapRange(uint32_t offset, uint32_t length, GLbitfield access) {
+    VKM_ASSERT(offset + length <= m_size);
+    bind();
+    void* data = nullptr;
+    VKM_GL_CHECK(data = glMapBufferRange(m_target, offset, length, access));
+    return MappedBuffer(*this, data);
 }
 
 } // namespace Core
