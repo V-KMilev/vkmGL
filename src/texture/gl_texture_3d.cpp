@@ -22,12 +22,12 @@ Texture3D::Texture3D(const std::string& name, const Texture3DParams& params)
         static_cast<GLsizei>(m_params.depth),
         0, m_params.format, m_params.type, nullptr));
 
-    const GLenum wrap = toGL(m_params.wrap);
+    const GLenum wrap = toGLenum(m_params.wrap);
     VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, static_cast<GLint>(wrap)));
     VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, static_cast<GLint>(wrap)));
     VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, static_cast<GLint>(wrap)));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(toGL(m_params.minFilter))));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(toGL(m_params.magFilter))));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(toGLenum(m_params.minFilter))));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(toGLenum(m_params.magFilter))));
 
     VKM_GL_CHECK(glBindTexture(GL_TEXTURE_3D, 0));
 }
@@ -72,36 +72,6 @@ void Texture3D::bindSlot(uint32_t slot) const {
 void Texture3D::bindImage(uint32_t unit, GLenum access, int32_t level) const {
     // Layered = GL_TRUE exposes the whole volume as an image3D to the shader.
     VKM_GL_CHECK(glBindImageTexture(unit, m_id, level, GL_TRUE, 0, access, m_params.internalFormat));
-}
-
-GLenum Texture3D::toGL(TextureWrap wrap) {
-    switch (wrap) {
-        case TextureWrap::Repeat:         return GL_REPEAT;
-        case TextureWrap::MirroredRepeat: return GL_MIRRORED_REPEAT;
-        case TextureWrap::ClampToEdge:    return GL_CLAMP_TO_EDGE;
-        case TextureWrap::ClampToBorder:  return GL_CLAMP_TO_BORDER;
-    }
-    return GL_CLAMP_TO_EDGE;
-}
-
-GLenum Texture3D::toGL(TextureMinFilter filter) {
-    switch (filter) {
-        case TextureMinFilter::Nearest:              return GL_NEAREST;
-        case TextureMinFilter::Linear:               return GL_LINEAR;
-        case TextureMinFilter::NearestMipmapNearest: return GL_NEAREST_MIPMAP_NEAREST;
-        case TextureMinFilter::LinearMipmapNearest:  return GL_LINEAR_MIPMAP_NEAREST;
-        case TextureMinFilter::NearestMipmapLinear:  return GL_NEAREST_MIPMAP_LINEAR;
-        case TextureMinFilter::LinearMipmapLinear:   return GL_LINEAR_MIPMAP_LINEAR;
-    }
-    return GL_LINEAR;
-}
-
-GLenum Texture3D::toGL(TextureMagFilter filter) {
-    switch (filter) {
-        case TextureMagFilter::Nearest: return GL_NEAREST;
-        case TextureMagFilter::Linear:  return GL_LINEAR;
-    }
-    return GL_LINEAR;
 }
 
 } // namespace Core

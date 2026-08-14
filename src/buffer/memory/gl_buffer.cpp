@@ -70,6 +70,14 @@ void GLBuffer::allocate(uint32_t size, const void* data) {
     m_size = size;
 }
 
+void GLBuffer::bindBase(uint32_t bindingPoint) const {
+    VKM_GL_CHECK(glBindBufferBase(m_target, bindingPoint, m_id));
+}
+
+void GLBuffer::bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) const {
+    VKM_GL_CHECK(glBindBufferRange(m_target, bindingPoint, m_id, offset, size));
+}
+
 void* GLBuffer::map(GLenum access) {
     bind();
     return glMapBuffer(m_target, access);

@@ -39,6 +39,33 @@ enum class TextureMagFilter {
 };
 
 /**
+ * @brief Map a wrap mode to the OpenGL enum glTexParameteri expects.
+ *
+ * Free functions rather than per-class statics: the mapping depends only on
+ * the enum, and every texture type plus Sampler needs the same answer.
+ *
+ * @param wrap Wrap mode to translate.
+ * @return The corresponding GL_* constant.
+ */
+GLenum toGLenum(TextureWrap wrap);
+
+/**
+ * @brief Map a minification filter to its OpenGL enum.
+ *
+ * @param filter Filter to translate.
+ * @return The corresponding GL_* constant.
+ */
+GLenum toGLenum(TextureMinFilter filter);
+
+/**
+ * @brief Map a magnification filter to its OpenGL enum.
+ *
+ * @param filter Filter to translate.
+ * @return The corresponding GL_* constant.
+ */
+GLenum toGLenum(TextureMagFilter filter);
+
+/**
  * @brief Parameters for initializing a 2D texture.
  */
 struct Texture2DParams {
@@ -187,11 +214,6 @@ class Texture2D : public GLObject {
         void release() noexcept;
 
         void applyParameters() const;
-
-        // Convert to underlying OpenGL enums
-        static GLenum toGL(TextureWrap wrap);
-        static GLenum toGL(TextureMinFilter filter);
-        static GLenum toGL(TextureMagFilter filter);
 
     private:
         std::string m_name;

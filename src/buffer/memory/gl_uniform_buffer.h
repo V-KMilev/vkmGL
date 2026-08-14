@@ -7,8 +7,10 @@ namespace Core {
 /**
  * @brief Uniform buffer (UBO) wrapper.
  *
- * Provides creation and binding helpers for uniform buffer objects, including
- * binding to specific binding points or ranges.
+ * Adds nothing to GLBuffer but its target. bindBase() and bindRange() are
+ * inherited and bind as GL_UNIFORM_BUFFER because that is what the buffer was
+ * created with, so the type exists to make a call site read as a UBO and to
+ * stop one being constructed against the wrong target by accident.
  */
 class UniformBuffer : public GLBuffer {
     public:
@@ -17,28 +19,6 @@ class UniformBuffer : public GLBuffer {
             uint32_t size,
             GLenum usage = GL_STATIC_DRAW
         );
-
-    public:
-        /**
-         * @brief Binds the entire uniform buffer object to a binding point.
-         *
-         * This method binds the uniform buffer to the specified binding point so shaders can access it. 
-         * It calls glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, bufferId).
-         *
-         * @param bindingPoint The index of the UBO binding point.
-         */
-        void bindBase(uint32_t bindingPoint) const;
-
-        /**
-         * @brief Binds a specific range of the uniform buffer to a binding point.
-         *
-         * This method binds a range of the UBO (from offset, for size bytes) to a binding point using glBindBufferRange.
-         *
-         * @param bindingPoint The UBO binding point index.
-         * @param offset The byte offset into the buffer to start the binding range.
-         * @param size The number of bytes to bind starting from offset.
-         */
-        void bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) const;
 };
 
 } // namespace Core
