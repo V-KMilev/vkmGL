@@ -62,7 +62,7 @@ set(_vkmgl_warnings
 	-Wno-unused-parameter  # interface stubs, placeholders
 )
 target_compile_options(${PROJECT_NAME} PRIVATE
-	$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:${_vkmgl_warnings}>
+	$<$<CXX_COMPILER_ID:GNU,Clang>:${_vkmgl_warnings}>
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -89,11 +89,10 @@ if(VKMGL_BUILD_TESTS)
 	add_executable(vkmgl_tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/vkmgl_tests.cpp)
 	target_link_libraries(vkmgl_tests PRIVATE ${PROJECT_NAME})
 	target_compile_options(vkmgl_tests PRIVATE
-		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:${_vkmgl_warnings}>
+		$<$<CXX_COMPILER_ID:GNU,Clang>:${_vkmgl_warnings}>
 	)
 	add_test(NAME vkmgl COMMAND vkmgl_tests)
 endif()
-
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	OpenGL::GL
