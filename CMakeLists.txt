@@ -81,6 +81,21 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
+# Tests cover only what runs without a GL context, so this binary stays usable
+# on a build machine with no GPU. Built when vkmGL is the top-level project, or
+# when a parent asks for it - the engine does not build them by default.
+option(VKMGL_BUILD_TESTS "Build the vkmGL test suite" ${PROJECT_IS_TOP_LEVEL})
+
+if(VKMGL_BUILD_TESTS)
+	enable_testing()
+	add_executable(vkmgl_tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/vkmgl_tests.cpp)
+	target_link_libraries(vkmgl_tests PRIVATE ${PROJECT_NAME})
+	target_compile_options(vkmgl_tests PRIVATE
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:${_vkmgl_warnings}>
+	)
+	add_test(NAME vkmgl COMMAND vkmgl_tests)
+endif()
+
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	OpenGL::GL
