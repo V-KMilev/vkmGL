@@ -66,8 +66,11 @@ class RenderBuffer : public GLObject {
         void storageMultisample(int32_t samples, GLenum internalFormat, int32_t width, int32_t height);
 
     private:
-        /// Delete the renderbuffer and zero m_id. Idempotent - safe on a
-        /// moved-from renderbuffer or after a previous release().
+        /**
+         * @brief Delete the renderbuffer and zero m_id.
+         *
+         * Idempotent, so it is safe on a moved-from renderbuffer or after a previous release().
+         */
         void release() noexcept;
 
     private:

@@ -179,8 +179,11 @@ class Texture2D : public GLObject {
         uint32_t getHeight() const { return m_params.height; }
 
     private:
-        /// Delete the texture and zero m_id. Idempotent - safe on a
-        /// moved-from texture or after a previous release().
+        /**
+         * @brief Delete the texture and zero m_id.
+         *
+         * Idempotent, so it is safe on a moved-from texture or after a previous release().
+         */
         void release() noexcept;
 
         void applyParameters() const;

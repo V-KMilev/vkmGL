@@ -77,8 +77,11 @@ class GLBuffer : public GLObject {
         void unmap();
 
     private:
-        /// Delete the GL buffer and zero m_id. Idempotent - safe on a
-        /// moved-from buffer or after a previous release().
+        /**
+         * @brief Delete the GL buffer and zero m_id.
+         *
+         * Idempotent, so it is safe on a moved-from buffer or after a previous release().
+         */
         void release() noexcept;
 
     protected:
