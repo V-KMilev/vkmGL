@@ -5,6 +5,50 @@
 
 namespace Core {
 
+class GLBuffer;
+
+/**
+ * @brief A buffer mapped into client address space, unmapped on destruction.
+ *
+ * Obtained from GLBuffer::map() / mapRange(), never constructed directly. Move
+ * transfers the mapping, so a moved-from object unmaps nothing.
+ */
+class MappedBuffer {
+    public:
+        MappedBuffer() = delete;
+        ~MappedBuffer();
+
+        MappedBuffer(const MappedBuffer& other) = delete;
+        MappedBuffer& operator=(const MappedBuffer& other) = delete;
+
+        MappedBuffer(MappedBuffer && other) noexcept;
+        MappedBuffer& operator=(MappedBuffer && other) noexcept;
+
+    public:
+        /**
+         * @brief The mapped memory.
+         *
+         * @return Pointer to the mapping, or null if the map failed.
+         */
+        void* data() const { return m_data; }
+
+        /**
+         * @brief Whether the mapping succeeded.
+         *
+         * @return True when data() is safe to write through.
+         */
+        bool isValid() const { return m_data != nullptr; }
+
+    private:
+        friend class GLBuffer;
+
+        MappedBuffer(const GLBuffer& buffer, void* data);
+
+    private:
+        const GLBuffer* m_buffer;
+        void*           m_data;
+};
+
 /**
  * @brief Abstract base class for OpenGL buffer objects.
  *
@@ -40,8 +84,17 @@ class GLBuffer : public GLObject {
 
         /**
          * @brief Returns the buffer size in bytes.
+         *
+         * @return Size of the current storage allocation.
          */
         uint32_t getSize() const;
+
+        /**
+         * @brief The target this buffer was created against.
+         *
+         * @return The GL_*_BUFFER constant bind() uses when given no override.
+         */
+        GLenum getTarget() const;
 
         /**
          * @brief Updates a subset or the entirety of the buffer's data.
@@ -87,19 +140,29 @@ class GLBuffer : public GLObject {
         void bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) const;
 
         /**
-         * @brief Maps the buffer into the client's address space.
+         * @brief Map the whole buffer into client address space.
+         *
+         * The mapping unmaps itself when the returned object goes out of
+         * scope, which is why nothing here hands back a bare pointer: an
+         * unmatched unmap leaves the buffer unusable by the GPU, and there is
+         * no way to notice from the call site.
+         *
+         * @param access GL_READ_ONLY / GL_WRITE_ONLY / GL_READ_WRITE.
+         * @return The mapping; check isValid() before writing through it.
          */
-        void* map(GLenum access = GL_WRITE_ONLY);
+        [[nodiscard]] MappedBuffer map(GLenum access = GL_WRITE_ONLY);
 
         /**
-         * @brief Maps a range of the buffer into the client's address space.
+         * @brief Map part of the buffer into client address space.
+         *
+         * Same scoped-unmap contract as map().
+         *
+         * @param offset Byte offset the mapping starts at.
+         * @param length Length of the mapping in bytes.
+         * @param access Bitfield of GL_MAP_* flags.
+         * @return The mapping; check isValid() before writing through it.
          */
-        void* mapRange(uint32_t offset, uint32_t length, GLbitfield access);
-
-        /**
-         * @brief Unmaps the previously mapped buffer.
-         */
-        void unmap();
+        [[nodiscard]] MappedBuffer mapRange(uint32_t offset, uint32_t length, GLbitfield access);
 
     private:
         /**
