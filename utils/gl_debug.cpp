@@ -75,6 +75,7 @@ namespace {
                 break;
         }
     }
+
 } // namespace
 
 void enableGLDebugLogging(bool synchronous) {
@@ -97,5 +98,6 @@ void enableGLDebugLogging(bool synchronous) {
     (void)synchronous;
 #endif
 }
+
 } // namespace Core
 

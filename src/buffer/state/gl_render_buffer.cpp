@@ -18,7 +18,7 @@ RenderBuffer::~RenderBuffer() {
     release();
 }
 
-RenderBuffer& RenderBuffer::operator=(RenderBuffer&& other) noexcept {
+RenderBuffer& RenderBuffer::operator=(RenderBuffer && other) noexcept {
     if (this != &other) {
         release();
         GLObject::operator=(std::move(other));
@@ -67,4 +67,5 @@ void RenderBuffer::storageMultisample(int32_t samples, GLenum internalFormat, in
     bind();
     VKM_GL_CHECK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internalFormat, width, height));
 }
-};
+
+} // namespace Core

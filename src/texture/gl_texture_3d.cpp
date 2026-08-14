@@ -36,7 +36,7 @@ Texture3D::~Texture3D() {
     release();
 }
 
-Texture3D& Texture3D::operator=(Texture3D&& other) noexcept {
+Texture3D& Texture3D::operator=(Texture3D && other) noexcept {
     if (this != &other) {
         release();
         m_id     = other.m_id;

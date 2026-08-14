@@ -57,4 +57,5 @@ class IndexBuffer : public GLBuffer {
         uint32_t m_count;
         GLenum m_type;
 };
-};
+
+} // namespace Core

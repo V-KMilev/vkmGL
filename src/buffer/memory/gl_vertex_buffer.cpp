@@ -7,4 +7,5 @@ VertexBuffer::VertexBuffer(
     uint32_t size,
     GLenum usage
 ) : GLBuffer(GL_ARRAY_BUFFER, data, size, usage) {}
-};
+
+} // namespace Core

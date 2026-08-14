@@ -16,7 +16,7 @@ VertexArray::~VertexArray() {
     release();
 }
 
-VertexArray& VertexArray::operator=(VertexArray&& other) noexcept {
+VertexArray& VertexArray::operator=(VertexArray && other) noexcept {
     if (this != &other) {
         release();
         GLObject::operator=(std::move(other));
@@ -104,4 +104,4 @@ void VertexArray::drawArrays(GLenum mode, int32_t first, int32_t count) const {
     VKM_GL_CHECK(glDrawArrays(mode, first, count));
 }
 
-};
+} // namespace Core

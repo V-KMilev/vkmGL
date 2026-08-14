@@ -47,4 +47,5 @@ void IndexBuffer::drawInstanced(uint32_t instanceCount, uint32_t baseInstance, G
         baseInstance
     ));
 }
-};
+
+} // namespace Core

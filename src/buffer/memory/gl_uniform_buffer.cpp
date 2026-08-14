@@ -15,4 +15,4 @@ void UniformBuffer::bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t s
     VKM_GL_CHECK(glBindBufferRange(GL_UNIFORM_BUFFER, bindingPoint, m_id, offset, size));
 }
 
-};
+} // namespace Core

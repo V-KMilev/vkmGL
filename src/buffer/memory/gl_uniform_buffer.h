@@ -41,4 +41,4 @@ class UniformBuffer : public GLBuffer {
         void bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) const;
 };
 
-};
+} // namespace Core

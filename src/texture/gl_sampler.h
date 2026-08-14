@@ -27,29 +27,69 @@ class Sampler : public GLObject {
         explicit Sampler(const Params& params);
         ~Sampler() override;
 
-        Sampler(const Sampler&) = delete;
-        Sampler& operator=(const Sampler&) = delete;
+        Sampler(const Sampler& other) = delete;
+        Sampler& operator=(const Sampler& other) = delete;
 
-        Sampler(Sampler&&) noexcept = default;
-        Sampler& operator=(Sampler&&) noexcept;
+        Sampler(Sampler && other) noexcept = default;
+        Sampler& operator=(Sampler && other) noexcept;
 
-        /** @brief No-op for interface compat; use bindSlot(). */
+    public:
+        /**
+         * @brief No-op: a sampler is bound to a texture unit, not to a target.
+         *
+         * GLObject requires the pair, but glBindSampler takes a unit rather
+         * than a bind point, so there is nothing meaningful to do here.
+         * Use bindSlot().
+         *
+         * @param target Ignored.
+         */
         void bind(GLenum target = GL_NONE) const override;
-        /** @brief No-op for interface compat; use unbindSlot(). */
+
+        /**
+         * @brief No-op counterpart to bind(); use unbindSlot().
+         *
+         * @param target Ignored.
+         */
         void unbind(GLenum target = GL_NONE) const override;
 
-        /** @brief Bind this sampler to a specific texture unit. */
+        /**
+         * @brief Bind this sampler to a texture unit.
+         *
+         * The sampler's wrap/filter state then overrides whatever the texture
+         * bound to the same unit carries, which is the point of the type.
+         *
+         * @param slot Texture unit index.
+         */
         void bindSlot(uint32_t slot) const;
-        /** @brief Unbind any sampler from the given texture unit. */
+
+        /**
+         * @brief Unbind any sampler from a texture unit.
+         *
+         * Static because clearing a unit does not need an instance - the unit
+         * reverts to sampling with the texture's own parameters.
+         *
+         * @param slot Texture unit index.
+         */
         static void unbindSlot(uint32_t slot);
 
-        /** @brief Update wrap/filter parameters on the live GL object. */
+        /**
+         * @brief Replace the wrap/filter parameters on the live GL object.
+         *
+         * @param params New parameter set, applied immediately.
+         */
         void setParams(const Params& params);
+
+        /**
+         * @brief The parameters this sampler currently applies.
+         *
+         * @return Reference to the stored parameter set.
+         */
         const Params& getParams() const { return m_params; }
 
     private:
         void applyParams();
 
+    private:
         Params m_params;
 };
 

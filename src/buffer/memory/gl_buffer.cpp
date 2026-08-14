@@ -27,7 +27,7 @@ GLBuffer::~GLBuffer() {
     release();
 }
 
-GLBuffer& GLBuffer::operator=(GLBuffer&& other) noexcept {
+GLBuffer& GLBuffer::operator=(GLBuffer && other) noexcept {
     if (this != &other) {
         release();
         GLObject::operator=(std::move(other));
@@ -85,4 +85,4 @@ void GLBuffer::unmap() {
     VKM_GL_CHECK(glUnmapBuffer(m_target));
 }
 
-};
+} // namespace Core
