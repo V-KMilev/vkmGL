@@ -116,7 +116,8 @@ const std::string& ShaderBase::getPath() const {
 }
 
 uint32_t ShaderBase::compileShader(uint32_t type, const std::string& source) const {
-    uint32_t id = VKM_GL_CHECK(glCreateShader(type));
+    uint32_t id = 0;
+    VKM_GL_CHECK(id = glCreateShader(type));
     const char* src = source.c_str();
 
     VKM_GL_CHECK(glShaderSource(id, 1, &src, nullptr));
@@ -134,7 +135,6 @@ uint32_t ShaderBase::compileShader(uint32_t type, const std::string& source) con
 
 void ShaderBase::linkProgram(uint32_t programId) const {
     VKM_GL_CHECK(glLinkProgram(programId));
-    VKM_GL_CHECK(glValidateProgram(programId));
 
     int32_t linkStatus = 0;
     VKM_GL_CHECK(glGetProgramiv(programId, GL_LINK_STATUS, &linkStatus));

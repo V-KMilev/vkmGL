@@ -54,9 +54,7 @@ class InstanceBuffer {
             } else if (count > m_capacity) {
                 m_capacity = std::max(
                     static_cast<uint32_t>(m_capacity * GROWTH_FACTOR), count);
-                m_buffer->bind();
-                VKM_GL_CHECK(glBufferData(GL_ARRAY_BUFFER,
-                    m_capacity * sizeof(glm::mat4), nullptr, GL_STREAM_DRAW));
+                m_buffer->allocate(m_capacity * sizeof(glm::mat4));
                 m_buffer->update(data, dataSize, 0);
             } else {
                 m_buffer->update(data, dataSize, 0);
@@ -101,9 +99,7 @@ class InstanceBuffer {
                 m_buffer = std::make_unique<Core::VertexBuffer>(
                     nullptr, m_capacity * sizeof(glm::mat4), GL_STREAM_DRAW);
             } else {
-                m_buffer->bind();
-                VKM_GL_CHECK(glBufferData(GL_ARRAY_BUFFER,
-                    m_capacity * sizeof(glm::mat4), nullptr, GL_STREAM_DRAW));
+                m_buffer->allocate(m_capacity * sizeof(glm::mat4));
             }
         }
 

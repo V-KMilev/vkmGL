@@ -49,6 +49,19 @@ class GLBuffer : public GLObject {
         void update(const void* data, uint32_t size, uint32_t offset = 0);
 
         /**
+        * @brief Reallocate the buffer's storage, discarding its contents.
+        *
+        * Orphaning: the GL name is unchanged, so vertex-array attribute
+        * bindings that reference this buffer stay valid across a grow. Goes
+        * through the wrapper rather than glBufferData directly so the tracked
+        * size cannot drift from the storage it describes.
+        *
+        * @param size New size in bytes.
+        * @param data Optional initial contents (null allocates only).
+        */
+        void allocate(uint32_t size, const void* data = nullptr);
+
+        /**
         * @brief Maps the buffer into the client's address space.
         */
         void* map(GLenum access = GL_WRITE_ONLY);

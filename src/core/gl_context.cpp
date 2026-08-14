@@ -1,4 +1,5 @@
-#include "gl_context.h"          // renamed header
+#include "gl_context.h"
+
 #include "gl_error_handle.h"
 
 namespace Core {
@@ -175,21 +176,23 @@ void Context::setDefaultState() {
 
 int32_t Context::maxSamples() const {
     if (m_maxSamples < 0) {
-        GLint v = 1;
-        glGetIntegerv(GL_MAX_SAMPLES, &v);
-        m_maxSamples = v > 0 ? v : 1;
+        GLint samples = 1;
+        VKM_GL_CHECK(glGetIntegerv(GL_MAX_SAMPLES, &samples));
+        m_maxSamples = samples > 0 ? samples : 1;
     }
     return m_maxSamples;
 }
 
 std::string Context::versionString() const {
-    VKM_GL_CHECK(const GLubyte* v = glGetString(GL_VERSION));
-    return v ? reinterpret_cast<const char*>(v) : std::string();
+    const GLubyte* version = nullptr;
+    VKM_GL_CHECK(version = glGetString(GL_VERSION));
+    return version ? reinterpret_cast<const char*>(version) : std::string();
 }
 
 std::string Context::rendererString() const {
-    VKM_GL_CHECK(const GLubyte* r = glGetString(GL_RENDERER));
-    return r ? reinterpret_cast<const char*>(r) : std::string();
+    const GLubyte* renderer = nullptr;
+    VKM_GL_CHECK(renderer = glGetString(GL_RENDERER));
+    return renderer ? reinterpret_cast<const char*>(renderer) : std::string();
 }
 
 } // namespace Core

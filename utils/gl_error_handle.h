@@ -3,38 +3,49 @@
 #include <GL/glew.h>
 
 /**
- * @brief Checks for any OpenGL errors and logs detailed information.
- * 
- * This function checks the OpenGL error state and, if an error is present,
- * logs a detailed message including the file name, line number, and function name.
+ * @brief Drain the OpenGL error queue, logging and aborting if it is not empty.
  *
- * @param file The source file where the check is being performed.
- * @param line The line number in the source file.
- * @param function The name of the function from which the check is called.
+ * GL queues errors rather than holding one, so this loops until the queue is
+ * empty and reports every entry - stopping at the first would leave the rest to
+ * surface at some unrelated later check.
+ *
+ * @param file     Source file the check is performed from.
+ * @param line     Line number in that file.
+ * @param function Name of the enclosing function.
  */
 void checkGLError(
-	const char* file,
-	int line,
-	const char* function
+    const char* file,
+    int line,
+    const char* function
 );
 
 /**
- * @brief Executes an OpenGL function and checks for any GL errors.
+ * @brief Run an OpenGL call and check the error queue immediately after it.
  *
- * This macro calls the specified OpenGL function and immediately checks for
- * any errors that may have occurred during its execution. If an error is found,
- * a detailed log message is produced including the file name, line number, and function name.
+ * A statement, not an expression: the body is wrapped so that
+ * `if (cond) VKM_GL_CHECK(glFoo());` binds the check to the branch instead of
+ * running it unconditionally. A call whose result is needed assigns inside the
+ * macro rather than around it:
  *
- * In release builds (NDEBUG defined), error checking is disabled for performance.
+ * @code
+ * uint32_t id = 0;
+ * VKM_GL_CHECK(id = glCreateShader(type));
+ * @endcode
  *
- * @param MyFunction The OpenGL function to be executed and checked.
+ * Release builds (NDEBUG) drop the check but keep the same statement shape, so
+ * control flow cannot differ between configurations.
+ *
+ * @param GL_CALL The OpenGL call to execute and check.
  */
 #ifdef NDEBUG
-	// Release build: disable error checking for performance
-	#define VKM_GL_CHECK(MyFunction) MyFunction
+    #define VKM_GL_CHECK(GL_CALL) \
+        do {                      \
+            GL_CALL;              \
+        } while (0)
 #else
-	// Debug build: enable error checking
-	#define VKM_GL_CHECK(MyFunction)                  \
-		MyFunction;                                   \
-		checkGLError(__FILE__, __LINE__, __FUNCTION__)
+    #define VKM_GL_CHECK(GL_CALL)                              \
+        do {                                                   \
+            GL_CALL;                                           \
+            checkGLError(__FILE__, __LINE__, __FUNCTION__);    \
+        } while (0)
 #endif

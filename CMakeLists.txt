@@ -39,6 +39,7 @@ set(SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_context.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader_base.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader_preprocess.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader_reload.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_compute_shader.cpp

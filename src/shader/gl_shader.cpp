@@ -4,85 +4,17 @@
 #include "gl_shader.h"
 
 #include <filesystem>
-#include <fstream>
-#include <sstream>
 #include <stdexcept>
-#include <unordered_set>
+#include <vector>
 
 #include "gl_error_handle.h"
+#include "gl_shader_preprocess.h"
 #include "l_assert.h"
 #include "logger.h"
 
 namespace fs = std::filesystem;
 
 namespace Core {
-
-namespace {
-
-// GLSL `#version` injected at the top of every graphics stage (see
-// setGraphicsShaderVersion). Defaults to 430 (GL 4.3); the application overrides
-// it at startup from its requested GL context version - one source of truth.
-int g_glslVersion = 430;
-
-// Resolve `#include "relative/path"` directives in GLSL source (GLSL has none
-// natively). Inlines referenced files relative to each including file's
-// directory, cycle-safe via `visited`; the directive is preserved as a comment
-// so compile errors in the inlined body stay navigable. A stage with no
-// #include is returned verbatim. Used via preprocessShaderSource by both the
-// graphics and compute shader sources.
-std::string resolveIncludes(const fs::path& filePath, std::unordered_set<std::string>& visited) {
-    std::error_code ec;
-    const fs::path canonical = fs::weakly_canonical(filePath, ec);
-    const std::string key = ec ? filePath.string() : canonical.string();
-    if (!visited.insert(key).second) {
-        return "// (skipped duplicate include: " + filePath.string() + ")\n";
-    }
-
-    std::ifstream in(filePath);
-    if (!in) {
-        LOG_ERROR("Shader preprocessor: cannot open '%s'", filePath.string().c_str());
-        return "// (failed to open: " + filePath.string() + ")\n";
-    }
-
-    const fs::path basedir = filePath.parent_path();
-    std::ostringstream out;
-    std::string line;
-    while (std::getline(in, line)) {
-        // Only a leading `#include` token is a directive (not one in a comment).
-        size_t firstNonWS = 0;
-        while (firstNonWS < line.size() &&
-               (line[firstNonWS] == ' ' || line[firstNonWS] == '\t')) {
-            ++firstNonWS;
-        }
-        if (line.compare(firstNonWS, 8, "#include") == 0) {
-            const size_t q1 = line.find('"', firstNonWS + 8);
-            const size_t q2 = q1 != std::string::npos ? line.find('"', q1 + 1) : std::string::npos;
-            if (q1 != std::string::npos && q2 != std::string::npos && q2 > q1) {
-                out << "// " << line << "\n";
-                out << resolveIncludes(basedir / line.substr(q1 + 1, q2 - q1 - 1), visited);
-                continue;
-            }
-            LOG_WARNING("Shader preprocessor: malformed #include in '%s': %s",
-                filePath.string().c_str(), line.c_str());
-        }
-        out << line << "\n";
-    }
-    return out.str();
-}
-
-} // namespace
-
-std::string preprocessShaderSource(const std::string& filePath) {
-    std::unordered_set<std::string> visited;
-    // Prepend the #version directive (shaders omit their own), then the resolved
-    // source. #version must be the first line; #included files never carry one.
-    return "#version " + std::to_string(g_glslVersion) + " core\n"
-         + resolveIncludes(fs::path(filePath), visited);
-}
-
-void setGraphicsShaderVersion(int glslVersion) {
-    g_glslVersion = glslVersion;
-}
 
 GraphicsShaderSource::GraphicsShaderSource()
     : m_path()
@@ -166,35 +98,42 @@ void Shader::reloadSource() {
 }
 
 void Shader::createProgram() {
-    m_id = VKM_GL_CHECK(glCreateProgram());
+    VKM_GL_CHECK(m_id = glCreateProgram());
     VKM_ASSERT(m_id != 0);
 
-    const uint32_t vertexShader = compileShader(GL_VERTEX_SHADER, m_source.vertexShader);
-    const uint32_t fragmentShader = compileShader(GL_FRAGMENT_SHADER, m_source.fragmentShader);
-    uint32_t geometryShader = 0;
+    // Stage objects are released on every exit path. compileShader throws when
+    // a stage fails, and the stages already built before it must not leak out
+    // with the exception - a hot reload of a broken shader would otherwise leak
+    // one object per save.
+    std::vector<uint32_t> stages;
+    const auto deleteStages = [&stages]() {
+        for (const uint32_t stage : stages) {
+            VKM_GL_CHECK(glDeleteShader(stage));
+        }
+    };
 
-    if (!m_source.geometryShader.empty()) {
-        geometryShader = compileShader(GL_GEOMETRY_SHADER, m_source.geometryShader);
+    try {
+        stages.push_back(compileShader(GL_VERTEX_SHADER, m_source.vertexShader));
+        stages.push_back(compileShader(GL_FRAGMENT_SHADER, m_source.fragmentShader));
+
+        if (!m_source.geometryShader.empty()) {
+            stages.push_back(compileShader(GL_GEOMETRY_SHADER, m_source.geometryShader));
+        }
+
+        for (const uint32_t stage : stages) {
+            VKM_GL_CHECK(glAttachShader(m_id, stage));
+        }
+
+        linkProgram(m_id);
+    } catch (...) {
+        deleteStages();
+        throw;
     }
-
-    VKM_GL_CHECK(glAttachShader(m_id, vertexShader));
-    VKM_GL_CHECK(glAttachShader(m_id, fragmentShader));
-
-    if (geometryShader != 0) {
-        VKM_GL_CHECK(glAttachShader(m_id, geometryShader));
-    }
-
-    linkProgram(m_id);
 
     // Apply a debug label for easier GPU debugging.
     setLabel(m_name.c_str());
 
-    VKM_GL_CHECK(glDeleteShader(vertexShader));
-    VKM_GL_CHECK(glDeleteShader(fragmentShader));
-
-    if (geometryShader != 0) {
-        VKM_GL_CHECK(glDeleteShader(geometryShader));
-    }
+    deleteStages();
 
     LOG_TRACE("Graphics shader '%s' successfully created", m_path.c_str());
 }
