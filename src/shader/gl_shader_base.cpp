@@ -127,7 +127,7 @@ uint32_t ShaderBase::compileShader(uint32_t type, const std::string& source) con
     VKM_GL_CHECK(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
 
     if (result != GL_TRUE) {
-        printCompilationError(type, id);
+        throwCompilationError(type, id);
     }
 
     return id;
@@ -143,25 +143,25 @@ void ShaderBase::linkProgram(uint32_t programId) const {
         VKM_GL_CHECK(glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLogLength));
         std::string errorMessage(static_cast<size_t>(infoLogLength), '\0');
         VKM_GL_CHECK(glGetProgramInfoLog(programId, infoLogLength, &infoLogLength, errorMessage.data()));
-        LOG_FATAL("Shader program link failed [%s]: %s", m_name.c_str(), errorMessage.c_str());
+        // Not fatal: tryRecompile() catches this so a hot-reload edit that does
+        // not link keeps the working program. Only an uncaught throw - startup -
+        // ends the process, and that is the caller's policy, not ours.
+        LOG_ERROR("Shader program link failed [%s]: %s", m_name.c_str(), errorMessage.c_str());
         throw std::runtime_error("Shader program link failed");
     }
 }
 
-void ShaderBase::printCompilationError(uint32_t type, uint32_t id) const {
-    std::string shaderTypeName = "UNKNOWN";
-
-    if (type == GL_VERTEX_SHADER) {
-        shaderTypeName = "VERTEX";
-    } else if (type == GL_FRAGMENT_SHADER) {
-        shaderTypeName = "FRAGMENT";
-    } else if (type == GL_GEOMETRY_SHADER) {
-        shaderTypeName = "GEOMETRY";
-    } else if (type == GL_COMPUTE_SHADER) {
-        shaderTypeName = "COMPUTE";
+void ShaderBase::throwCompilationError(uint32_t type, uint32_t id) const {
+    const char* stageName = "UNKNOWN";
+    switch (type) {
+        case GL_VERTEX_SHADER:   stageName = "VERTEX";   break;
+        case GL_FRAGMENT_SHADER: stageName = "FRAGMENT"; break;
+        case GL_GEOMETRY_SHADER: stageName = "GEOMETRY"; break;
+        case GL_COMPUTE_SHADER:  stageName = "COMPUTE";  break;
+        default: break;
     }
 
-    LOG_ERROR("Shader '%s' failed to compile %s shader [ID:%u]", m_path.c_str(), shaderTypeName.c_str(), id);
+    LOG_ERROR("Shader '%s' failed to compile %s shader [ID:%u]", m_path.c_str(), stageName, id);
 
     int32_t infoLogLength = 0;
     VKM_GL_CHECK(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &infoLogLength));

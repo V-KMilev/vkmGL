@@ -153,12 +153,17 @@ class ShaderBase : public GLObject {
         void linkProgram(uint32_t programId) const;
 
         /**
-         * @brief Print compilation errors for a shader and throw.
+         * @brief Log a stage's compilation error, delete the stage, and throw.
+         *
+         * Never returns - the name says so, because a caller reading
+         * `printCompilationError(...)` would reasonably expect control to
+         * continue past it.
+         *
          * @param type OpenGL shader stage enum.
-         * @param id   Shader object ID.
-         * @throws std::runtime_error Always throws after logging the error.
+         * @param id   Shader object ID (deleted before throwing).
+         * @throws std::runtime_error Always.
          */
-        [[noreturn]] void printCompilationError(uint32_t type, uint32_t id) const;
+        [[noreturn]] void throwCompilationError(uint32_t type, uint32_t id) const;
 
         /**
          * @brief Get the uniform location for a uniform variable (content-cached).
