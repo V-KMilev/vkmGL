@@ -42,15 +42,13 @@ class ShaderBase : public GLObject {
     public:
         /**
          * @brief Bind this shader program (glUseProgram).
-         * @param target (Unused, defaults to GL_NONE)
          */
-        void bind(GLenum target = GL_NONE) const override;
+        void bind() const;
 
         /**
          * @brief Unbind any currently bound shader program (glUseProgram(0)).
-         * @param target (Unused, defaults to GL_NONE)
          */
-        void unbind(GLenum target = GL_NONE) const override;
+        void unbind() const;
 
         /**
          * @brief Reload shader sources from disk and recreate the program.

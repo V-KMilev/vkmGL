@@ -87,13 +87,13 @@ class FrameBuffer : public GLObject {
          * @brief Bind the framebuffer object.
          * @param target Unused (default GL_NONE).
          */
-        void bind(GLenum target = GL_NONE) const override;
+        void bind(GLenum target = GL_NONE) const;
 
         /**
          * @brief Unbind the framebuffer object.
          * @param target Unused (default GL_NONE).
          */
-        void unbind(GLenum target = GL_NONE) const override;
+        void unbind(GLenum target = GL_NONE) const;
 
         /**
          * @brief Bind the default framebuffer (the window backbuffer, FBO 0).

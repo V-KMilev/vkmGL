@@ -129,13 +129,13 @@ class Texture2D : public GLObject {
          * @brief Bind the texture to the current OpenGL context.
          * @param target Target texture type, defaults to GL_NONE (use internal target).
          */
-        void bind(GLenum target = GL_NONE) const override;
+        void bind(GLenum target = GL_NONE) const;
 
         /**
          * @brief Unbind the texture from the bind point.
          * @param target Target texture type, defaults to GL_NONE (use internal target).
          */
-        void unbind(GLenum target = GL_NONE) const override;
+        void unbind(GLenum target = GL_NONE) const;
 
         /**
          * @brief Bind the texture to a given texture slot.

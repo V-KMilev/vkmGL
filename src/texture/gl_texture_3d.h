@@ -47,8 +47,8 @@ class Texture3D : public GLObject {
         explicit Texture3D(const std::string& name, const Texture3DParams& params);
 
     public:
-        void bind(GLenum target = GL_NONE) const override;
-        void unbind(GLenum target = GL_NONE) const override;
+        void bind(GLenum target = GL_NONE) const;
+        void unbind(GLenum target = GL_NONE) const;
 
         /**
          * @brief Bind for sampling on texture unit @p slot.

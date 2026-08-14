@@ -35,24 +35,6 @@ class Sampler : public GLObject {
 
     public:
         /**
-         * @brief No-op: a sampler is bound to a texture unit, not to a target.
-         *
-         * GLObject requires the pair, but glBindSampler takes a unit rather
-         * than a bind point, so there is nothing meaningful to do here.
-         * Use bindSlot().
-         *
-         * @param target Ignored.
-         */
-        void bind(GLenum target = GL_NONE) const override;
-
-        /**
-         * @brief No-op counterpart to bind(); use unbindSlot().
-         *
-         * @param target Ignored.
-         */
-        void unbind(GLenum target = GL_NONE) const override;
-
-        /**
          * @brief Bind this sampler to a texture unit.
          *
          * The sampler's wrap/filter state then overrides whatever the texture

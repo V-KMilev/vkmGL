@@ -6,15 +6,19 @@
 namespace Core {
 
 /**
- * @brief Abstract base class representing a generic OpenGL object.
+ * @brief Base for the things OpenGL identifies by an integer handle.
  *
- * GLObject serves as the foundational interface for OpenGL objects that are
- * identified by an integer handle. It ensures objects provide basic operations
- * such as binding, unbinding, querying their OpenGL ID, and setting debug labels.
+ * Carries the handle, the object type glObjectLabel needs, and the ownership
+ * rules: non-copyable, since a GL handle has a single owner, and movable so a
+ * wrapper can be returned by value or stored in a container. A move zeros the
+ * source's m_id, which makes the moved-from destructor a no-op.
  *
- * Non-copyable (a GL handle has a single owner); movable so wrappers can be
- * returned by value or stored in containers. Move zeros the source's m_id so
- * the moved-from object's destructor becomes a no-op.
+ * Deliberately declares no bind()/unbind(). Nothing in the codebase holds a
+ * GLObject by pointer or reference, so a virtual here dispatched nothing while
+ * obliging every subclass to supply the same signature - which four of six
+ * could not honour: a program, a VAO and a renderbuffer have no target to
+ * select, and a sampler binds to a texture unit rather than a target at all.
+ * Each subclass declares the binding call that suits it instead.
  */
 class GLObject {
     public:
@@ -36,18 +40,6 @@ class GLObject {
         );
 
     public:
-        /**
-         * @brief Bind this OpenGL object to its target.
-         * @param target Optional override for the target; default is GL_NONE.
-         */
-        virtual void bind(GLenum target = GL_NONE) const = 0;
-
-        /**
-         * @brief Unbind this OpenGL object from its target.
-         * @param target Optional override for the target; default is GL_NONE.
-         */
-        virtual void unbind(GLenum target = GL_NONE) const = 0;
-
         /**
          * @brief Get the OpenGL id/name for this object.
          * @return The GLuint identifier for this GL object.

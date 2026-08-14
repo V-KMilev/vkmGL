@@ -32,9 +32,6 @@ Sampler& Sampler::operator=(Sampler && other) noexcept {
     return *this;
 }
 
-void Sampler::bind(GLenum) const {}
-void Sampler::unbind(GLenum) const {}
-
 void Sampler::bindSlot(uint32_t slot) const {
     VKM_GL_CHECK(glBindSampler(slot, m_id));
 }

@@ -30,13 +30,13 @@ class GLBuffer : public GLObject {
          * @brief Binds the buffer to the specified target.
          * @param target OpenGL buffer target (default is GL_NONE, uses the internal target).
          */
-        void bind(GLenum target = GL_NONE) const override;
+        void bind(GLenum target = GL_NONE) const;
 
         /**
          * @brief Unbinds the buffer from the specified target.
          * @param target OpenGL buffer target (default is GL_NONE, uses the internal target).
          */
-        void unbind(GLenum target = GL_NONE) const override;
+        void unbind(GLenum target = GL_NONE) const;
 
         /**
          * @brief Returns the buffer size in bytes.
