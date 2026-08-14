@@ -171,6 +171,17 @@ void Context::setDefaultState() {
     setFrontFace(GL_CCW);
 
     setBlending(false);
+    setBlendFunc(GL_ONE, GL_ZERO);
+    setBlendEquation(GL_FUNC_ADD);
+
+    setStencilTest(false);
+    setStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFFu);
+    setStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    setStencilMask(0xFFFFFFFFu);
+
+    setColorMask(true, true, true, true);
+    enableScissor(false);
+
     setPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 

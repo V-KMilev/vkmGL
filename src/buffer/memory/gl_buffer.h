@@ -62,6 +62,31 @@ class GLBuffer : public GLObject {
         void allocate(uint32_t size, const void* data = nullptr);
 
         /**
+         * @brief Bind the whole buffer to an indexed binding point.
+         *
+         * Uses the buffer's own target, so a UniformBuffer binds as a UBO and a
+         * ShaderStorageBuffer as an SSBO with no per-subclass override. Only the
+         * indexed targets accept this (uniform, shader-storage, atomic-counter,
+         * transform-feedback); calling it on a vertex or index buffer is a GL
+         * error, which VKM_GL_CHECK reports in debug builds.
+         *
+         * @param bindingPoint Index of the binding point the shader declares.
+         */
+        void bindBase(uint32_t bindingPoint) const;
+
+        /**
+         * @brief Bind a sub-range of the buffer to an indexed binding point.
+         *
+         * Same target rule and same restriction as bindBase(); the shader sees
+         * only the requested window.
+         *
+         * @param bindingPoint Index of the binding point the shader declares.
+         * @param offset       Byte offset the range starts at.
+         * @param size         Length of the range in bytes.
+         */
+        void bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) const;
+
+        /**
          * @brief Maps the buffer into the client's address space.
          */
         void* map(GLenum access = GL_WRITE_ONLY);

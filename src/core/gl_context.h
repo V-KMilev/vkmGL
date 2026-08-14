@@ -123,6 +123,14 @@ class Context {
 
         /**
          * @brief Set the viewport region for rendering.
+         *
+         * Deliberately uncached, unlike the toggles and modes below - hence
+         * const. Two reasons: the rectangle is set by code outside this class
+         * (a mip chain sizes the viewport to the level it is rendering into),
+         * so a cache here would go stale and start filtering out calls that
+         * were needed; and the frame is GPU-bound, where removing a handful of
+         * glViewport calls buys nothing measurable.
+         *
          * @param x      Lower-left corner X coordinate.
          * @param y      Lower-left corner Y coordinate.
          * @param width  Width of the viewport.
@@ -323,7 +331,12 @@ class Context {
         GLenum getPolygonMode() const { return m_state.polygonMode; }
 
         /**
-         * @brief Reset context state to sensible defaults (depth test on, culling on, blending off, etc).
+         * @brief Reset every tracked piece of state to its default.
+         *
+         * Covers all of it - depth, culling, blending, stencil, colour mask and
+         * scissor - so a caller can rely on the name and not have to know which
+         * subset was actually reset. The viewport and scissor *rectangles* are
+         * not tracked and are left alone; see setViewport().
          */
         void setDefaultState();
 

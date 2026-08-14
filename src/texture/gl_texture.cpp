@@ -214,8 +214,8 @@ void Texture2D::setWrap(TextureWrap s, TextureWrap t) {
     m_params.wrapS = s;
     m_params.wrapT = t;
     bind();
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGL(m_params.wrapS)));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGL(m_params.wrapT)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLenum(m_params.wrapS)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLenum(m_params.wrapT)));
     unbind();
 }
 
@@ -223,8 +223,8 @@ void Texture2D::setFilter(TextureMinFilter minFilter, TextureMagFilter magFilter
     m_params.minFilter = minFilter;
     m_params.magFilter = magFilter;
     bind();
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGL(m_params.minFilter)));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGL(m_params.magFilter)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLenum(m_params.minFilter)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLenum(m_params.magFilter)));
     unbind();
 }
 
@@ -288,13 +288,13 @@ bool Texture2D::loadFromFile(const std::string& filePath, bool flipVertically, b
 }
 
 void Texture2D::applyParameters() const {
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGL(m_params.wrapS)));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGL(m_params.wrapT)));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGL(m_params.minFilter)));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGL(m_params.magFilter)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLenum(m_params.wrapS)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLenum(m_params.wrapT)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLenum(m_params.minFilter)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLenum(m_params.magFilter)));
 }
 
-GLenum Texture2D::toGL(TextureWrap wrap) {
+GLenum toGLenum(TextureWrap wrap) {
     switch (wrap) {
         case TextureWrap::Repeat:         return GL_REPEAT;
         case TextureWrap::MirroredRepeat: return GL_MIRRORED_REPEAT;
@@ -304,7 +304,7 @@ GLenum Texture2D::toGL(TextureWrap wrap) {
     return GL_CLAMP_TO_EDGE;
 }
 
-GLenum Texture2D::toGL(TextureMinFilter filter) {
+GLenum toGLenum(TextureMinFilter filter) {
     switch (filter) {
         case TextureMinFilter::Nearest:               return GL_NEAREST;
         case TextureMinFilter::Linear:                return GL_LINEAR;
@@ -316,7 +316,7 @@ GLenum Texture2D::toGL(TextureMinFilter filter) {
     return GL_LINEAR_MIPMAP_LINEAR;
 }
 
-GLenum Texture2D::toGL(TextureMagFilter filter) {
+GLenum toGLenum(TextureMagFilter filter) {
     switch (filter) {
         case TextureMagFilter::Nearest: return GL_NEAREST;
         case TextureMagFilter::Linear:  return GL_LINEAR;

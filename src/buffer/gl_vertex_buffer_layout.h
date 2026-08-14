@@ -5,6 +5,8 @@
 
 #include <GL/glew.h>
 
+#include "l_assert.h"
+
 namespace Core {
 /**
  * @brief Represents a single vertex attribute element in a vertex buffer layout.
@@ -30,9 +32,15 @@ struct VertexBufferElement {
             case GL_INT:           return sizeof(GLint);
             case GL_UNSIGNED_BYTE: return sizeof(GLubyte);
             case GL_BYTE:          return sizeof(GLbyte);
+            case GL_SHORT:         return sizeof(GLshort);
+            case GL_UNSIGNED_SHORT: return sizeof(GLushort);
             case GL_DOUBLE:        return sizeof(GLdouble);
-            default:               return 0;
+            default: break;
         }
+        // Returning 0 would silently stop the attribute offsets advancing, so
+        // every later attribute in the layout would read the same bytes.
+        VKM_ASSERT(false);
+        return 0;
     }
 };
 
@@ -48,11 +56,11 @@ class VertexBufferLayout {
         VertexBufferLayout();
         ~VertexBufferLayout() = default;
 
-        VertexBufferLayout(const VertexBufferLayout& other) = delete;
-        VertexBufferLayout& operator=(const VertexBufferLayout& other) = delete;
+        VertexBufferLayout(const VertexBufferLayout& other) = default;
+        VertexBufferLayout& operator=(const VertexBufferLayout& other) = default;
 
-        VertexBufferLayout(VertexBufferLayout && other) = delete;
-        VertexBufferLayout& operator=(VertexBufferLayout && other) = delete;
+        VertexBufferLayout(VertexBufferLayout && other) noexcept = default;
+        VertexBufferLayout& operator=(VertexBufferLayout && other) noexcept = default;
 
     public:
         /**

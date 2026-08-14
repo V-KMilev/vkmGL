@@ -57,27 +57,21 @@ void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBuffer
 
         VKM_GL_CHECK(glEnableVertexAttribArray(index));
 
-        if (element.type == GL_INT || element.type == GL_UNSIGNED_INT ||
-            element.type == GL_BYTE || element.type == GL_UNSIGNED_BYTE ||
-            element.type == GL_SHORT || element.type == GL_UNSIGNED_SHORT) {
-            if (element.normalized == GL_FALSE) {
-                VKM_GL_CHECK(glVertexAttribIPointer(
-                    index,
-                    element.count,
-                    element.type,
-                    layout.getStride(),
-                    reinterpret_cast<const void*>(offset)
-                ));
-            } else {
-                VKM_GL_CHECK(glVertexAttribPointer(
-                    index,
-                    element.count,
-                    element.type,
-                    element.normalized,
-                    layout.getStride(),
-                    reinterpret_cast<const void*>(offset)
-                ));
-            }
+        // An integer attribute stays integral in the shader only when it is
+        // not normalized; a normalized one is read as a float, which is the
+        // same path every non-integer type takes.
+        const bool integral = element.type == GL_INT   || element.type == GL_UNSIGNED_INT   ||
+                              element.type == GL_BYTE  || element.type == GL_UNSIGNED_BYTE  ||
+                              element.type == GL_SHORT || element.type == GL_UNSIGNED_SHORT;
+
+        if (integral && element.normalized == GL_FALSE) {
+            VKM_GL_CHECK(glVertexAttribIPointer(
+                index,
+                element.count,
+                element.type,
+                layout.getStride(),
+                reinterpret_cast<const void*>(offset)
+            ));
         } else {
             VKM_GL_CHECK(glVertexAttribPointer(
                 index,

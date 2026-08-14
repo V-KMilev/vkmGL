@@ -2,7 +2,7 @@
 
 namespace Core {
 
-VertexBufferLayout::VertexBufferLayout() : m_stride(0), m_elements({}) {}
+VertexBufferLayout::VertexBufferLayout() : m_stride(0) {}
 
 uint32_t VertexBufferLayout::getStride() const {
     return m_stride;

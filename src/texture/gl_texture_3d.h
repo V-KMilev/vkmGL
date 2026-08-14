@@ -71,9 +71,6 @@ class Texture3D : public GLObject {
     private:
         void release() noexcept;
 
-        static GLenum toGL(TextureWrap wrap);
-        static GLenum toGL(TextureMinFilter filter);
-        static GLenum toGL(TextureMagFilter filter);
 
     private:
         std::string     m_name;
