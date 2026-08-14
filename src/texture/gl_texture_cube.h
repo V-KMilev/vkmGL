@@ -5,6 +5,8 @@
 
 #include <GL/glew.h>
 
+#include "gl_error_handle.h"
+
 namespace Core {
 
 /**
@@ -50,40 +52,40 @@ class TextureCube {
             m_size = size;
             m_mips = mips;
 
-            glGenTextures(1, &m_id);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, m_id);
+            VKM_GL_CHECK(glGenTextures(1, &m_id));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, m_id));
             for (int face = 0; face < 6; ++face) {
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, internalFormat,
-                    size, size, 0, format, type, nullptr);
+                VKM_GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, internalFormat,
+                        size, size, 0, format, type, nullptr));
             }
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER,
-                mipFiltering ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER,
+                    mipFiltering ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
             if (mips > 1) {
-                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, mips - 1);
-                glGenerateMipmap(GL_TEXTURE_CUBE_MAP);  // allocate the chain
+                VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, mips - 1));
+                VKM_GL_CHECK(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));  // allocate the chain
             }
-            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
         }
 
         void generateMipmaps() const {
-            glBindTexture(GL_TEXTURE_CUBE_MAP, m_id);
-            glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, m_id));
+            VKM_GL_CHECK(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
         }
 
         void bindSlot(uint32_t slot) const {
-            glActiveTexture(GL_TEXTURE0 + slot);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, m_id);
+            VKM_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, m_id));
         }
 
         /// Attach one face/mip to the currently bound (or given) FBO.
         void attachFace(GLenum attachment, int face, int mip) const {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment,
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, m_id, mip);
+            VKM_GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment,
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, m_id, mip));
         }
 
         GLuint id()   const { return m_id; }
@@ -94,7 +96,7 @@ class TextureCube {
     private:
         void release() noexcept {
             if (m_id) {
-                glDeleteTextures(1, &m_id);
+                VKM_GL_CHECK(glDeleteTextures(1, &m_id));
                 m_id = 0;
             }
         }
