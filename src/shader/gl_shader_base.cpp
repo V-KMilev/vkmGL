@@ -59,12 +59,11 @@ void ShaderBase::release() noexcept {
     m_id = 0;
 }
 
-// A program has no bind target; the parameter exists only to satisfy GLObject.
-void ShaderBase::bind(GLenum) const {
+void ShaderBase::bind() const {
     VKM_GL_CHECK(glUseProgram(m_id));
 }
 
-void ShaderBase::unbind(GLenum) const {
+void ShaderBase::unbind() const {
     VKM_GL_CHECK(glUseProgram(0));
 }
 

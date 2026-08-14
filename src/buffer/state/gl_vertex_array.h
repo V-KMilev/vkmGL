@@ -27,15 +27,13 @@ class VertexArray : public GLObject {
     public:
         /**
          * @brief Binds this vertex array object (VAO) for subsequent OpenGL operations.
-         * @param target Optional, unused for VAO but present for interface compatibility.
          */
-        void bind(GLenum target = GL_NONE) const override;
+        void bind() const;
 
         /**
          * @brief Unbinds this vertex array object (VAO).
-         * @param target Optional, unused for VAO but present for interface compatibility.
          */
-        void unbind(GLenum target = GL_NONE) const override;
+        void unbind() const;
 
         /**
          * @brief Adds a vertex buffer and its associated layout to this VAO, starting at attribute index 0.
