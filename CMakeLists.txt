@@ -22,21 +22,22 @@ message("[VKMGL] Building vkmGL v${PROJECT_VERSION}")
 find_package(OpenGL REQUIRED)
 
 set(SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/src/gl_object.cpp
-
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_vertex_buffer_layout.cpp
-
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_vertex_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_index_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_uniform_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory/gl_shader_storage_buffer.cpp
-
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state/gl_vertex_array.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state/gl_frame_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state/gl_render_buffer.cpp
-
+	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_object.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_context.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_error_handle.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_debug.cpp
+
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_vertex_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_index_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_uniform_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_shader_storage_buffer.cpp
+
+	${CMAKE_CURRENT_SOURCE_DIR}/src/vertex/gl_vertex_array.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/vertex/gl_vertex_buffer_layout.cpp
+
+	${CMAKE_CURRENT_SOURCE_DIR}/src/target/gl_frame_buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/target/gl_render_buffer.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader_base.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader_preprocess.cpp
@@ -47,9 +48,6 @@ set(SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_texture.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_texture_3d.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_sampler.cpp
-
-	${CMAKE_CURRENT_SOURCE_DIR}/utils/gl_error_handle.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/utils/gl_debug.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
@@ -68,15 +66,15 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
+	# src/ itself, so a consumer can also qualify: "texture/gl_texture.h".
 	${CMAKE_CURRENT_SOURCE_DIR}/src
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/memory
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/state
-	${CMAKE_CURRENT_SOURCE_DIR}/src/core
-	${CMAKE_CURRENT_SOURCE_DIR}/src/shader
-	${CMAKE_CURRENT_SOURCE_DIR}/src/texture
 
-	${CMAKE_CURRENT_SOURCE_DIR}/utils
+	${CMAKE_CURRENT_SOURCE_DIR}/src/core
+	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer
+	${CMAKE_CURRENT_SOURCE_DIR}/src/vertex
+	${CMAKE_CURRENT_SOURCE_DIR}/src/target
+	${CMAKE_CURRENT_SOURCE_DIR}/src/texture
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader
 )
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modules)
