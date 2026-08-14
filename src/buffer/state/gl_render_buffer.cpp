@@ -34,11 +34,13 @@ void RenderBuffer::release() noexcept {
     m_id = 0;
 }
 
-void RenderBuffer::bind(GLenum target) const {
+// GL_RENDERBUFFER is the only target glBindRenderbuffer accepts, so there is
+// nothing for an override to select; the parameter satisfies GLObject only.
+void RenderBuffer::bind(GLenum) const {
     VKM_GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, m_id));
 }
 
-void RenderBuffer::unbind(GLenum target) const {
+void RenderBuffer::unbind(GLenum) const {
     VKM_GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, 0));
 }
 

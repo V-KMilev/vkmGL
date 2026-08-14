@@ -28,12 +28,12 @@ class GLObject {
 
         virtual ~GLObject() = default;
 
-        protected:
-            GLObject(
-                GLenum target,
-                GLenum identifier,
-                uint32_t id
-            );
+    protected:
+        GLObject(
+            GLenum target,
+            GLenum identifier,
+            uint32_t id
+        );
 
     public:
         /**
@@ -66,10 +66,13 @@ class GLObject {
          */
         void setLabel(const char* label);
 
-        protected:
-            uint32_t m_id;
-
-            GLenum m_target;
-            GLenum m_identifier;
-    };
+    protected:
+        // Declared in constructor-parameter order: initialising out of that
+        // order is what the members are read in regardless, and -Wreorder
+        // flags the mismatch.
+        GLenum   m_target;
+        GLenum   m_identifier;
+        uint32_t m_id;
 };
+
+} // namespace Core

@@ -31,11 +31,12 @@ void VertexArray::release() noexcept {
     m_id = 0;
 }
 
-void VertexArray::bind(GLenum target) const {
+// A VAO has no bind target; the parameter exists only to satisfy GLObject.
+void VertexArray::bind(GLenum) const {
     VKM_GL_CHECK(glBindVertexArray(m_id));
 }
 
-void VertexArray::unbind(GLenum target) const {
+void VertexArray::unbind(GLenum) const {
     VKM_GL_CHECK(glBindVertexArray(0));
 }
 

@@ -4,7 +4,6 @@ set(PROJECT_NAME vkmGL)
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION_PATCH 2)
-set(PROJECT_ROOT_DIR ${CMAKE_SOURCE_DIR})
 
 project(
   ${PROJECT_NAME}
@@ -54,6 +53,20 @@ set(SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
+# Warnings are on for our own sources only - the submodules under modules/ keep
+# their own level. Kept deliberately close to the engine's set so a file reads
+# the same on either side of the boundary; unused parameters stay enabled here
+# because the GLObject interface is the main source of them and they are worth
+# seeing rather than silencing.
+set(_vkmgl_warnings
+	-Wall
+	-Wextra
+	-Wno-unused-value    # VKM_ASSERT expands to `true` in release
+)
+target_compile_options(${PROJECT_NAME} PRIVATE
+	$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:${_vkmgl_warnings}>
+)
+
 target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer
@@ -62,7 +75,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/src/core
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader
 	${CMAKE_CURRENT_SOURCE_DIR}/src/texture
-	${CMAKE_CURRENT_SOURCE_DIR}/src/components
 
 	${CMAKE_CURRENT_SOURCE_DIR}/utils
 )

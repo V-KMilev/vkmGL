@@ -24,14 +24,15 @@ class RenderBuffer : public GLObject {
 
     public:
         /**
-         * @brief Binds this renderbuffer to GL_RENDERBUFFER or the provided target.
-         * @param target The target to bind to. Defaults to GL_NONE (uses internal target).
+         * @brief Binds this renderbuffer to GL_RENDERBUFFER.
+         * @param target Ignored - GL_RENDERBUFFER is the only target
+         *               glBindRenderbuffer accepts. Present for GLObject.
          */
         void bind(GLenum target = GL_NONE) const override;
 
         /**
-         * @brief Unbinds this renderbuffer from its target.
-         * @param target The target to unbind from. Defaults to GL_NONE (uses internal target).
+         * @brief Unbinds this renderbuffer from GL_RENDERBUFFER.
+         * @param target Ignored, as for bind().
          */
         void unbind(GLenum target = GL_NONE) const override;
 
