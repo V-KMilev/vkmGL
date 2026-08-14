@@ -54,19 +54,4 @@ inline void uploadPrefixIfChanged(std::unique_ptr<Buffer>& buffer, T& last,
     std::memcpy(&last, &data, activeSize);
 }
 
-/**
- * @brief Bind @p ubo to @p bindingPoint when it exists (null buffers are
- * skipped, matching the lazy creation of uploadIfChanged).
- */
-inline void bindUBO(const std::unique_ptr<UniformBuffer>& ubo, uint32_t bindingPoint) {
-    if (ubo) ubo->bindBase(bindingPoint);
-}
-
-/**
- * @brief SSBO counterpart of bindUBO.
- */
-inline void bindSSBO(const std::unique_ptr<ShaderStorageBuffer>& ssbo, uint32_t bindingPoint) {
-    if (ssbo) ssbo->bindBase(bindingPoint);
-}
-
 } // namespace Core
