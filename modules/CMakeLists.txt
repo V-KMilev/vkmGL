@@ -1,44 +1,32 @@
 set(MODULES_DIR ${PROJECT_SOURCE_DIR}/modules)
 
-set(GLFW_DIR  ${MODULES_DIR}/glfw)
-set(GLM_DIR   ${MODULES_DIR}/glm)
-set(STB_DIR   ${MODULES_DIR}/stb)
 set(GLEW_DIR  ${MODULES_DIR}/glew)
-set(VKMLOG_DIR ${MODULES_DIR}/vkmLog)
+
+# glm, glfw, stb and vkmLog are the consuming project's to provide. They are not
+# vendored here because vkmGL is not their only user - glm crosses this library's
+# own API, and the engine above needs all four directly - so a copy in here would
+# be a second one, and two copies of glm across a module boundary is a layout
+# mismatch waiting to happen. Fail with the reason rather than with whatever
+# error a missing target produces three files later.
+foreach(_vkmgl_required glm glfw vkmLog stb)
+	if(NOT TARGET ${_vkmgl_required})
+		message(FATAL_ERROR
+			"vkmGL requires the target '${_vkmgl_required}', which the consuming "
+			"project must add before add_subdirectory(vkmGL). vkmGL vendors only "
+			"glew; see the engine's modules/CMakeLists.txt for the expected order.")
+	endif()
+endforeach()
 
 message("[VKMGL] Modules:")
-message("\t- glfw | Path: ${GLFW_DIR} (https://github.com/glfw/glfw)")
-message("\t- glm  | Path: ${GLM_DIR} (https://github.com/g-truc/glm)")
-message("\t- stb  | Path: ${STB_DIR} (https://github.com/nothings/stb)")
 message("\t- glew | Path: ${GLEW_DIR} (https://github.com/nigels-com/glew)")
-message("\t- vkmLog | Path: ${VKMLOG_DIR} (https://github.com/V-KMilev/vkmLog)")
-
-set(HEADERS
-	${STB_DIR}
-)
 
 # Define compile definitions
 target_compile_definitions(${PROJECT_NAME} PUBLIC
 	GLM_ENABLE_EXPERIMENTAL
 )
 
-if (TARGET glfw)
-  message(STATUS "Target glfw exists, will link to it.")
-else()
-  add_subdirectory(${GLFW_DIR})
-endif()
 
-if (TARGET glm)
-  message(STATUS "Target glm exists, will link to it.")
-else()
-  add_subdirectory(${GLM_DIR})
-endif()
 
-if (TARGET vkmLog)
-  message(STATUS "Target vkmLog exists, will link to it.")
-else()
-  add_subdirectory(${VKMLOG_DIR})
-endif()
 
 # GLEW - Auto-download pre-built release if needed
 if (TARGET glew)
@@ -91,12 +79,13 @@ else()
 endif()
 
 # Set the target's include directories
+# glew is vkmGL's own, always. The rest may be supplied by a parent project - if
+# they are, their targets carry the include directories and vkmGL's copies are
+# not even checked out, so pointing at those paths would add empty directories.
 target_include_directories(${PROJECT_NAME} PUBLIC
-	${GLFW_DIR}/include
-	${GLM_DIR}/glm
-	${STB_DIR}
 	${GLEW_DIR}/include
 )
 
-# Add the header files to the target (for IDE visibility)
-target_sources(${PROJECT_NAME} PRIVATE ${HEADERS})
+target_include_directories(${PROJECT_NAME} PUBLIC
+	$<TARGET_PROPERTY:stb,INTERFACE_INCLUDE_DIRECTORIES>)
+
