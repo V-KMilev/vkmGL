@@ -185,8 +185,12 @@ class FrameBuffer : public GLObject {
         );
 
     private:
-        /// Delete the FBO and zero m_id. Idempotent - safe on a moved-from
-        /// framebuffer or after a previous release().
+        /**
+         * @brief Delete the FBO and zero m_id.
+         *
+         * Idempotent, so it is safe on a moved-from framebuffer or after a
+         * previous release().
+         */
         void release() noexcept;
 };
 
