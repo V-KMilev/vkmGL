@@ -74,16 +74,23 @@ else()
     message(STATUS "GLEW source files found")
   endif()
 
-  set(BUILD_UTILS OFF CACHE BOOL "" FORCE)
-  add_subdirectory(${GLEW_DIR}/build/cmake)
+  set(BUILD_UTILS  OFF CACHE BOOL "" FORCE)
+  set(GLEW_INSTALL OFF CACHE BOOL "" FORCE)
+  # EXCLUDE_FROM_ALL keeps glew's own install rules from firing: it installs its
+  # headers and pkgconfig unconditionally, and a parent packaging an SDK decides
+  # what ships rather than inheriting whatever a dependency felt like adding.
+  add_subdirectory(${GLEW_DIR}/build/cmake EXCLUDE_FROM_ALL)
 endif()
 
 # Set the target's include directories
 # glew is vkmGL's own, always. The rest may be supplied by a parent project - if
 # they are, their targets carry the include directories and vkmGL's copies are
 # not even checked out, so pointing at those paths would add empty directories.
+# Split so the path resolves against this tree while building and against an
+# installed prefix when vkmGL travels inside an SDK.
 target_include_directories(${PROJECT_NAME} PUBLIC
-	${GLEW_DIR}/include
+	$<BUILD_INTERFACE:${GLEW_DIR}/include>
+	$<INSTALL_INTERFACE:include>
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
