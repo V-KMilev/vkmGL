@@ -5,7 +5,7 @@
 #include "gl_error_handle.h"
 #include "l_assert.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 GLBuffer::GLBuffer(
     GLenum target,
@@ -122,4 +122,4 @@ MappedBuffer GLBuffer::mapRange(uint32_t offset, uint32_t length, GLbitfield acc
     return MappedBuffer(*this, data);
 }
 
-} // namespace VkmGL
+} // namespace Vkm::GL

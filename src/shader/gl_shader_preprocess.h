@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief GLSL version injected when none is set explicitly - GL 4.3 core.
@@ -39,4 +39,4 @@ void setShaderVersion(int glslVersion);
  */
 std::string preprocessShaderSource(const std::string& filePath);
 
-} // namespace VkmGL
+} // namespace Vkm::GL

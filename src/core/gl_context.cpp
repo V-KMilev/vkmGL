@@ -2,7 +2,7 @@
 
 #include "gl_error_handle.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 void Context::setClearColor(const glm::vec4& color) {
     m_clearColor = color;
@@ -206,4 +206,4 @@ std::string Context::rendererString() const {
     return renderer ? reinterpret_cast<const char*>(renderer) : std::string();
 }
 
-} // namespace VkmGL
+} // namespace Vkm::GL

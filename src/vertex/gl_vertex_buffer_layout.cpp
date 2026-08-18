@@ -1,6 +1,6 @@
 #include "gl_vertex_buffer_layout.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 VertexBufferLayout::VertexBufferLayout() : m_stride(0) {}
 
@@ -42,4 +42,4 @@ void VertexBufferLayout::push<uint8_t>(uint32_t count) {
     m_stride += count * VertexBufferElement::getSizeOfType(GL_UNSIGNED_BYTE);
 }
 
-} // namespace VkmGL
+} // namespace Vkm::GL

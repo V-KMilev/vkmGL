@@ -5,7 +5,7 @@
 
 #include "gl_shader_base.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Holds the source code for a compute shader stage.
@@ -81,4 +81,4 @@ class ComputeShader : public ShaderBase {
         ComputeShaderSource m_source;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

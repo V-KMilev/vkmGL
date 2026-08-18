@@ -7,7 +7,7 @@
 #include "gl_object.h"
 #include "gl_texture.h"  // TextureWrap / TextureMinFilter / TextureMagFilter
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Parameters for a 3D texture (e.g. a froxel volume or an SH probe grid).
@@ -77,4 +77,4 @@ class Texture3D : public GLObject {
         Texture3DParams m_params;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL
