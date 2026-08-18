@@ -1,4 +1,4 @@
-// vkmGL's test suite. Deliberately covers only what runs without a GL context:
+// The vkm_gl test suite. Deliberately covers only what runs without a GL context:
 // vertex layout arithmetic and the shader preprocessor. Anything needing a live
 // context belongs in a rendering test, not here - this binary must stay runnable
 // on a build machine with no GPU.
@@ -133,10 +133,10 @@ int main() {
     // The preprocessor logs a warning for the deliberately-missing file below,
     // so the logger has to exist. ERROR level keeps the expected noise out of
     // the test output.
-    const fs::path logPath = fs::temp_directory_path() / "vkmgl_tests.log";
-    Logger::init(logPath.string(), "VKMGL-TESTS", LogLevel::ERROR);
+    const fs::path logPath = fs::temp_directory_path() / "vkm_gl_tests.log";
+    Logger::init(logPath.string(), "VKM_GL-TESTS", LogLevel::ERROR);
 
-    const fs::path dir = fs::temp_directory_path() / "vkmgl_tests";
+    const fs::path dir = fs::temp_directory_path() / "vkm_gl_tests";
     fs::remove_all(dir);
     fs::create_directories(dir);
 
