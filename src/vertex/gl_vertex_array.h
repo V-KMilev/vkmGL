@@ -5,7 +5,7 @@
 #include "gl_vertex_buffer.h"
 #include <cstdint>
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Vertex Array Object (VAO) wrapper.
@@ -74,4 +74,4 @@ class VertexArray : public GLObject {
         uint32_t m_attributeIndex;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

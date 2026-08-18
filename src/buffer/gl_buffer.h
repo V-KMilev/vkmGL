@@ -3,7 +3,7 @@
 #include "gl_object.h"
 #include <cstdint>
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 class GLBuffer;
 
@@ -177,4 +177,4 @@ class GLBuffer : public GLObject {
         GLenum   m_usage;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

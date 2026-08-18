@@ -6,7 +6,7 @@
 #include "gl_uniform_buffer.h"
 #include "gl_shader_storage_buffer.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Memoized buffer upload: send @p data only when it differs from the
@@ -54,4 +54,4 @@ inline void uploadPrefixIfChanged(std::unique_ptr<Buffer>& buffer, T& last,
     std::memcpy(&last, &data, activeSize);
 }
 
-} // namespace VkmGL
+} // namespace Vkm::GL

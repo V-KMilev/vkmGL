@@ -15,7 +15,7 @@
 #define GLAPIENTRY APIENTRY
 #endif
 
-namespace VkmGL {
+namespace Vkm::GL {
 namespace {
     void GLAPIENTRY glDebugCallback(
         GLenum source,
@@ -99,5 +99,5 @@ void enableGLDebugLogging(bool synchronous) {
 #endif
 }
 
-} // namespace VkmGL
+} // namespace Vkm::GL
 

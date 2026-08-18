@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 class ShaderBase;
 
@@ -51,4 +51,4 @@ void unregisterShader(ShaderBase* shader);
  */
 uint32_t reloadChangedShaders(const std::string& directory);
 
-} // namespace VkmGL
+} // namespace Vkm::GL

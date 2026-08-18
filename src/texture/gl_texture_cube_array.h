@@ -7,7 +7,7 @@
 
 #include "gl_error_handle.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief RAII cubemap-array texture wrapper (per-layer / per-face / per-mip targets).
@@ -101,4 +101,4 @@ class TextureCubeArray {
         int    m_capacity = 0;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

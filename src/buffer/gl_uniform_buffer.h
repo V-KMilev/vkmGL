@@ -2,7 +2,7 @@
 
 #include "gl_buffer.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Uniform buffer (UBO) wrapper.
@@ -21,4 +21,4 @@ class UniformBuffer : public GLBuffer {
         );
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

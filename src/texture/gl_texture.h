@@ -6,7 +6,7 @@
 
 #include "gl_object.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Enum specifying texture wrapping mode.
@@ -222,4 +222,4 @@ class Texture2D : public GLObject {
         Texture2DParams m_params;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

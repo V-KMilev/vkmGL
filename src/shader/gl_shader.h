@@ -5,7 +5,7 @@
 
 #include "gl_shader_base.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Holds the source code for graphics shader stages (vertex, fragment, geometry).
@@ -122,4 +122,4 @@ class Shader : public ShaderBase {
         GraphicsShaderSource m_source;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

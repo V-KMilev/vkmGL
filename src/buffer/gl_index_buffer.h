@@ -2,7 +2,7 @@
 
 #include "gl_buffer.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Index buffer (IBO) wrapping an OpenGL element array buffer.
@@ -58,4 +58,4 @@ class IndexBuffer : public GLBuffer {
         GLenum m_type;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

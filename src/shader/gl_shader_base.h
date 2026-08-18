@@ -13,7 +13,7 @@
 
 #include "gl_object.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Base class for OpenGL shader programs.
@@ -205,4 +205,4 @@ class ShaderBase : public GLObject {
         mutable std::unordered_map<std::string_view, int32_t> m_uniformLocationCache;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL
