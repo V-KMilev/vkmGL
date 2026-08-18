@@ -5,7 +5,7 @@
 #include "gl_error_handle.h"
 #include "l_assert.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 VertexArray::VertexArray() : GLObject(0, GL_VERTEX_ARRAY, 0), m_attributeIndex(0) {
     VKM_GL_CHECK(glGenVertexArrays(1, &m_id));
@@ -97,4 +97,4 @@ void VertexArray::drawArrays(GLenum mode, int32_t first, int32_t count) const {
     VKM_GL_CHECK(glDrawArrays(mode, first, count));
 }
 
-} // namespace VkmGL
+} // namespace Vkm::GL

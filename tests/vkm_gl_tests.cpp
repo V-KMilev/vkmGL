@@ -32,7 +32,7 @@ void write(const fs::path& p, const std::string& text) {
 void testVertexBufferLayout() {
     std::printf("VertexBufferLayout:\n");
 
-    VkmGL::VertexBufferLayout layout;
+    Vkm::GL::VertexBufferLayout layout;
     check("a fresh layout has zero stride", layout.getStride() == 0);
     check("a fresh layout has no elements", layout.getElements().empty());
 
@@ -56,17 +56,17 @@ void testVertexBufferLayout() {
 
     // A layout describes vertex data and owns no GL handle, so it has to be
     // copyable and movable - it was deleted on both until 1.2.
-    VkmGL::VertexBufferLayout source;
+    Vkm::GL::VertexBufferLayout source;
     source.push<float>(3);
-    VkmGL::VertexBufferLayout copied = source;
+    Vkm::GL::VertexBufferLayout copied = source;
     check("a layout can be copied", copied.getStride() == 12 && copied.getElements().size() == 1);
     check("the copy is independent", (copied.push<float>(1), source.getStride() == 12));
 
-    VkmGL::VertexBufferLayout moved = std::move(copied);
+    Vkm::GL::VertexBufferLayout moved = std::move(copied);
     check("a layout can be moved", moved.getStride() == 16);
 
     std::printf("VertexBufferElement::getSizeOfType:\n");
-    using E = VkmGL::VertexBufferElement;
+    using E = Vkm::GL::VertexBufferElement;
     check("GL_FLOAT is 4",          E::getSizeOfType(GL_FLOAT) == 4);
     check("GL_UNSIGNED_INT is 4",   E::getSizeOfType(GL_UNSIGNED_INT) == 4);
     check("GL_UNSIGNED_BYTE is 1",  E::getSizeOfType(GL_UNSIGNED_BYTE) == 1);
@@ -77,23 +77,23 @@ void testVertexBufferLayout() {
 void testShaderPreprocessor(const fs::path& dir) {
     std::printf("Shader preprocessor:\n");
 
-    VkmGL::setShaderVersion(430);
+    Vkm::GL::setShaderVersion(430);
 
     write(dir / "plain.glsl", "void main() {}\n");
-    const std::string plain = VkmGL::preprocessShaderSource((dir / "plain.glsl").string());
+    const std::string plain = Vkm::GL::preprocessShaderSource((dir / "plain.glsl").string());
     check("the #version is prepended", plain.rfind("#version 430 core", 0) == 0);
     check("a stage with no include is otherwise verbatim",
           plain.find("void main() {}") != std::string::npos);
 
-    VkmGL::setShaderVersion(460);
-    const std::string bumped = VkmGL::preprocessShaderSource((dir / "plain.glsl").string());
+    Vkm::GL::setShaderVersion(460);
+    const std::string bumped = Vkm::GL::preprocessShaderSource((dir / "plain.glsl").string());
     check("setShaderVersion changes what is injected",
           bumped.rfind("#version 460 core", 0) == 0);
-    VkmGL::setShaderVersion(430);
+    Vkm::GL::setShaderVersion(430);
 
     write(dir / "helper.glsl", "float helper() { return 1.0; }\n");
     write(dir / "uses.glsl",   "#include \"helper.glsl\"\nvoid main() {}\n");
-    const std::string included = VkmGL::preprocessShaderSource((dir / "uses.glsl").string());
+    const std::string included = Vkm::GL::preprocessShaderSource((dir / "uses.glsl").string());
     check("an included body is inlined",
           included.find("float helper()") != std::string::npos);
     check("the directive survives as a comment",
@@ -104,13 +104,13 @@ void testShaderPreprocessor(const fs::path& dir) {
     write(dir / "sub" / "leaf.glsl",  "int leaf;\n");
     write(dir / "sub" / "inner.glsl", "#include \"leaf.glsl\"\n");
     write(dir / "outer.glsl",         "#include \"sub/inner.glsl\"\n");
-    const std::string nested = VkmGL::preprocessShaderSource((dir / "outer.glsl").string());
+    const std::string nested = Vkm::GL::preprocessShaderSource((dir / "outer.glsl").string());
     check("includes nest, each relative to its own directory",
           nested.find("int leaf;") != std::string::npos);
 
     // The cycle guard: a file including itself must terminate, not recurse.
     write(dir / "cycle.glsl", "#include \"cycle.glsl\"\nint after;\n");
-    const std::string cycle = VkmGL::preprocessShaderSource((dir / "cycle.glsl").string());
+    const std::string cycle = Vkm::GL::preprocessShaderSource((dir / "cycle.glsl").string());
     check("a self-include is skipped rather than looping",
           cycle.find("skipped duplicate include") != std::string::npos);
     check("parsing continues past the cycle",
@@ -118,11 +118,11 @@ void testShaderPreprocessor(const fs::path& dir) {
 
     // A directive inside a comment is not a directive.
     write(dir / "commented.glsl", "// #include \"helper.glsl\"\nint only;\n");
-    const std::string commented = VkmGL::preprocessShaderSource((dir / "commented.glsl").string());
+    const std::string commented = Vkm::GL::preprocessShaderSource((dir / "commented.glsl").string());
     check("a commented-out include is not resolved",
           commented.find("float helper()") == std::string::npos);
 
-    const std::string missing = VkmGL::preprocessShaderSource((dir / "nope.glsl").string());
+    const std::string missing = Vkm::GL::preprocessShaderSource((dir / "nope.glsl").string());
     check("a missing file yields a marker instead of throwing",
           missing.find("failed to open") != std::string::npos);
 }
@@ -134,7 +134,7 @@ int main() {
     // so the logger has to exist. ERROR level keeps the expected noise out of
     // the test output.
     const fs::path logPath = fs::temp_directory_path() / "vkm_gl_tests.log";
-    Logger::init(logPath.string(), "VKM_GL-TESTS", LogLevel::ERROR);
+    Vkm::Log::Logger::init(logPath.string(), "VKM_GL-TESTS", Vkm::Log::LogLevel::ERROR);
 
     const fs::path dir = fs::temp_directory_path() / "vkm_gl_tests";
     fs::remove_all(dir);

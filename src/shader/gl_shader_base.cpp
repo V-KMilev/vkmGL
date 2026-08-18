@@ -15,7 +15,7 @@
 
 namespace fs = std::filesystem;
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 ShaderBase::ShaderBase(const std::string& path)
     : GLObject(GL_NONE, GL_PROGRAM, 0)
@@ -291,4 +291,4 @@ void ShaderBase::setUniform3iv(const char* uniformName, const glm::ivec3& v) con
     }
 }
 
-} // namespace VkmGL
+} // namespace Vkm::GL

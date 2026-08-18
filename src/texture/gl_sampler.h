@@ -3,7 +3,7 @@
 #include "gl_object.h"
 #include "gl_texture.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Sampler object decoupling filter/wrap state from texture storage.
@@ -75,4 +75,4 @@ class Sampler : public GLObject {
         Params m_params;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

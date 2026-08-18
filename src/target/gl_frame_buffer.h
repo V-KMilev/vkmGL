@@ -2,7 +2,7 @@
 
 #include "gl_object.h"
 
-namespace VkmGL {
+namespace Vkm::GL {
 
 /**
  * @brief Enum class to specify the dimensionality of a framebuffer attachment.
@@ -194,4 +194,4 @@ class FrameBuffer : public GLObject {
         void release() noexcept;
 };
 
-} // namespace VkmGL
+} // namespace Vkm::GL

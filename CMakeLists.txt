@@ -96,8 +96,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	OpenGL::GL
-	glfw
+	glew
 	glm
 	vkm_log
-	glew
 )
