@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25.0)
 
-set(PROJECT_NAME vkmGL)
+set(PROJECT_NAME vkm_gl)
 set(PROJECT_VERSION_MAJOR 1)
 set(PROJECT_VERSION_MINOR 1)
 set(PROJECT_VERSION_PATCH 0)
@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-message("[VKMGL] Building vkmGL v${PROJECT_VERSION}")
+message("[VKM_GL] Building vkm_gl v${PROJECT_VERSION}")
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)
@@ -55,14 +55,14 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 # Warnings are on for our own sources only - the submodules under modules/ keep
 # their own level. The set matches the engine's vkm_warnings so a file reads the
 # same on either side of the boundary, per docs/guides/code-style.md.
-set(_vkmgl_warnings
+set(_vkm_gl_warnings
 	-Wall
 	-Wextra
 	-Wno-unused-value      # VKM_ASSERT expands to `true` in release
 	-Wno-unused-parameter  # interface stubs, placeholders
 )
 target_compile_options(${PROJECT_NAME} PRIVATE
-	$<$<CXX_COMPILER_ID:GNU,Clang>:${_vkmgl_warnings}>
+	$<$<CXX_COMPILER_ID:GNU,Clang>:${_vkm_gl_warnings}>
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -80,18 +80,18 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
 # Tests cover only what runs without a GL context, so this binary stays usable
-# on a build machine with no GPU. Built when vkmGL is the top-level project, or
+# on a build machine with no GPU. Built when vkm_gl is the top-level project, or
 # when a parent asks for it - the engine does not build them by default.
-option(VKMGL_BUILD_TESTS "Build the vkmGL test suite" ${PROJECT_IS_TOP_LEVEL})
+option(VKM_GL_BUILD_TESTS "Build the vkm_gl test suite" ${PROJECT_IS_TOP_LEVEL})
 
-if(VKMGL_BUILD_TESTS)
+if(VKM_GL_BUILD_TESTS)
 	enable_testing()
-	add_executable(vkmgl_tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/vkmgl_tests.cpp)
-	target_link_libraries(vkmgl_tests PRIVATE ${PROJECT_NAME})
-	target_compile_options(vkmgl_tests PRIVATE
-		$<$<CXX_COMPILER_ID:GNU,Clang>:${_vkmgl_warnings}>
+	add_executable(vkm_gl_tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/vkm_gl_tests.cpp)
+	target_link_libraries(vkm_gl_tests PRIVATE ${PROJECT_NAME})
+	target_compile_options(vkm_gl_tests PRIVATE
+		$<$<CXX_COMPILER_ID:GNU,Clang>:${_vkm_gl_warnings}>
 	)
-	add_test(NAME vkmgl COMMAND vkmgl_tests)
+	add_test(NAME vkm_gl COMMAND vkm_gl_tests)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC

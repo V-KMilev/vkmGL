@@ -3,21 +3,21 @@ set(MODULES_DIR ${PROJECT_SOURCE_DIR}/modules)
 set(GLEW_DIR  ${MODULES_DIR}/glew)
 
 # glm, glfw, stb and vkm_log are the consuming project's to provide. They are not
-# vendored here because vkmGL is not their only user - glm crosses this library's
+# vendored here because vkm_gl is not their only user - glm crosses this library's
 # own API, and the engine above needs all four directly - so a copy in here would
 # be a second one, and two copies of glm across a module boundary is a layout
 # mismatch waiting to happen. Fail with the reason rather than with whatever
 # error a missing target produces three files later.
-foreach(_vkmgl_required glm glfw vkm_log stb)
-	if(NOT TARGET ${_vkmgl_required})
+foreach(_vkm_gl_required glm glfw vkm_log stb)
+	if(NOT TARGET ${_vkm_gl_required})
 		message(FATAL_ERROR
-			"vkmGL requires the target '${_vkmgl_required}', which the consuming "
-			"project must add before add_subdirectory(vkmGL). vkmGL vendors only "
+			"vkm_gl requires the target '${_vkm_gl_required}', which the consuming "
+			"project must add before add_subdirectory(vkmGL). vkm_gl vendors only "
 			"glew; see the engine's modules/CMakeLists.txt for the expected order.")
 	endif()
 endforeach()
 
-message("[VKMGL] Modules:")
+message("[VKM_GL] Modules:")
 message("\t- glew | Path: ${GLEW_DIR} (https://github.com/nigels-com/glew)")
 
 # Define compile definitions
@@ -83,11 +83,11 @@ else()
 endif()
 
 # Set the target's include directories
-# glew is vkmGL's own, always. The rest may be supplied by a parent project - if
-# they are, their targets carry the include directories and vkmGL's copies are
+# glew is vkm_gl's own, always. The rest may be supplied by a parent project - if
+# they are, their targets carry the include directories and vkm_gl's copies are
 # not even checked out, so pointing at those paths would add empty directories.
 # Split so the path resolves against this tree while building and against an
-# installed prefix when vkmGL travels inside an SDK.
+# installed prefix when vkm_gl travels inside an SDK.
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${GLEW_DIR}/include>
 	$<INSTALL_INTERFACE:include>
