@@ -2,7 +2,7 @@
 
 #include "gl_error_handle.h"
 
-namespace Core {
+namespace VkmGL {
 
 namespace {
     uint32_t getTypeSize(GLenum type) {
@@ -48,4 +48,4 @@ void IndexBuffer::drawInstanced(uint32_t instanceCount, uint32_t baseInstance, G
     ));
 }
 
-} // namespace Core
+} // namespace VkmGL

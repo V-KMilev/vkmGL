@@ -8,7 +8,7 @@
 
 #include "gl_error_handle.h"
 
-namespace Core {
+namespace VkmGL {
 
 /**
  * @brief RAII single-texture explicit mip-chain render target.
@@ -138,4 +138,4 @@ class MipChainTexture {
         int    m_mips  = 1;
 };
 
-} // namespace Core
+} // namespace VkmGL

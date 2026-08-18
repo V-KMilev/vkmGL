@@ -14,7 +14,7 @@
 
 namespace fs = std::filesystem;
 
-namespace Core {
+namespace VkmGL {
 
 ComputeShaderSource::ComputeShaderSource()
     : m_path()
@@ -73,4 +73,4 @@ void ComputeShader::dispatch(uint32_t numGroupsX, uint32_t numGroupsY, uint32_t 
     VKM_GL_CHECK(glDispatchCompute(numGroupsX, numGroupsY, numGroupsZ));
 }
 
-} // namespace Core
+} // namespace VkmGL

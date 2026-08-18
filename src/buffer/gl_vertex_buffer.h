@@ -2,7 +2,7 @@
 
 #include "gl_buffer.h"
 
-namespace Core {
+namespace VkmGL {
 
 /**
  * @brief Vertex buffer (VBO) wrapping an OpenGL array buffer.
@@ -19,4 +19,4 @@ class VertexBuffer : public GLBuffer {
         );
 };
 
-} // namespace Core
+} // namespace VkmGL

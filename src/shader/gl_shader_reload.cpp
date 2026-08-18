@@ -9,7 +9,7 @@
 
 #include "gl_shader_base.h"
 
-namespace Core {
+namespace VkmGL {
 
 namespace {
 
@@ -109,4 +109,4 @@ uint32_t reloadChangedShaders(const std::string& directory) {
     return reloaded;
 }
 
-} // namespace Core
+} // namespace VkmGL

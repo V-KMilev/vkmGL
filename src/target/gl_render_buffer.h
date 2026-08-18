@@ -2,7 +2,7 @@
 
 #include "gl_object.h"
 
-namespace Core {
+namespace VkmGL {
 
 /**
  * @brief Encapsulates an OpenGL renderbuffer object.
@@ -76,4 +76,4 @@ class RenderBuffer : public GLObject {
         int32_t m_height;
 };
 
-} // namespace Core
+} // namespace VkmGL

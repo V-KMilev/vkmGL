@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <GL/glew.h>
 
-namespace Core {
+namespace VkmGL {
 
 /**
  * @brief Base for the things OpenGL identifies by an integer handle.
@@ -67,4 +67,4 @@ class GLObject {
         uint32_t m_id;
 };
 
-} // namespace Core
+} // namespace VkmGL
