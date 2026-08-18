@@ -2,13 +2,13 @@ set(MODULES_DIR ${PROJECT_SOURCE_DIR}/modules)
 
 set(GLEW_DIR  ${MODULES_DIR}/glew)
 
-# glm, glfw, stb and vkmLog are the consuming project's to provide. They are not
+# glm, glfw, stb and vkm_log are the consuming project's to provide. They are not
 # vendored here because vkmGL is not their only user - glm crosses this library's
 # own API, and the engine above needs all four directly - so a copy in here would
 # be a second one, and two copies of glm across a module boundary is a layout
 # mismatch waiting to happen. Fail with the reason rather than with whatever
 # error a missing target produces three files later.
-foreach(_vkmgl_required glm glfw vkmLog stb)
+foreach(_vkmgl_required glm glfw vkm_log stb)
 	if(NOT TARGET ${_vkmgl_required})
 		message(FATAL_ERROR
 			"vkmGL requires the target '${_vkmgl_required}', which the consuming "

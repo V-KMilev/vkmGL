@@ -98,6 +98,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 	OpenGL::GL
 	glfw
 	glm
-	vkmLog
+	vkm_log
 	glew
 )
