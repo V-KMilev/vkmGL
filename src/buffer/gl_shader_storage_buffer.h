@@ -2,7 +2,7 @@
 
 #include "gl_buffer.h"
 
-namespace Core {
+namespace VkmGL {
 
 /**
  * @brief Shader Storage Buffer Object (SSBO) wrapper.
@@ -21,4 +21,4 @@ class ShaderStorageBuffer : public GLBuffer {
         );
 };
 
-} // namespace Core
+} // namespace VkmGL

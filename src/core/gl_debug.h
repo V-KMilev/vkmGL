@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 
-namespace Core {
+namespace VkmGL {
 /**
  * @brief Enable OpenGL debug output with a default callback that logs messages.
  *
@@ -13,5 +13,5 @@ namespace Core {
  */
 void enableGLDebugLogging(bool synchronous = true);
 
-} // namespace Core
+} // namespace VkmGL
 

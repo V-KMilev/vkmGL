@@ -7,7 +7,7 @@
 
 #include "l_assert.h"
 
-namespace Core {
+namespace VkmGL {
 /**
  * @brief Represents a single vertex attribute element in a vertex buffer layout.
  * 
@@ -98,4 +98,4 @@ template<> void VertexBufferLayout::push<uint32_t>(uint32_t count);
 template<> void VertexBufferLayout::push<int32_t>(uint32_t count);
 template<> void VertexBufferLayout::push<uint8_t>(uint32_t count);
 
-} // namespace Core
+} // namespace VkmGL

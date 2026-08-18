@@ -12,7 +12,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-namespace Core {
+namespace VkmGL {
 
 Texture2DParams renderTargetParams(
     uint32_t width, uint32_t height, GLenum internalFormat, GLenum format,
@@ -324,4 +324,4 @@ GLenum toGLenum(TextureMagFilter filter) {
     return GL_LINEAR;
 }
 
-} // namespace Core
+} // namespace VkmGL

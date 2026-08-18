@@ -7,7 +7,7 @@
 #include "l_assert.h"
 #include "logger.h"
 
-namespace Core {
+namespace VkmGL {
 
 FrameBuffer::FrameBuffer() : GLObject(GL_FRAMEBUFFER, GL_FRAMEBUFFER, 0) {
     VKM_GL_CHECK(glGenFramebuffers(1, &m_id));
@@ -153,4 +153,4 @@ void FrameBuffer::blit(
     VKM_GL_CHECK(glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter));
 }
 
-} // namespace Core
+} // namespace VkmGL

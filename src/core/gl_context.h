@@ -6,7 +6,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
-namespace Core {
+namespace VkmGL {
 
 /**
  * @brief Depth state configuration for OpenGL context.
@@ -364,4 +364,4 @@ class Context {
         mutable int32_t m_maxSamples = -1;  ///< Cached GL_MAX_SAMPLES (-1 = not yet queried).
 };
 
-} // namespace Core
+} // namespace VkmGL

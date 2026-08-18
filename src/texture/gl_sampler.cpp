@@ -3,7 +3,7 @@
 #include "gl_error_handle.h"
 #include "l_assert.h"
 
-namespace Core {
+namespace VkmGL {
 
 Sampler::Sampler() : Sampler(Params{}) {}
 
@@ -53,4 +53,4 @@ void Sampler::applyParams() {
     VKM_GL_CHECK(glSamplerParameteri(m_id, GL_TEXTURE_MAG_FILTER, toGLenum(m_params.magFilter)));
 }
 
-} // namespace Core
+} // namespace VkmGL

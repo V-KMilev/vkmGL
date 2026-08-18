@@ -2,7 +2,7 @@
 
 #include "gl_error_handle.h"
 
-namespace Core {
+namespace VkmGL {
 
 GLObject::GLObject(
     GLenum target,
@@ -38,4 +38,4 @@ void GLObject::setLabel(const char* label) {
     VKM_GL_CHECK(glObjectLabel(m_identifier, m_id, -1, label));
 }
 
-} // namespace Core
+} // namespace VkmGL

@@ -14,7 +14,7 @@
 
 namespace fs = std::filesystem;
 
-namespace Core {
+namespace VkmGL {
 
 GraphicsShaderSource::GraphicsShaderSource()
     : m_path()
@@ -138,4 +138,4 @@ void Shader::createProgram() {
     LOG_TRACE("Graphics shader '%s' successfully created", m_path.c_str());
 }
 
-} // namespace Core
+} // namespace VkmGL

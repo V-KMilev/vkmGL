@@ -1,6 +1,6 @@
 #include "gl_vertex_buffer.h"
 
-namespace Core {
+namespace VkmGL {
 
 VertexBuffer::VertexBuffer(
     const void* data,
@@ -8,4 +8,4 @@ VertexBuffer::VertexBuffer(
     GLenum usage
 ) : GLBuffer(GL_ARRAY_BUFFER, data, size, usage) {}
 
-} // namespace Core
+} // namespace VkmGL

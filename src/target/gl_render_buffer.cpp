@@ -4,7 +4,7 @@
 #include "l_assert.h"
 #include "logger.h"
 
-namespace Core {
+namespace VkmGL {
 
 RenderBuffer::RenderBuffer()
 : GLObject(GL_RENDERBUFFER, GL_RENDERBUFFER, 0)
@@ -66,4 +66,4 @@ void RenderBuffer::storageMultisample(int32_t samples, GLenum internalFormat, in
     VKM_GL_CHECK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internalFormat, width, height));
 }
 
-} // namespace Core
+} // namespace VkmGL

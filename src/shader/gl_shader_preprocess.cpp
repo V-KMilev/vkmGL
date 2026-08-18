@@ -12,7 +12,7 @@
 
 namespace fs = std::filesystem;
 
-namespace Core {
+namespace VkmGL {
 
 namespace {
 
@@ -81,4 +81,4 @@ std::string preprocessShaderSource(const std::string& filePath) {
          + resolveIncludes(fs::path(filePath), visited);
 }
 
-} // namespace Core
+} // namespace VkmGL

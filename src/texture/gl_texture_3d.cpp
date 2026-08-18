@@ -5,7 +5,7 @@
 
 #include "gl_error_handle.h"
 
-namespace Core {
+namespace VkmGL {
 
 Texture3D::Texture3D(const std::string& name, const Texture3DParams& params)
     : GLObject(GL_TEXTURE_3D, GL_TEXTURE, 0)
@@ -74,4 +74,4 @@ void Texture3D::bindImage(uint32_t unit, GLenum access, int32_t level) const {
     VKM_GL_CHECK(glBindImageTexture(unit, m_id, level, GL_TRUE, 0, access, m_params.internalFormat));
 }
 
-} // namespace Core
+} // namespace VkmGL
