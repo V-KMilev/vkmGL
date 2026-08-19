@@ -46,8 +46,12 @@ void testVertexBufferLayout() {
     check("byte attributes add one byte each", layout.getStride() == 24);
     check("three elements recorded", layout.getElements().size() == 3);
 
+    layout.push<uint16_t>(4);
+    check("short attributes add two bytes each", layout.getStride() == 32);
+
     // uint8_t is the one type pushed as normalized - 0..255 reads as 0..1.
     check("uint8 pushes normalized", layout.getElements()[2].normalized == GL_TRUE);
+    check("uint16 pushes unnormalized", layout.getElements()[3].normalized == GL_FALSE);
     check("float pushes unnormalized", layout.getElements()[0].normalized == GL_FALSE);
 
     layout.clear();
