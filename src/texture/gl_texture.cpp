@@ -292,22 +292,13 @@ void Texture2D::setWrap(TextureWrap s, TextureWrap t) {
 }
 
 void Texture2D::setFilter(TextureMinFilter minFilter, TextureMagFilter magFilter) {
-    m_params.minFilter = minFilter;
-    m_params.magFilter = magFilter;
-    bind();
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLenum(m_params.minFilter)));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLenum(m_params.magFilter)));
-    unbind();
-}
-
-void Texture2D::setFiltering(TextureMinFilter minFilter, TextureMagFilter magFilter) {
     if (minFilter == m_params.minFilter && magFilter == m_params.magFilter) return;
 
     m_params.minFilter = minFilter;
     m_params.magFilter = magFilter;
     bind();
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLenum(minFilter)));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLenum(magFilter)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLenum(m_params.minFilter)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLenum(m_params.magFilter)));
     unbind();
 }
 
