@@ -197,6 +197,11 @@ class Texture2D : public GLObject {
 
         /**
          * @brief Set the min/mag filtering for the texture.
+         *
+         * Separate from setMaxAnisotropy because the two are independent: a
+         * caller re-applying a filtering mode every frame must not disturb the
+         * degree, and vice versa. Both early-out when nothing changed.
+         *
          * @param minFilter Minifying filter.
          * @param magFilter Magnifying filter.
          */
@@ -220,18 +225,6 @@ class Texture2D : public GLObject {
          * @param maxAnisotropy Requested degree; values below 1 are treated as 1.
          */
         void setMaxAnisotropy(float maxAnisotropy);
-
-        /**
-         * @brief Re-filter this texture with @p minFilter and @p magFilter.
-         *
-         * Separate from setMaxAnisotropy because the two are independent: a
-         * caller re-applying a filtering mode every frame must not disturb the
-         * degree, and vice versa. Both early-out when nothing changed.
-         *
-         * @param minFilter Minification filter to apply.
-         * @param magFilter Magnification filter to apply.
-         */
-        void setFiltering(TextureMinFilter minFilter, TextureMagFilter magFilter);
 
         /**
          * @brief Load the texture from a file.
