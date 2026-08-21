@@ -3,6 +3,8 @@
 
 #include "gl_texture.h"
 
+#include <algorithm>
+
 #include "gl_error_handle.h"
 #include "l_assert.h"
 #include "logger.h"
@@ -58,6 +60,76 @@ GLenum inferFormat(int channels) {
         case 4: return GL_RGBA;
         default: return GL_RGBA;
     }
+}
+
+/**
+ * @brief Ask the driver for its anisotropy ceiling.
+ *
+ * Either extension defines the same enum with the same value, so which one is
+ * present only decides whether the query is legal at all.
+ *
+ * @return The reported maximum, or 1.0 when neither extension is present.
+ */
+float queryMaxAnisotropy() {
+    if (!GLEW_ARB_texture_filter_anisotropic && !GLEW_EXT_texture_filter_anisotropic) {
+        LOG_INFO("Anisotropic filtering unavailable here - textures stay trilinear");
+        return 1.0f;
+    }
+
+    GLfloat limit = 1.0f;
+    VKM_GL_CHECK(glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &limit));
+    LOG_INFO("Anisotropic filtering available up to %.0fx", limit);
+    return (limit > 1.0f) ? limit : 1.0f;
+}
+
+/**
+ * @brief Whether @p filter reads from a mip chain rather than level 0 alone.
+ *
+ * @param filter Minification filter to classify.
+ * @return True for the four Mipmap variants.
+ */
+bool samplesMipChain(TextureMinFilter filter) {
+    switch (filter) {
+        case TextureMinFilter::Nearest:              return false;
+        case TextureMinFilter::Linear:               return false;
+        case TextureMinFilter::NearestMipmapNearest: return true;
+        case TextureMinFilter::LinearMipmapNearest:  return true;
+        case TextureMinFilter::NearestMipmapLinear:  return true;
+        case TextureMinFilter::LinearMipmapLinear:   return true;
+    }
+    return false;
+}
+
+/**
+ * @brief The anisotropy degree @p params can actually be given.
+ *
+ * Two things can lower the request. The driver's ceiling is the obvious one.
+ * The other is the texture's own minification filter: anisotropy corrects mip
+ * *selection*, so a texture sampled from level 0 alone has nothing for it to
+ * correct, and taking several taps across one that was deliberately left
+ * unfiltered would soften the hard edges it was configured to keep.
+ *
+ * @param params Texture parameters carrying the request and the filter.
+ * @return A degree of at least 1.0.
+ */
+float effectiveAnisotropy(const Texture2DParams& params) {
+    if (!samplesMipChain(params.minFilter)) return 1.0f;
+    return std::min(std::max(params.maxAnisotropy, 1.0f), maxSupportedAnisotropy());
+}
+
+/**
+ * @brief Apply @p params' anisotropy to the currently bound 2D texture.
+ *
+ * Skipped rather than set to 1.0 when the driver offers none: the enum is only
+ * core in GL 4.6, so on the 4.3 context this library targets the call raises
+ * GL_INVALID_ENUM rather than quietly doing nothing.
+ *
+ * @param params Texture parameters to read the requested degree from.
+ */
+void applyAnisotropy(const Texture2DParams& params) {
+    if (maxSupportedAnisotropy() <= 1.0f) return;
+    VKM_GL_CHECK(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY,
+                                 effectiveAnisotropy(params)));
 }
 
 } // namespace
@@ -228,6 +300,31 @@ void Texture2D::setFilter(TextureMinFilter minFilter, TextureMagFilter magFilter
     unbind();
 }
 
+void Texture2D::setFiltering(TextureMinFilter minFilter, TextureMagFilter magFilter) {
+    if (minFilter == m_params.minFilter && magFilter == m_params.magFilter) return;
+
+    m_params.minFilter = minFilter;
+    m_params.magFilter = magFilter;
+    bind();
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLenum(minFilter)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLenum(magFilter)));
+    unbind();
+}
+
+void Texture2D::setMaxAnisotropy(float maxAnisotropy) {
+    // Store the clamped degree, not the raw request, so this compare answers
+    // "is the texture already filtered the way it was asked to be?" - callers
+    // re-apply the same level over every texture they own each frame, and it
+    // has to cost nothing when nothing moved.
+    const float level = std::min(std::max(maxAnisotropy, 1.0f), maxSupportedAnisotropy());
+    if (level == m_params.maxAnisotropy) return;
+
+    m_params.maxAnisotropy = level;
+    bind();
+    applyAnisotropy(m_params);
+    unbind();
+}
+
 bool Texture2D::loadFromFile(const std::string& filePath, bool flipVertically, bool srgb) {
     m_path = filePath;
 
@@ -292,6 +389,7 @@ void Texture2D::applyParameters() const {
     VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLenum(m_params.wrapT)));
     VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLenum(m_params.minFilter)));
     VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLenum(m_params.magFilter)));
+    applyAnisotropy(m_params);
 }
 
 GLenum toGLenum(TextureWrap wrap) {
@@ -322,6 +420,13 @@ GLenum toGLenum(TextureMagFilter filter) {
         case TextureMagFilter::Linear:  return GL_LINEAR;
     }
     return GL_LINEAR;
+}
+
+float maxSupportedAnisotropy() {
+    // A driver constant, so it is asked for once. Without the cache the round
+    // trip would repeat for every texture uploaded, and a scene has thousands.
+    static const float SUPPORTED = queryMaxAnisotropy();
+    return SUPPORTED;
 }
 
 } // namespace Vkm::GL

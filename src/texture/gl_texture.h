@@ -21,7 +21,7 @@ enum class TextureWrap {
 /**
  * @brief Enum specifying minifying filter for textures.
  */
-enum class TextureMinFilter {
+enum class TextureMinFilter : int {
     Nearest,                ///< Nearest texel
     Linear,                 ///< Linear interpolation
     NearestMipmapNearest,   ///< Nearest mipmap, nearest texel
@@ -33,7 +33,7 @@ enum class TextureMinFilter {
 /**
  * @brief Enum specifying magnification filter for textures.
  */
-enum class TextureMagFilter {
+enum class TextureMagFilter : int {
     Nearest,    ///< Nearest texel
     Linear      ///< Linear interpolation
 };
@@ -66,6 +66,22 @@ GLenum toGLenum(TextureMinFilter filter);
 GLenum toGLenum(TextureMagFilter filter);
 
 /**
+ * @brief The highest degree of anisotropic filtering this driver will accept.
+ *
+ * GL_TEXTURE_MAX_ANISOTROPY is only core in 4.6, so on the 4.3 context this
+ * library targets it exists only when GL_ARB_texture_filter_anisotropic or its
+ * EXT predecessor is present. Returns 1.0 when neither is, which is the value
+ * meaning "no anisotropy" and lets callers degrade to plain trilinear without
+ * a separate capability test.
+ *
+ * Queried once on first call, so it needs a current context but costs nothing
+ * after that.
+ *
+ * @return GL_MAX_TEXTURE_MAX_ANISOTROPY, or 1.0 when unsupported.
+ */
+float maxSupportedAnisotropy();
+
+/**
  * @brief Parameters for initializing a 2D texture.
  */
 struct Texture2DParams {
@@ -80,6 +96,8 @@ struct Texture2DParams {
     TextureWrap wrapT          = TextureWrap::ClampToEdge;                ///< T axis wrapping
     TextureMinFilter minFilter = TextureMinFilter::LinearMipmapLinear;    ///< Minifying filter
     TextureMagFilter magFilter = TextureMagFilter::Linear;                ///< Magnification filter
+
+    float maxAnisotropy = 1.0f;                                           ///< Anisotropic filtering degree (1 = off); clamped to the driver's limit
 
     bool generateMipmaps = true;                                          ///< Automatically generate mipmaps
     const void* data     = nullptr;                                       ///< Pointer to initial data
@@ -183,6 +201,37 @@ class Texture2D : public GLObject {
          * @param magFilter Magnifying filter.
          */
         void setFilter(TextureMinFilter minFilter, TextureMagFilter magFilter);
+
+        /**
+         * @brief Set how far the sampler may stretch its footprint when minifying.
+         *
+         * A surface seen edge-on covers a texel footprint far longer in one
+         * direction than the other, and a single mip level cannot represent
+         * both - so the hardware picks one for the wide axis and the detail
+         * along the narrow one is lost. A degree above 1 lets it take that many
+         * samples along the long axis instead.
+         *
+         * Clamped to maxSupportedAnisotropy(), so a level the driver does not
+         * offer degrades to the highest it does rather than failing. A texture
+         * whose minification filter walks no mip chain is left at 1 whatever is
+         * asked: it has no mip selection to correct, and multi-tap filtering
+         * would only soften content that was asked to stay sharp.
+         *
+         * @param maxAnisotropy Requested degree; values below 1 are treated as 1.
+         */
+        void setMaxAnisotropy(float maxAnisotropy);
+
+        /**
+         * @brief Re-filter this texture with @p minFilter and @p magFilter.
+         *
+         * Separate from setMaxAnisotropy because the two are independent: a
+         * caller re-applying a filtering mode every frame must not disturb the
+         * degree, and vice versa. Both early-out when nothing changed.
+         *
+         * @param minFilter Minification filter to apply.
+         * @param magFilter Magnification filter to apply.
+         */
+        void setFiltering(TextureMinFilter minFilter, TextureMagFilter magFilter);
 
         /**
          * @brief Load the texture from a file.
