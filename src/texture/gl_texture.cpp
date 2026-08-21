@@ -299,6 +299,10 @@ void Texture2D::setFilter(TextureMinFilter minFilter, TextureMagFilter magFilter
     bind();
     VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLenum(m_params.minFilter)));
     VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLenum(m_params.magFilter)));
+    // The minification filter is the other half of what degree the driver ends
+    // up applying, so a new one has to be pushed through it. setMaxAnisotropy
+    // compares against the stored request and would not re-send it.
+    applyAnisotropy(m_params);
     unbind();
 }
 

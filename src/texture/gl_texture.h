@@ -202,6 +202,11 @@ class Texture2D : public GLObject {
          * caller re-applying a filtering mode every frame must not disturb the
          * degree, and vice versa. Both early-out when nothing changed.
          *
+         * The stored anisotropy request is left alone, but the degree the
+         * driver is given is re-derived here: it is 1 for a filter that walks
+         * no mip chain, so it cannot survive a change of minification filter
+         * untouched.
+         *
          * @param minFilter Minifying filter.
          * @param magFilter Magnifying filter.
          */
