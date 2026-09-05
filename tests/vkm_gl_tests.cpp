@@ -81,7 +81,7 @@ void testVertexBufferLayout() {
 void testShaderPreprocessor(const fs::path& dir) {
     std::printf("Shader preprocessor:\n");
 
-    Vkm::GL::setShaderVersion(430);
+    Vkm::GL::setShaderPrelude(430);
 
     write(dir / "plain.glsl", "void main() {}\n");
     const std::string plain = Vkm::GL::preprocessShaderSource((dir / "plain.glsl").string());
@@ -89,11 +89,21 @@ void testShaderPreprocessor(const fs::path& dir) {
     check("a stage with no include is otherwise verbatim",
           plain.find("void main() {}") != std::string::npos);
 
-    Vkm::GL::setShaderVersion(460);
+    Vkm::GL::setShaderPrelude(460);
     const std::string bumped = Vkm::GL::preprocessShaderSource((dir / "plain.glsl").string());
-    check("setShaderVersion changes what is injected",
+    check("setShaderPrelude changes what is injected",
           bumped.rfind("#version 460 core", 0) == 0);
-    Vkm::GL::setShaderVersion(430);
+
+    Vkm::GL::setShaderPrelude(430, "const int ANSWER = 42;\n");
+    const std::string withConstants =
+        Vkm::GL::preprocessShaderSource((dir / "plain.glsl").string());
+    check("the constants land after the #version and before the source",
+          withConstants.find("const int ANSWER = 42;") <
+          withConstants.find("void main() {}"));
+    Vkm::GL::setShaderPrelude(430);
+    check("and a prelude with no constants adds none",
+          Vkm::GL::preprocessShaderSource((dir / "plain.glsl").string())
+              .find("ANSWER") == std::string::npos);
 
     write(dir / "helper.glsl", "float helper() { return 1.0; }\n");
     write(dir / "uses.glsl",   "#include \"helper.glsl\"\nvoid main() {}\n");

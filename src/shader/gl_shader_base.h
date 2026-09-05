@@ -51,23 +51,14 @@ class ShaderBase : public GLObject {
         void unbind() const;
 
         /**
-         * @brief Reload shader sources from disk and recreate the program.
-         * @throws std::runtime_error on compilation or linking failure.
-         */
-        void recompile();
-
-        /**
-         * @brief Reload and recompile, keeping the working program on failure.
+         * @brief Reload the sources from disk, keeping the working program on failure.
          *
-         * recompile() releases the live program before building the new one, so
-         * a source file that no longer compiles leaves the shader with nothing
-         * and throws. That is the right behaviour at startup, where a broken
-         * shader should stop the program, and the wrong one for hot reload,
-         * where a half-typed edit must not take the renderer down with it.
-         *
-         * Builds the replacement first and adopts it only once it has linked.
-         * On failure the previous program stays bound-able and the error is
-         * logged, so the next save can fix it.
+         * Builds the replacement first and adopts it only once it has linked, so
+         * a half-typed edit does not take the renderer down with it: the previous
+         * program stays bound-able and the error is logged for the next save to
+         * fix. Construction is the opposite case and behaves the opposite way -
+         * a shader that will not compile at startup throws, because a program
+         * that cannot draw should not start.
          *
          * @return True if the new program linked and is now in use.
          */

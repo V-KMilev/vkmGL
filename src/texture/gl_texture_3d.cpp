@@ -1,6 +1,3 @@
-#define VKM_LOG_SUFFIX "VKM-GL"
-#define VKM_LOG_CATEGORY "TEXTURE"
-
 #include "gl_texture_3d.h"
 
 #include "gl_error_handle.h"
@@ -39,19 +36,20 @@ Texture3D::~Texture3D() {
 Texture3D& Texture3D::operator=(Texture3D && other) noexcept {
     if (this != &other) {
         release();
-        m_id     = other.m_id;
+        // Through the base, like Texture2D's: GLObject owns the id and the two
+        // fields beside it (target, label namespace), and moving only the id by
+        // hand left those two describing the object that was overwritten.
+        GLObject::operator=(std::move(other));
         m_name   = std::move(other.m_name);
         m_params = other.m_params;
-        other.m_id = 0;
     }
     return *this;
 }
 
 void Texture3D::release() noexcept {
-    if (m_id != 0) {
-        glDeleteTextures(1, &m_id);
-        m_id = 0;
-    }
+    if (m_id == 0) return;
+    VKM_GL_CHECK(glDeleteTextures(1, &m_id));
+    m_id = 0;
 }
 
 void Texture3D::bind(GLenum target) const {
