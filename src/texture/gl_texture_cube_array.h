@@ -6,37 +6,41 @@
 #include <GL/glew.h>
 
 #include "gl_error_handle.h"
+#include "gl_object.h"
 
 namespace Vkm::GL {
 
 /**
  * @brief RAII cubemap-array texture wrapper (per-layer / per-face / per-mip targets).
  *
- * Header-only so it needs no addition to the vkmGL source list. Owns a
- * GL_TEXTURE_CUBE_MAP_ARRAY allocated with immutable storage: `capacity` cubes,
+ * Owns a GL_TEXTURE_CUBE_MAP_ARRAY allocated with immutable storage: `capacity` cubes,
  * each six faces, with an optional mip chain. A single sampler binds the whole
  * array regardless of layer count, and the shader selects a cube via its layer
  * index - so the layer count, not the texture-unit budget, bounds how many cubes
  * you can address. Bind to a sampler slot, or attach one layer/face/mip to an FBO
- * for rendering. Non-copyable; movable (the moved-from object is left empty).
+ * for rendering.
+ *
+ * A GLObject, so its ownership rules are the base's; see TextureCube.
  */
-class TextureCubeArray {
+class TextureCubeArray : public GLObject {
     public:
-        TextureCubeArray() = default;
-        ~TextureCubeArray() { release(); }
+        TextureCubeArray() : GLObject(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE, 0) {}
+        ~TextureCubeArray() override { release(); }
 
         TextureCubeArray(const TextureCubeArray& other) = delete;
         TextureCubeArray& operator=(const TextureCubeArray& other) = delete;
 
-        TextureCubeArray(TextureCubeArray && other) noexcept { *this = std::move(other); }
+        TextureCubeArray(TextureCubeArray && other) noexcept
+            : GLObject(std::move(other))
+            , m_size(other.m_size), m_mips(other.m_mips), m_capacity(other.m_capacity) {}
+
         TextureCubeArray& operator=(TextureCubeArray && other) noexcept {
             if (this != &other) {
                 release();
-                m_id       = other.m_id;
+                GLObject::operator=(std::move(other));
                 m_size     = other.m_size;
                 m_mips     = other.m_mips;
                 m_capacity = other.m_capacity;
-                other.m_id = 0;
             }
             return *this;
         }
@@ -80,25 +84,21 @@ class TextureCubeArray {
             VKM_GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, m_id, mip, layer * 6 + face));
         }
 
-        GLuint id()       const { return m_id; }
-        int    size()     const { return m_size; }
-        int    mips()     const { return m_mips; }
-        int    capacity() const { return m_capacity; }
-        bool   valid()    const { return m_id != 0; }
+        int size()     const { return m_size; }
+        int mips()     const { return m_mips; }
+        int capacity() const { return m_capacity; }
 
     private:
         void release() noexcept {
-            if (m_id) {
-                VKM_GL_CHECK(glDeleteTextures(1, &m_id));
-                m_id = 0;
-            }
+            if (m_id == 0) return;
+            VKM_GL_CHECK(glDeleteTextures(1, &m_id));
+            m_id = 0;
         }
 
     private:
-        GLuint m_id       = 0;
-        int    m_size     = 0;
-        int    m_mips     = 1;
-        int    m_capacity = 0;
+        int m_size     = 0;
+        int m_mips     = 1;
+        int m_capacity = 0;
 };
 
 } // namespace Vkm::GL

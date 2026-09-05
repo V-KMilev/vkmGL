@@ -96,16 +96,6 @@ bool ShaderBase::tryRecompile() {
     return true;
 }
 
-void ShaderBase::recompile() {
-    reloadSource();
-    // The relinked program reassigns uniform locations, so drop the cache and
-    // its backing names; both repopulate lazily on the next lookup.
-    m_uniformLocationCache.clear();
-    m_uniformNames.clear();
-    release();
-    createProgram();
-}
-
 const std::string& ShaderBase::getName() const {
     return m_name;
 }

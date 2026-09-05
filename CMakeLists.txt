@@ -21,36 +21,20 @@ message("[VKM_GL] Building vkm_gl v${PROJECT_VERSION}")
 # Find OpenGL
 find_package(OpenGL REQUIRED)
 
-set(SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_object.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_context.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_error_handle.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/core/gl_debug.cpp
-
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_vertex_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_index_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_uniform_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer/gl_shader_storage_buffer.cpp
-
-	${CMAKE_CURRENT_SOURCE_DIR}/src/vertex/gl_vertex_array.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/vertex/gl_vertex_buffer_layout.cpp
-
-	${CMAKE_CURRENT_SOURCE_DIR}/src/target/gl_frame_buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/target/gl_render_buffer.cpp
-
-	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader_base.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader_preprocess.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader_reload.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_shader.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/gl_compute_shader.cpp
-
-	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_texture.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_texture_3d.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/texture/gl_sampler.cpp
-)
+# Enumerated as one sweep rather than as a list: a list has to be edited to add
+# a file, and the edit is invisible when it is forgotten - the new .cpp simply
+# does not link, and the first sign is a missing symbol somewhere else.
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
+# The public surface is not annotated with __declspec(dllexport), so on Windows
+# CMake generates the export table from the object files instead - the same
+# property vkm_core carries, and for the same reason. Without it an MSVC build
+# links a DLL that exports nothing.
+set_target_properties(${PROJECT_NAME} PROPERTIES
+	WINDOWS_EXPORT_ALL_SYMBOLS ON
+)
 
 # Warnings are on for our own sources only - the submodules under modules/ keep
 # their own level. The set matches the engine's vkm_warnings so a file reads the
@@ -65,10 +49,11 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 	$<$<CXX_COMPILER_ID:GNU,Clang>:${_vkm_gl_warnings}>
 )
 
+# One spelling for a vkmGL header, and it is the flat one: #include "gl_texture.h".
+# Exporting src/ as well let the same header be reached two ways, and both were
+# in use - which meant a reader could not tell, from an include line, whether
+# two files were including the same thing.
 target_include_directories(${PROJECT_NAME} PUBLIC
-	# src/ itself, so a consumer can also qualify: "texture/gl_texture.h".
-	${CMAKE_CURRENT_SOURCE_DIR}/src
-
 	${CMAKE_CURRENT_SOURCE_DIR}/src/core
 	${CMAKE_CURRENT_SOURCE_DIR}/src/buffer
 	${CMAKE_CURRENT_SOURCE_DIR}/src/vertex

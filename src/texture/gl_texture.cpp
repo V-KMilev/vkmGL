@@ -9,11 +9,6 @@
 #include "l_assert.h"
 #include "logger.h"
 
-// Both defines must precede the include - stb_image is header-only, so anything
-// set after it has already missed the expansion it was meant to configure.
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 namespace Vkm::GL {
 
 Texture2DParams renderTargetParams(
@@ -35,33 +30,6 @@ Texture2DParams renderTargetParams(
 
 
 namespace {
-GLint inferInternalFormat(int channels, bool srgb) {
-    if (srgb) {
-        switch (channels) {
-            case 3: return GL_SRGB8;
-            case 4: return GL_SRGB8_ALPHA8;
-            default: return GL_SRGB8_ALPHA8;
-        }
-    }
-    switch (channels) {
-        case 1: return GL_R8;
-        case 2: return GL_RG8;
-        case 3: return GL_RGB8;
-        case 4: return GL_RGBA8;
-        default: return GL_RGBA8;
-    }
-}
-
-GLenum inferFormat(int channels) {
-    switch (channels) {
-        case 1: return GL_RED;
-        case 2: return GL_RG;
-        case 3: return GL_RGB;
-        case 4: return GL_RGBA;
-        default: return GL_RGBA;
-    }
-}
-
 /**
  * @brief Ask the driver for its anisotropy ceiling.
  *
@@ -137,7 +105,6 @@ void applyAnisotropy(const Texture2DParams& params) {
 Texture2D::Texture2D(const std::string& name, const Texture2DParams& params)
     : GLObject(GL_TEXTURE_2D, GL_TEXTURE, 0)
     , m_name(name)
-    , m_path()
     , m_params(params)
 {
     VKM_GL_CHECK(glGenTextures(1, &m_id));
@@ -165,31 +132,6 @@ Texture2D::Texture2D(const std::string& name, const Texture2DParams& params)
     unbind();
 }
 
-Texture2D::Texture2D(const std::string& filePath, bool flipVertically, bool srgb)
-    : GLObject(GL_TEXTURE_2D, GL_TEXTURE, 0)
-    , m_path(filePath)
-{
-    // Stem of the path: filename without directory or extension. npos + 1
-    // is 0, so a bare filename correctly starts at the beginning - but the
-    // extension test has to treat "no directory" as position 0 rather than
-    // comparing against npos, which no dot position can exceed.
-    const size_t lastSlash = filePath.find_last_of("/\\");
-    const size_t nameStart = (lastSlash == std::string::npos) ? 0 : lastSlash + 1;
-    const size_t lastDot   = filePath.find_last_of('.');
-
-    if (lastDot != std::string::npos && lastDot > nameStart) {
-        m_name = filePath.substr(nameStart, lastDot - nameStart);
-    } else {
-        m_name = filePath.substr(nameStart);
-    }
-
-    if (!loadFromFile(filePath, flipVertically, srgb)) {
-        LOG_ERROR("Failed to load texture from file '%s' in constructor", filePath.c_str());
-        // Initialize with default params even on failure
-        m_params = Texture2DParams{};
-    }
-}
-
 Texture2D::~Texture2D() {
     release();
 }
@@ -199,7 +141,6 @@ Texture2D& Texture2D::operator=(Texture2D && other) noexcept {
         release();
         GLObject::operator=(std::move(other));
         m_name   = std::move(other.m_name);
-        m_path   = std::move(other.m_path);
         m_params = other.m_params;
     }
     return *this;
@@ -282,15 +223,6 @@ void Texture2D::setData(const void* data, uint32_t width, uint32_t height, GLenu
     unbind();
 }
 
-void Texture2D::setWrap(TextureWrap s, TextureWrap t) {
-    m_params.wrapS = s;
-    m_params.wrapT = t;
-    bind();
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLenum(m_params.wrapS)));
-    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLenum(m_params.wrapT)));
-    unbind();
-}
-
 void Texture2D::setFilter(TextureMinFilter minFilter, TextureMagFilter magFilter) {
     if (minFilter == m_params.minFilter && magFilter == m_params.magFilter) return;
 
@@ -320,63 +252,14 @@ void Texture2D::setMaxAnisotropy(float maxAnisotropy) {
     unbind();
 }
 
-bool Texture2D::loadFromFile(const std::string& filePath, bool flipVertically, bool srgb) {
-    m_path = filePath;
-
-    // Initialize default parameters if not already set
-    if (m_params.width == 0 && m_params.height == 0) {
-        m_params = Texture2DParams{};
-    }
-
-    stbi_set_flip_vertically_on_load(flipVertically);
-
-    int width = 0;
-    int height = 0;
-    int channels = 0;
-    unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &channels, 0);
-
-    if (!data) {
-        LOG_ERROR("Failed to load texture '%s': %s", filePath.c_str(), stbi_failure_reason());
-        return false;
-    }
-
-    m_params.width = static_cast<uint32_t>(width);
-    m_params.height = static_cast<uint32_t>(height);
-
-    GLenum format = inferFormat(channels);
-    GLint internalFormat = inferInternalFormat(channels, srgb);
-    m_params.format = format;
-    m_params.type = GL_UNSIGNED_BYTE;
-    m_params.internalFormat = internalFormat;
-
-    // Generate texture ID if not already created
-    if (m_id == 0) {
-        VKM_GL_CHECK(glGenTextures(1, &m_id));
-        VKM_ASSERT(m_id != 0);
-    }
+void Texture2D::setWrap(TextureWrap s, TextureWrap t) {
+    m_params.wrapS = s;
+    m_params.wrapT = t;
 
     bind();
-    VKM_GL_CHECK(glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        internalFormat,
-        width,
-        height,
-        0,
-        format,
-        GL_UNSIGNED_BYTE,
-        data
-    ));
-
-    applyParameters();
-
-    if (m_params.generateMipmaps) {
-        VKM_GL_CHECK(glGenerateMipmap(GL_TEXTURE_2D));
-    }
-
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLenum(s)));
+    VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLenum(t)));
     unbind();
-    stbi_image_free(data);
-    return true;
 }
 
 void Texture2D::applyParameters() const {

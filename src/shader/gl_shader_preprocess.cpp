@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <utility>
 #include <unordered_set>
 
 #include "logger.h"
@@ -22,6 +24,13 @@ namespace {
 int& glslVersion() {
     static int version = DEFAULT_GLSL_VERSION;
     return version;
+}
+
+// The application's own constants, inserted after the #version line. Empty
+// until something sets them, which is what makes this module usable without.
+std::string& preludeConstants() {
+    static std::string constants;
+    return constants;
 }
 
 // Resolve `#include "relative/path"` directives, inlining referenced files
@@ -70,14 +79,16 @@ std::string resolveIncludes(const fs::path& filePath, std::unordered_set<std::st
 
 } // namespace
 
-void setShaderVersion(int glslVersion_) {
+void setShaderPrelude(int glslVersion_, std::string constants) {
     glslVersion() = glslVersion_;
+    preludeConstants() = std::move(constants);
 }
 
 std::string preprocessShaderSource(const std::string& filePath) {
     std::unordered_set<std::string> visited;
     // #version must be the first line, and #included files never carry one.
     return "#version " + std::to_string(glslVersion()) + " core\n"
+         + preludeConstants()
          + resolveIncludes(fs::path(filePath), visited);
 }
 

@@ -115,10 +115,12 @@ Texture2DParams renderTargetParams(
 
 
 /**
- * @brief Represents a 2D OpenGL texture object.
- * 
- * Provides methods for binding, setting parameters, updating data,
- * and loading from file.
+ * @brief A 2D OpenGL texture object: bind, set parameters, update pixels.
+ *
+ * Built from pixels the caller already has. Decoding a file is not this
+ * module's job - a platform layer that owned an image decoder would decide the
+ * application's image formats for it - so an application decodes with whatever
+ * it uses elsewhere and hands the bytes over.
  */
 class Texture2D : public GLObject {
     public:
@@ -134,12 +136,6 @@ class Texture2D : public GLObject {
         explicit Texture2D(
             const std::string& name,
             const Texture2DParams& params
-        );
-
-        explicit Texture2D(
-            const std::string& filePath,
-            bool flipVertically = true,
-            bool srgb = false
         );
 
     public:
@@ -163,20 +159,16 @@ class Texture2D : public GLObject {
         void bindSlot(uint32_t slot, GLenum target = GL_NONE) const;
 
         /**
-         * @brief Get the parameters of the texture.
-         * @return The parameters of the texture.
-        */
+         * @brief The parameters this texture was created with.
+         * @return Its Texture2DParams.
+         */
         const Texture2DParams& getParams() const { return m_params; }
 
         /**
-         * @brief Get the name of the texture.
+         * @brief The debug label this texture was created under.
+         * @return The name.
          */
         const std::string& getName() const { return m_name; }
-
-        /**
-         * @brief Get the file path associated with this texture, if any.
-         */
-        const std::string& getPath() const { return m_path; }
 
         /**
          * @brief Set new data for the texture.
@@ -232,15 +224,6 @@ class Texture2D : public GLObject {
         void setMaxAnisotropy(float maxAnisotropy);
 
         /**
-         * @brief Load the texture from a file.
-         * @param filePath        Path to file.
-         * @param flipVertically  Optionally flip vertically.
-         * @param srgb            Whether to use sRGB color space (default: false).
-         * @return True on success, false otherwise.
-         */
-        bool loadFromFile(const std::string& filePath, bool flipVertically = true, bool srgb = false);
-
-        /**
          * @brief Get the width of the texture.
          * @return Texture width in pixels.
          */
@@ -263,9 +246,7 @@ class Texture2D : public GLObject {
         void applyParameters() const;
 
     private:
-        std::string m_name;
-        std::string m_path;
-
+        std::string     m_name;     ///< Debug label, for GL object naming and logs.
         Texture2DParams m_params;
 };
 

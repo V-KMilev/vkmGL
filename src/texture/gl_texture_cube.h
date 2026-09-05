@@ -6,33 +6,39 @@
 #include <GL/glew.h>
 
 #include "gl_error_handle.h"
+#include "gl_object.h"
 
 namespace Vkm::GL {
 
 /**
  * @brief RAII cubemap texture wrapper (per-face / per-mip render targets).
  *
- * Header-only so it needs no addition to the vkmGL source list. Owns a
- * GL_TEXTURE_CUBE_MAP: allocate all six faces (+ optional mip chain),
+ * Owns a GL_TEXTURE_CUBE_MAP: allocate all six faces (+ optional mip chain),
  * generate mips, bind to a sampler slot, or attach a face/mip to an FBO for
- * rendering. Non-copyable; movable (the moved-from object is left empty).
+ * rendering.
+ *
+ * A GLObject like every other handle-owning wrapper here, so the ownership
+ * rules - non-copyable, movable, a moved-from object left empty - are the base's
+ * rather than a fourth hand-written copy of them. That copy is where a move
+ * forgets a member, which is a bug this module has had.
  */
-class TextureCube {
+class TextureCube : public GLObject {
     public:
-        TextureCube() = default;
-        ~TextureCube() { release(); }
+        TextureCube() : GLObject(GL_TEXTURE_CUBE_MAP, GL_TEXTURE, 0) {}
+        ~TextureCube() override { release(); }
 
         TextureCube(const TextureCube& other) = delete;
         TextureCube& operator=(const TextureCube& other) = delete;
 
-        TextureCube(TextureCube && other) noexcept { *this = std::move(other); }
+        TextureCube(TextureCube && other) noexcept
+            : GLObject(std::move(other)), m_size(other.m_size), m_mips(other.m_mips) {}
+
         TextureCube& operator=(TextureCube && other) noexcept {
             if (this != &other) {
                 release();
-                m_id   = other.m_id;
+                GLObject::operator=(std::move(other));
                 m_size = other.m_size;
                 m_mips = other.m_mips;
-                other.m_id = 0;
             }
             return *this;
         }
@@ -88,23 +94,19 @@ class TextureCube {
                     GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, m_id, mip));
         }
 
-        GLuint id()   const { return m_id; }
-        int    size() const { return m_size; }
-        int    mips() const { return m_mips; }
-        bool   valid() const { return m_id != 0; }
+        int size() const { return m_size; }
+        int mips() const { return m_mips; }
 
     private:
         void release() noexcept {
-            if (m_id) {
-                VKM_GL_CHECK(glDeleteTextures(1, &m_id));
-                m_id = 0;
-            }
+            if (m_id == 0) return;
+            VKM_GL_CHECK(glDeleteTextures(1, &m_id));
+            m_id = 0;
         }
 
     private:
-        GLuint m_id   = 0;
-        int    m_size = 0;
-        int    m_mips = 1;
+        int m_size = 0;
+        int m_mips = 1;
 };
 
 } // namespace Vkm::GL
