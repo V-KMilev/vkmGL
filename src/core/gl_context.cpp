@@ -194,6 +194,17 @@ int32_t Context::maxSamples() const {
     return m_maxSamples;
 }
 
+int32_t Context::maxTextureSize() const {
+    if (m_maxTextureSize < 0) {
+        // GL 4.3 guarantees 16384; the floor here is only for a query that
+        // failed, so a caller clamping against it still gets a usable size.
+        GLint size = 1024;
+        VKM_GL_CHECK(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size));
+        m_maxTextureSize = size > 0 ? size : 1024;
+    }
+    return m_maxTextureSize;
+}
+
 std::string Context::versionString() const {
     const GLubyte* version = nullptr;
     VKM_GL_CHECK(version = glGetString(GL_VERSION));
