@@ -21,6 +21,7 @@ class Sampler : public GLObject {
             TextureWrap wrapR = TextureWrap::Repeat;
             TextureMinFilter minFilter = TextureMinFilter::LinearMipmapLinear;
             TextureMagFilter magFilter = TextureMagFilter::Linear;
+            TextureCompare   compare   = TextureCompare::None;
         };
 
         Sampler();

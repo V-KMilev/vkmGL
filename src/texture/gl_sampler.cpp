@@ -51,6 +51,12 @@ void Sampler::applyParams() {
     VKM_GL_CHECK(glSamplerParameteri(m_id, GL_TEXTURE_WRAP_R, toGLenum(m_params.wrapR)));
     VKM_GL_CHECK(glSamplerParameteri(m_id, GL_TEXTURE_MIN_FILTER, toGLenum(m_params.minFilter)));
     VKM_GL_CHECK(glSamplerParameteri(m_id, GL_TEXTURE_MAG_FILTER, toGLenum(m_params.magFilter)));
+
+    // The mode is what turns comparison on; the function only says which way.
+    const bool comparing = m_params.compare != TextureCompare::None;
+    VKM_GL_CHECK(glSamplerParameteri(m_id, GL_TEXTURE_COMPARE_MODE,
+                                     comparing ? GL_COMPARE_REF_TO_TEXTURE : GL_NONE));
+    VKM_GL_CHECK(glSamplerParameteri(m_id, GL_TEXTURE_COMPARE_FUNC, toGLenum(m_params.compare)));
 }
 
 } // namespace Vkm::GL

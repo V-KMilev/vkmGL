@@ -39,6 +39,27 @@ enum class TextureMagFilter : int {
 };
 
 /**
+ * @brief Whether a sampler compares its reads against a reference value.
+ *
+ * A depth texture read through a `sampler2DShadow` returns the filtered
+ * fraction of texels that passed a comparison rather than a depth. That is
+ * sampler state rather than texture state, so the same depth texture can be
+ * read both ways at once from two units - which is what a shadow atlas that is
+ * both sampled for shadowing and visualised as an image needs.
+ */
+enum class TextureCompare {
+    None,           ///< No comparison: the sampler returns the stored value
+    Never,          ///< Never passes
+    Less,           ///< Passes where reference < stored
+    Equal,          ///< Passes where reference == stored
+    LessEqual,      ///< Passes where reference <= stored (the shadow-map default)
+    Greater,        ///< Passes where reference > stored
+    NotEqual,       ///< Passes where reference != stored
+    GreaterEqual,   ///< Passes where reference >= stored
+    Always          ///< Always passes
+};
+
+/**
  * @brief Map a wrap mode to the OpenGL enum glTexParameteri expects.
  *
  * Free functions rather than per-class statics: the mapping depends only on
@@ -64,6 +85,18 @@ GLenum toGLenum(TextureMinFilter filter);
  * @return The corresponding GL_* constant.
  */
 GLenum toGLenum(TextureMagFilter filter);
+
+/**
+ * @brief Map a comparison to its OpenGL comparison function.
+ *
+ * TextureCompare::None has no function of its own - it is expressed by setting
+ * GL_TEXTURE_COMPARE_MODE to GL_NONE - so it maps to the shadow-map default,
+ * which the mode then makes irrelevant.
+ *
+ * @param compare Comparison to translate.
+ * @return The corresponding GL_* constant.
+ */
+GLenum toGLenum(TextureCompare compare);
 
 /**
  * @brief The highest degree of anisotropic filtering this driver will accept.

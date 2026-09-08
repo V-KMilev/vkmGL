@@ -300,6 +300,21 @@ GLenum toGLenum(TextureMagFilter filter) {
     return GL_LINEAR;
 }
 
+GLenum toGLenum(TextureCompare compare) {
+    switch (compare) {
+        case TextureCompare::None:         return GL_LEQUAL;
+        case TextureCompare::Never:        return GL_NEVER;
+        case TextureCompare::Less:         return GL_LESS;
+        case TextureCompare::Equal:        return GL_EQUAL;
+        case TextureCompare::LessEqual:    return GL_LEQUAL;
+        case TextureCompare::Greater:      return GL_GREATER;
+        case TextureCompare::NotEqual:     return GL_NOTEQUAL;
+        case TextureCompare::GreaterEqual: return GL_GEQUAL;
+        case TextureCompare::Always:       return GL_ALWAYS;
+    }
+    return GL_LEQUAL;
+}
+
 float maxSupportedAnisotropy() {
     // A driver constant, so it is asked for once. Without the cache the round
     // trip would repeat for every texture uploaded, and a scene has thousands.
