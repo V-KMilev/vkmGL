@@ -349,6 +349,18 @@ class Context {
         int32_t maxSamples() const;
 
         /**
+         * @brief Largest 2D texture edge the driver accepts (GL_MAX_TEXTURE_SIZE).
+         *
+         * Queried once on first use and cached, like maxSamples(). What an
+         * atlas or a pyramid sized from authored settings clamps against: a
+         * request past it is not a texture that renders badly, it is one the
+         * driver refuses to allocate at all.
+         *
+         * @return The limit in texels; at least 1024 on any GL 4.3 context.
+         */
+        int32_t maxTextureSize() const;
+
+        /**
          * @brief GL_VERSION string (e.g. "4.6.0 ..."), empty if unavailable.
          */
         std::string versionString() const;
@@ -361,7 +373,8 @@ class Context {
     private:
         glm::vec4 m_clearColor{0.0f, 0.0f, 0.0f, 0.0f};  ///< Matches the GL default.
         RasterState m_state;
-        mutable int32_t m_maxSamples = -1;  ///< Cached GL_MAX_SAMPLES (-1 = not yet queried).
+        mutable int32_t m_maxSamples     = -1;  ///< Cached GL_MAX_SAMPLES (-1 = not yet queried).
+        mutable int32_t m_maxTextureSize = -1;  ///< Cached GL_MAX_TEXTURE_SIZE (-1 = not yet queried).
 };
 
 } // namespace Vkm::GL
