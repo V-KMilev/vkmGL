@@ -36,14 +36,24 @@ class VertexArray : public GLObject {
         void unbind() const;
 
         /**
-         * @brief Adds a vertex buffer and its associated layout to this VAO, starting at attribute index 0.
+         * @brief Adds a vertex buffer and its layout to this VAO.
+         *
+         * The layout's elements land on consecutive attribute locations starting
+         * at @p startIndex, so a VAO fed from two buffers gives the second one
+         * the index the first one ended at.
+         *
+         * That index is the caller's to state and is not remembered between
+         * calls: a VAO re-fed with a new buffer - a ring that outgrew itself,
+         * say - must re-wire the same locations, and a counter that carried over
+         * would move them instead and leave the old, deleted buffer wired to the
+         * ones the shader actually reads.
+         *
+         * @param vertexBuffer Buffer to source the attributes from.
+         * @param layout       Element list describing one vertex.
+         * @param startIndex   First attribute location to write.
          */
-        void addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout);
-
-        /**
-         * @brief Adds a vertex buffer and its layout to this VAO, starting at a specified attribute index.
-         */
-        void addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout, uint32_t startIndex);
+        void addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout,
+                       uint32_t startIndex = 0);
 
         /**
          * @brief Sets the attribute divisor for instanced rendering for a given attribute index.
@@ -69,9 +79,6 @@ class VertexArray : public GLObject {
          * release().
          */
         void release() noexcept;
-
-    private:
-        uint32_t m_attributeIndex;
 };
 
 } // namespace Vkm::GL
