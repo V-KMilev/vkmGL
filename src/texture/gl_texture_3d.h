@@ -64,6 +64,27 @@ class Texture3D : public GLObject {
          */
         void bindImage(uint32_t unit, GLenum access, int32_t level = 0) const;
 
+        /**
+         * @brief Replace the whole volume from @p pixels.
+         *
+         * Transfers in the params' format/type, so the caller's buffer holds
+         * width * height * depth elements of whatever those describe.
+         *
+         * @param pixels Source for every texel of level 0.
+         */
+        void upload(const void* pixels) const;
+
+        /**
+         * @brief Read the whole volume back into @p pixels.
+         *
+         * A synchronising read - the offline half of the same transfer as
+         * upload(), for a bake that finishes its work on the CPU. Not for
+         * anything inside a frame.
+         *
+         * @param pixels Destination, sized as upload()'s source is.
+         */
+        void download(void* pixels) const;
+
         uint32_t getWidth()  const { return m_params.width; }
         uint32_t getHeight() const { return m_params.height; }
         uint32_t getDepth()  const { return m_params.depth; }

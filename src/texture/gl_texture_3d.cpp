@@ -72,4 +72,21 @@ void Texture3D::bindImage(uint32_t unit, GLenum access, int32_t level) const {
     VKM_GL_CHECK(glBindImageTexture(unit, m_id, level, GL_TRUE, 0, access, m_params.internalFormat));
 }
 
+void Texture3D::upload(const void* pixels) const {
+    VKM_GL_CHECK(glBindTexture(GL_TEXTURE_3D, m_id));
+    VKM_GL_CHECK(glTexSubImage3D(
+        GL_TEXTURE_3D, 0, 0, 0, 0,
+        static_cast<GLsizei>(m_params.width),
+        static_cast<GLsizei>(m_params.height),
+        static_cast<GLsizei>(m_params.depth),
+        m_params.format, m_params.type, pixels));
+    VKM_GL_CHECK(glBindTexture(GL_TEXTURE_3D, 0));
+}
+
+void Texture3D::download(void* pixels) const {
+    VKM_GL_CHECK(glBindTexture(GL_TEXTURE_3D, m_id));
+    VKM_GL_CHECK(glGetTexImage(GL_TEXTURE_3D, 0, m_params.format, m_params.type, pixels));
+    VKM_GL_CHECK(glBindTexture(GL_TEXTURE_3D, 0));
+}
+
 } // namespace Vkm::GL
