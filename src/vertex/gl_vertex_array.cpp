@@ -7,7 +7,7 @@
 
 namespace Vkm::GL {
 
-VertexArray::VertexArray() : GLObject(0, GL_VERTEX_ARRAY, 0), m_attributeIndex(0) {
+VertexArray::VertexArray() : GLObject(0, GL_VERTEX_ARRAY, 0) {
     VKM_GL_CHECK(glGenVertexArrays(1, &m_id));
     VKM_ASSERT(m_id != 0);
 }
@@ -20,7 +20,6 @@ VertexArray& VertexArray::operator=(VertexArray && other) noexcept {
     if (this != &other) {
         release();
         GLObject::operator=(std::move(other));
-        m_attributeIndex = other.m_attributeIndex;
     }
     return *this;
 }
@@ -37,10 +36,6 @@ void VertexArray::bind() const {
 
 void VertexArray::unbind() const {
     VKM_GL_CHECK(glBindVertexArray(0));
-}
-
-void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout) {
-    addBuffer(vertexBuffer, layout, m_attributeIndex);
 }
 
 void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout, uint32_t startIndex) {
@@ -84,8 +79,6 @@ void VertexArray::addBuffer(const VertexBuffer& vertexBuffer, const VertexBuffer
 
         offset += element.count * VertexBufferElement::getSizeOfType(element.type);
     }
-
-    m_attributeIndex = startIndex + static_cast<uint32_t>(elements.size());
 }
 
 void VertexArray::setAttributeDivisor(uint32_t index, uint32_t divisor) {
