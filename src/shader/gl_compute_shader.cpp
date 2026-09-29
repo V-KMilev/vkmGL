@@ -23,7 +23,7 @@ ComputeShaderSource::ComputeShaderSource()
 ComputeShaderSource::ComputeShaderSource(const std::string& path)
     : m_path(path)
     , computeShader() {
-    const std::string computeShaderName = (fs::path(m_path) / "computeShader.shader").string();
+    const std::string computeShaderName = (fs::path(m_path) / "compute.shader").string();
 
     if (!validatePath(computeShaderName)) {
         throw std::runtime_error("Compute shader source validation failed");

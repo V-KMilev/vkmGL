@@ -34,7 +34,7 @@ struct ComputeShaderSource {
  * @brief OpenGL compute shader program wrapper.
  *
  * Handles compilation, linkage, binding/unbinding, and uniform value setting for compute shaders.
- * Automatically loads compute shader from directory containing computeShader.shader.
+ * Automatically loads compute shader from directory containing compute.shader.
  *
  * Provides compute-specific functionality like dispatch() for executing compute operations.
  *
@@ -53,7 +53,7 @@ class ComputeShader : public ShaderBase {
 
         /**
          * @brief Construct and load compute shader from the directory at path.
-         * @param path Path to the directory containing computeShader.shader.
+         * @param path Path to the directory containing compute.shader.
          * @throws std::runtime_error if shader source validation or compilation fails.
          */
         explicit ComputeShader(const std::string& path);
