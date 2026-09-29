@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <utility>
+#include <vector>
 
 #include <GL/glew.h>
 
@@ -15,15 +15,20 @@ namespace Vkm::GL {
 /**
  * @brief RAII single-texture explicit mip-chain render target.
  *
- * One GL texture with an explicit per-level mip chain plus a reusable FBO: each
- * level is independently render-targetable (attachMip), and the whole chain
- * binds as one sampler (the shader selects a level via textureLod). The caller
- * owns the format / filter / mip-count policy and passes it to create(); this
- * class owns the handles and the bind / attach / query ops.
+ * One GL texture with immutable storage for the whole chain. Every level is
+ * render-targetable through a framebuffer of its own (bindTarget) and readable
+ * on its own through a one-level texture view (bindLevel); the whole chain
+ * also binds as one sampler for a reader that picks a level with textureLod
+ * (bindSlot). The caller owns the format / filter / mip-count policy and passes
+ * it to create(); this class owns the handles.
  *
- * A GLObject for the texture, so its ownership rules are the base's (see
- * TextureCube), and a FrameBuffer member for the FBO rather than a raw name -
- * this module already has a type that owns one.
+ * Built for the per-level walk - write level N from level N-1 - that the
+ * Hi-Z, bloom and GTAO chains all do. A view of one level makes that walk a
+ * read of a texture that does not contain the level being written, so it is
+ * never a feedback loop and never needs the sampled range narrowed; and each
+ * level keeping its own framebuffer means the walk binds rather than
+ * re-attaches, which a driver would otherwise re-validate every level of every
+ * frame.
  */
 class MipChainTexture : public GLObject {
     public:
@@ -33,36 +38,20 @@ class MipChainTexture : public GLObject {
         MipChainTexture(const MipChainTexture& other) = delete;
         MipChainTexture& operator=(const MipChainTexture& other) = delete;
 
-        MipChainTexture(MipChainTexture && other) noexcept
-            : GLObject(std::move(other))
-            , m_fbo(std::move(other.m_fbo))
-            , m_baseW(other.m_baseW), m_baseH(other.m_baseH), m_mips(other.m_mips) {}
-
-        MipChainTexture& operator=(MipChainTexture && other) noexcept {
-            if (this != &other) {
-                release();
-                GLObject::operator=(std::move(other));
-                m_fbo   = std::move(other.m_fbo);
-                m_baseW = other.m_baseW;
-                m_baseH = other.m_baseH;
-                m_mips  = other.m_mips;
-            }
-            return *this;
-        }
+        MipChainTexture(MipChainTexture && other) = delete;
+        MipChainTexture& operator=(MipChainTexture && other) = delete;
 
         /**
-         * @brief (Re)allocate the chain: a `mips`-level texture, baseW x baseH at
-         *        level 0 and halving each level. Replaces any previous
-         *        allocation; the FBO is the member's and outlives them all.
+         * @brief (Re)allocate the chain: `mips` levels, baseW x baseH at level 0
+         *        and halving each level. Replaces any previous allocation.
          * @param baseW/baseH    Level-0 dimensions in texels.
          * @param mips           Mip level count (each level halves, min 1 texel).
-         * @param internalFormat e.g. GL_RGBA16F.
-         * @param format/type    Pixel transfer format (data is null = storage only).
-         * @param minFilter/magFilter  Sampling filters.
+         * @param internalFormat Sized format, e.g. GL_RGBA16F.
+         * @param minFilter/magFilter  Sampling filters for the whole chain; a
+         *        one-level view samples with magFilter both ways.
          */
         void create(int baseW, int baseH, int mips,
-                    GLenum internalFormat, GLenum format, GLenum type,
-                    GLenum minFilter, GLenum magFilter) {
+                    GLenum internalFormat, GLenum minFilter, GLenum magFilter) {
             release();
             m_baseW = baseW;
             m_baseH = baseH;
@@ -70,17 +59,24 @@ class MipChainTexture : public GLObject {
 
             VKM_GL_CHECK(glGenTextures(1, &m_id));
             VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_id));
+            VKM_GL_CHECK(glTexStorage2D(GL_TEXTURE_2D, mips, internalFormat, baseW, baseH));
+            setSampling(minFilter, magFilter);
+
+            m_levels.resize(static_cast<size_t>(mips));
+            VKM_GL_CHECK(glGenTextures(mips, m_levels.data()));
+            m_targets.clear();
+            m_targets.reserve(static_cast<size_t>(mips));
             for (int mip = 0; mip < mips; ++mip) {
-                VKM_GL_CHECK(glTexImage2D(GL_TEXTURE_2D, mip, internalFormat,
-                    mipWidth(mip), mipHeight(mip), 0, format, type, nullptr));
+                const GLuint view = m_levels[static_cast<size_t>(mip)];
+                VKM_GL_CHECK(glTextureView(view, GL_TEXTURE_2D, m_id, internalFormat,
+                                           static_cast<GLuint>(mip), 1, 0, 1));
+                VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, view));
+                setSampling(magFilter, magFilter);
+
+                m_targets.emplace_back().attachTexture2D(GL_COLOR_ATTACHMENT0, m_id, mip);
             }
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mips - 1));
             VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
+            FrameBuffer::bindDefault();
         }
 
         bool isReady()  const { return m_id != 0; }
@@ -89,55 +85,50 @@ class MipChainTexture : public GLObject {
         int mipWidth (int mip) const { return std::max(m_baseW >> mip, 1); }
         int mipHeight(int mip) const { return std::max(m_baseH >> mip, 1); }
 
-        /// Bind the chain texture for sampling (shader selects a level via textureLod).
+        /// Bind the whole chain for sampling (the shader selects a level via textureLod).
         void bindSlot(uint32_t slot) const {
             VKM_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
             VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_id));
         }
 
-        /// Bind / unbind the chain's framebuffer for the per-mip loop.
-        void bindFbo()   const { m_fbo.bind(); }
-        void unbindFbo() const { FrameBuffer::bindDefault(); }
-
-        /**
-         * @brief Restrict which levels sampling may read.
-         *
-         * Rendering into one level of a texture while sampling another is only
-         * defined if the sampled range excludes the attached level. Callers
-         * walking the chain (write mip N, read mip N-1) set this to N-1 so the
-         * two never overlap.
-         *
-         * @param maxLevel Highest level sampling may read.
-         */
-        void restrictSampling(int maxLevel) const {
-            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_id));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, maxLevel));
+        /// Bind one level alone for sampling; the shader reads it as level 0.
+        void bindLevel(int mip, uint32_t slot) const {
+            VKM_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_levels[static_cast<size_t>(mip)]));
         }
 
-        /// Undo restrictSampling: the whole chain is readable again.
-        void allowAllSampling() const {
-            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_id));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, m_mips - 1));
-        }
-
-        /// Point COLOR_ATTACHMENT0 at one chain mip and size the viewport to it.
-        void attachMip(int mip) const {
-            VKM_GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_id, mip));
+        /// Render into one level: bind its framebuffer and size the viewport to it.
+        void bindTarget(int mip) const {
+            m_targets[static_cast<size_t>(mip)].bind();
             VKM_GL_CHECK(glViewport(0, 0, mipWidth(mip), mipHeight(mip)));
         }
 
     private:
+        /// Wrap and filter for the texture bound to GL_TEXTURE_2D.
+        static void setSampling(GLenum minFilter, GLenum magFilter) {
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter));
+            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter));
+        }
+
         void release() noexcept {
+            m_targets.clear();
+            if (!m_levels.empty()) {
+                VKM_GL_CHECK(glDeleteTextures(static_cast<GLsizei>(m_levels.size()), m_levels.data()));
+                m_levels.clear();
+            }
             if (m_id == 0) return;
             VKM_GL_CHECK(glDeleteTextures(1, &m_id));
             m_id = 0;
         }
 
     private:
-        FrameBuffer m_fbo;      ///< Reused across the per-mip loop; owns its own name.
-        int         m_baseW = 0;
-        int         m_baseH = 0;
-        int         m_mips  = 1;
+        std::vector<GLuint>      m_levels;   ///< One single-level view per mip.
+        std::vector<FrameBuffer> m_targets;  ///< One framebuffer per mip, attached once.
+        int m_baseW = 0;
+        int m_baseH = 0;
+        int m_mips  = 1;
 };
 
 } // namespace Vkm::GL
