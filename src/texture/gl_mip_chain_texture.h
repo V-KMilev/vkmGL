@@ -53,9 +53,10 @@ class MipChainTexture : public GLObject {
         void create(int baseW, int baseH, int mips,
                     GLenum internalFormat, GLenum minFilter, GLenum magFilter) {
             release();
-            m_baseW = baseW;
-            m_baseH = baseH;
-            m_mips  = mips;
+            m_baseW  = baseW;
+            m_baseH  = baseH;
+            m_mips   = mips;
+            m_format = internalFormat;
 
             VKM_GL_CHECK(glGenTextures(1, &m_id));
             VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_id));
@@ -97,6 +98,21 @@ class MipChainTexture : public GLObject {
             VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_levels[static_cast<size_t>(mip)]));
         }
 
+        /**
+         * @brief Bind one level as an image, for a compute pass to write or read.
+         *
+         * No framebuffer is involved, which is the point: a chain walked in
+         * compute pays for a dispatch per level, not a framebuffer bind and a
+         * draw.
+         *
+         * @param mip    Level to bind.
+         * @param unit   Image unit the shader names.
+         * @param access GL_READ_ONLY, GL_WRITE_ONLY or GL_READ_WRITE.
+         */
+        void bindImage(int mip, uint32_t unit, GLenum access) const {
+            VKM_GL_CHECK(glBindImageTexture(unit, m_id, mip, GL_FALSE, 0, access, m_format));
+        }
+
         /// Render into one level: bind its framebuffer and size the viewport to it.
         void bindTarget(int mip) const {
             m_targets[static_cast<size_t>(mip)].bind();
@@ -126,9 +142,10 @@ class MipChainTexture : public GLObject {
     private:
         std::vector<GLuint>      m_levels;   ///< One single-level view per mip.
         std::vector<FrameBuffer> m_targets;  ///< One framebuffer per mip, attached once.
-        int m_baseW = 0;
-        int m_baseH = 0;
-        int m_mips  = 1;
+        int    m_baseW  = 0;
+        int    m_baseH  = 0;
+        int    m_mips   = 1;
+        GLenum m_format = GL_RGBA16F;
 };
 
 } // namespace Vkm::GL
