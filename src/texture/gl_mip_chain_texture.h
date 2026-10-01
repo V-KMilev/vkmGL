@@ -7,28 +7,24 @@
 #include <GL/glew.h>
 
 #include "gl_error_handle.h"
-#include "gl_frame_buffer.h"
 #include "gl_object.h"
 
 namespace Vkm::GL {
 
 /**
- * @brief RAII single-texture explicit mip-chain render target.
+ * @brief RAII single-texture explicit mip chain, walked a level at a time.
  *
- * One GL texture with immutable storage for the whole chain. Every level is
- * render-targetable through a framebuffer of its own (bindTarget) and readable
- * on its own through a one-level texture view (bindLevel); the whole chain
- * also binds as one sampler for a reader that picks a level with textureLod
- * (bindSlot). The caller owns the format / filter / mip-count policy and passes
- * it to create(); this class owns the handles.
+ * One GL texture with immutable storage for the whole chain. Every level
+ * binds as an image for a compute pass to write (bindImage) and reads on its
+ * own through a one-level texture view (bindLevel); the whole chain also binds
+ * as one sampler for a reader that picks a level with textureLod (bindSlot).
+ * The caller owns the format / filter / mip-count policy and passes it to
+ * create(); this class owns the handles.
  *
  * Built for the per-level walk - write level N from level N-1 - that the
- * Hi-Z, bloom and GTAO chains all do. A view of one level makes that walk a
- * read of a texture that does not contain the level being written, so it is
- * never a feedback loop and never needs the sampled range narrowed; and each
- * level keeping its own framebuffer means the walk binds rather than
- * re-attaches, which a driver would otherwise re-validate every level of every
- * frame.
+ * bloom, GTAO and reflection chains all do. A view of one level makes that walk
+ * a read of a texture that does not contain the level being written, so it is
+ * never a feedback loop and never needs the sampled range narrowed.
  */
 class MipChainTexture : public GLObject {
     public:
@@ -65,19 +61,14 @@ class MipChainTexture : public GLObject {
 
             m_levels.resize(static_cast<size_t>(mips));
             VKM_GL_CHECK(glGenTextures(mips, m_levels.data()));
-            m_targets.clear();
-            m_targets.reserve(static_cast<size_t>(mips));
             for (int mip = 0; mip < mips; ++mip) {
                 const GLuint view = m_levels[static_cast<size_t>(mip)];
                 VKM_GL_CHECK(glTextureView(view, GL_TEXTURE_2D, m_id, internalFormat,
                                            static_cast<GLuint>(mip), 1, 0, 1));
                 VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, view));
                 setSampling(magFilter, magFilter);
-
-                m_targets.emplace_back().attachTexture2D(GL_COLOR_ATTACHMENT0, m_id, mip);
             }
             VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
-            FrameBuffer::bindDefault();
         }
 
         bool isReady()  const { return m_id != 0; }
@@ -113,12 +104,6 @@ class MipChainTexture : public GLObject {
             VKM_GL_CHECK(glBindImageTexture(unit, m_id, mip, GL_FALSE, 0, access, m_format));
         }
 
-        /// Render into one level: bind its framebuffer and size the viewport to it.
-        void bindTarget(int mip) const {
-            m_targets[static_cast<size_t>(mip)].bind();
-            VKM_GL_CHECK(glViewport(0, 0, mipWidth(mip), mipHeight(mip)));
-        }
-
     private:
         /// Wrap and filter for the texture bound to GL_TEXTURE_2D.
         static void setSampling(GLenum minFilter, GLenum magFilter) {
@@ -129,7 +114,6 @@ class MipChainTexture : public GLObject {
         }
 
         void release() noexcept {
-            m_targets.clear();
             if (!m_levels.empty()) {
                 VKM_GL_CHECK(glDeleteTextures(static_cast<GLsizei>(m_levels.size()), m_levels.data()));
                 m_levels.clear();
@@ -140,8 +124,7 @@ class MipChainTexture : public GLObject {
         }
 
     private:
-        std::vector<GLuint>      m_levels;   ///< One single-level view per mip.
-        std::vector<FrameBuffer> m_targets;  ///< One framebuffer per mip, attached once.
+        std::vector<GLuint> m_levels;  ///< One single-level view per mip.
         int    m_baseW  = 0;
         int    m_baseH  = 0;
         int    m_mips   = 1;
