@@ -46,10 +46,12 @@ class TextureCube : public GLObject {
     public:
         /**
          * @brief Allocate the cubemap (six faces, `mips` levels).
+         *
          * @param size           Per-face edge length in texels.
          * @param mips           Mip level count (1 = no chain).
          * @param internalFormat e.g. GL_RGB16F.
-         * @param format/type    Pixel transfer format (data is null = storage only).
+         * @param format         Pixel transfer format (data is null = storage only).
+         * @param type           Pixel transfer type.
          * @param mipFiltering   Trilinear minification when true.
          */
         void create(int size, int mips, GLenum internalFormat,
