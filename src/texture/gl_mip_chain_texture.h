@@ -38,13 +38,17 @@ class MipChainTexture : public GLObject {
         MipChainTexture& operator=(MipChainTexture && other) = delete;
 
         /**
-         * @brief (Re)allocate the chain: `mips` levels, baseW x baseH at level 0
-         *        and halving each level. Replaces any previous allocation.
-         * @param baseW/baseH    Level-0 dimensions in texels.
+         * @brief (Re)allocate the chain: `mips` levels, halving from the base size.
+         *
+         * Replaces any previous allocation.
+         *
+         * @param baseW          Level-0 width in texels.
+         * @param baseH          Level-0 height in texels.
          * @param mips           Mip level count (each level halves, min 1 texel).
          * @param internalFormat Sized format, e.g. GL_RGBA16F.
-         * @param minFilter/magFilter  Sampling filters for the whole chain; a
-         *        one-level view samples with magFilter both ways.
+         * @param minFilter      Minification filter for the whole chain.
+         * @param magFilter      Magnification filter; a one-level view samples
+         *                       with it both ways.
          */
         void create(int baseW, int baseH, int mips,
                     GLenum internalFormat, GLenum minFilter, GLenum magFilter) {
