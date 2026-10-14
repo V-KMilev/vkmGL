@@ -101,8 +101,7 @@ uint32_t reloadChangedShaders(const std::string& directory) {
     }
 
     if (failed > 0) {
-        LOG_WARNING_C("SHADER", "Reloaded %u shader(s); %u kept their previous program",
-                      reloaded, failed);
+        LOG_WARNING_C("SHADER", "Reloaded %u shader(s); %u kept their previous program", reloaded, failed);
     } else {
         LOG_INFO_C("SHADER", "Reloaded %u shader(s)", reloaded);
     }

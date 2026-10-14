@@ -41,10 +41,12 @@ struct GraphicsShaderSource {
      * @param fragmentShader Final fragment shader source string.
      * @param geometryShader Optional geometry shader source (empty = none).
      */
-    GraphicsShaderSource(std::string path,
-                         std::string vertexShader,
-                         std::string fragmentShader,
-                         std::string geometryShader = {});
+    GraphicsShaderSource(
+        std::string path,
+        std::string vertexShader,
+        std::string fragmentShader,
+        std::string geometryShader = {}
+    );
 
     /**
      * @brief Check existence of the shader source files.

@@ -69,8 +69,11 @@ std::string resolveIncludes(const fs::path& filePath, std::unordered_set<std::st
                 out << resolveIncludes(basedir / line.substr(q1 + 1, q2 - q1 - 1), visited);
                 continue;
             }
-            LOG_WARNING("Shader preprocessor: malformed #include in '%s': %s",
-                filePath.string().c_str(), line.c_str());
+            LOG_WARNING(
+                "Shader preprocessor: malformed #include in '%s': %s",
+                filePath.string().c_str(),
+                line.c_str()
+            );
         }
         out << line << "\n";
     }
