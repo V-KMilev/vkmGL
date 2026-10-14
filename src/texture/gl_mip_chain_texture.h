@@ -50,29 +50,33 @@ class MipChainTexture : public GLObject {
          * @param magFilter      Magnification filter; a one-level view samples
          *                       with it both ways.
          */
-        void create(int baseW, int baseH, int mips,
-                    GLenum internalFormat, GLenum minFilter, GLenum magFilter) {
+        void create(
+            int baseW,
+            int baseH,
+            int mips,
+            GLenum internalFormat,
+            GLenum minFilter,
+            GLenum magFilter
+        ) {
             release();
             m_baseW  = baseW;
             m_baseH  = baseH;
             m_mips   = mips;
             m_format = internalFormat;
 
-            VKM_GL_CHECK(glGenTextures(1, &m_id));
-            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_id));
-            VKM_GL_CHECK(glTexStorage2D(GL_TEXTURE_2D, mips, internalFormat, baseW, baseH));
-            setSampling(minFilter, magFilter);
+            VKM_GL_CHECK(glCreateTextures(GL_TEXTURE_2D, 1, &m_id));
+            VKM_GL_CHECK(glTextureStorage2D(m_id, mips, internalFormat, baseW, baseH));
+            setSampling(m_id, minFilter, magFilter);
 
+            // Generated, not created: glTextureView makes the object of an unused name.
             m_levels.resize(static_cast<size_t>(mips));
             VKM_GL_CHECK(glGenTextures(mips, m_levels.data()));
             for (int mip = 0; mip < mips; ++mip) {
                 const GLuint view = m_levels[static_cast<size_t>(mip)];
-                VKM_GL_CHECK(glTextureView(view, GL_TEXTURE_2D, m_id, internalFormat,
-                                           static_cast<GLuint>(mip), 1, 0, 1));
-                VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, view));
-                setSampling(magFilter, magFilter);
+                const auto level = static_cast<GLuint>(mip);
+                VKM_GL_CHECK(glTextureView(view, GL_TEXTURE_2D, m_id, internalFormat, level, 1, 0, 1));
+                setSampling(view, magFilter, magFilter);
             }
-            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
         }
 
         bool isReady()  const { return m_id != 0; }
@@ -83,14 +87,12 @@ class MipChainTexture : public GLObject {
 
         /// Bind the whole chain for sampling (the shader selects a level via textureLod).
         void bindSlot(uint32_t slot) const {
-            VKM_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
-            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_id));
+            VKM_GL_CHECK(glBindTextureUnit(slot, m_id));
         }
 
         /// Bind one level alone for sampling; the shader reads it as level 0.
         void bindLevel(int mip, uint32_t slot) const {
-            VKM_GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
-            VKM_GL_CHECK(glBindTexture(GL_TEXTURE_2D, m_levels[static_cast<size_t>(mip)]));
+            VKM_GL_CHECK(glBindTextureUnit(slot, m_levels[static_cast<size_t>(mip)]));
         }
 
         /**
@@ -109,12 +111,12 @@ class MipChainTexture : public GLObject {
         }
 
     private:
-        /// Wrap and filter for the texture bound to GL_TEXTURE_2D.
-        static void setSampling(GLenum minFilter, GLenum magFilter) {
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter));
-            VKM_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter));
+        /// Wrap and filter for texture @p id.
+        static void setSampling(GLuint id, GLenum minFilter, GLenum magFilter) {
+            VKM_GL_CHECK(glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+            VKM_GL_CHECK(glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(minFilter)));
+            VKM_GL_CHECK(glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(magFilter)));
         }
 
         void release() noexcept {

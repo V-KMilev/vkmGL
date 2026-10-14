@@ -106,7 +106,7 @@ class GLBuffer : public GLObject {
          *
          * Orphaning: the GL name is unchanged, so vertex-array attribute
          * bindings that reference this buffer stay valid across a grow. Goes
-         * through the wrapper rather than glBufferData directly so the tracked
+         * through the wrapper rather than glNamedBufferData directly so the tracked
          * size cannot drift from the storage it describes.
          *
          * @param size New size in bytes.

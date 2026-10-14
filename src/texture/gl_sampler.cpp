@@ -11,7 +11,7 @@ Sampler::Sampler(const Params& params)
     : GLObject(0, GL_SAMPLER, 0)
     , m_params(params)
 {
-    VKM_GL_CHECK(glGenSamplers(1, &m_id));
+    VKM_GL_CHECK(glCreateSamplers(1, &m_id));
     VKM_ASSERT(m_id != 0);
     applyParams();
 }
@@ -54,8 +54,8 @@ void Sampler::applyParams() {
 
     // The mode is what turns comparison on; the function only says which way.
     const bool comparing = m_params.compare != TextureCompare::None;
-    VKM_GL_CHECK(glSamplerParameteri(m_id, GL_TEXTURE_COMPARE_MODE,
-                                     comparing ? GL_COMPARE_REF_TO_TEXTURE : GL_NONE));
+    const GLint mode = comparing ? GL_COMPARE_REF_TO_TEXTURE : GL_NONE;
+    VKM_GL_CHECK(glSamplerParameteri(m_id, GL_TEXTURE_COMPARE_MODE, mode));
     VKM_GL_CHECK(glSamplerParameteri(m_id, GL_TEXTURE_COMPARE_FUNC, toGLenum(m_params.compare)));
 }
 

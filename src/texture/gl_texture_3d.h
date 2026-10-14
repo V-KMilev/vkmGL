@@ -47,9 +47,6 @@ class Texture3D : public GLObject {
         explicit Texture3D(const std::string& name, const Texture3DParams& params);
 
     public:
-        void bind(GLenum target = GL_NONE) const;
-        void unbind(GLenum target = GL_NONE) const;
-
         /**
          * @brief Bind for sampling on texture unit @p slot.
          */
@@ -82,8 +79,9 @@ class Texture3D : public GLObject {
          * anything inside a frame.
          *
          * @param pixels Destination, sized as upload()'s source is.
+         * @param bytes  The destination's size in bytes; the read writes no further.
          */
-        void download(void* pixels) const;
+        void download(void* pixels, uint32_t bytes) const;
 
         uint32_t getWidth()  const { return m_params.width; }
         uint32_t getHeight() const { return m_params.height; }

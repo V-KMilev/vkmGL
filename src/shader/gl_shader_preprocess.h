@@ -5,9 +5,9 @@
 namespace Vkm::GL {
 
 /**
- * @brief GLSL version injected when none is set explicitly - GL 4.3 core.
+ * @brief GLSL version injected when none is set explicitly - GL 4.5 core, what this library calls.
  */
-constexpr int DEFAULT_GLSL_VERSION = 430;
+constexpr int DEFAULT_GLSL_VERSION = 450;
 
 /**
  * @brief Set the text prepended to every shader stage.
@@ -23,7 +23,7 @@ constexpr int DEFAULT_GLSL_VERSION = 430;
  * Applies to graphics and compute stages alike, since both go through
  * preprocessShaderSource. Call once at startup, before any shader is built.
  *
- * @param glslVersion Version in GLSL's integer form, e.g. 430 for 4.3.
+ * @param glslVersion Version in GLSL's integer form, e.g. 450 for 4.5.
  * @param constants GLSL declarations inserted after the `#version` line;
  *                  empty for an application that needs none.
  */

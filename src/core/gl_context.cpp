@@ -197,7 +197,7 @@ int32_t Context::maxSamples() const {
 
 int32_t Context::maxTextureSize() const {
     if (m_maxTextureSize < 0) {
-        // GL 4.3 guarantees 16384; the floor here is only for a query that
+        // GL 4.5 guarantees 16384; the floor here is only for a query that
         // failed, so a caller clamping against it still gets a usable size.
         GLint size = 1024;
         VKM_GL_CHECK(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size));

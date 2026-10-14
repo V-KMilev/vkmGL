@@ -52,13 +52,19 @@ class VertexArray : public GLObject {
          * @param layout       Element list describing one vertex.
          * @param startIndex   First attribute location to write.
          */
-        void addBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout,
-                       uint32_t startIndex = 0);
+        void addBuffer(
+            const VertexBuffer& vertexBuffer,
+            const VertexBufferLayout& layout,
+            uint32_t startIndex = 0
+        );
 
         /**
-         * @brief Sets the attribute divisor for instanced rendering for a given attribute index.
+         * @brief Step the buffer fed at @p startIndex once every @p divisor instances, not per vertex.
+         *
+         * @param startIndex The startIndex that buffer was added at.
+         * @param divisor    Instances per step; 0 steps per vertex.
          */
-        void setAttributeDivisor(uint32_t index, uint32_t divisor);
+        void setDivisor(uint32_t startIndex, uint32_t divisor);
 
         /**
          * @brief Draw @p count non-indexed vertices from this VAO with glDrawArrays.

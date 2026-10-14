@@ -357,7 +357,7 @@ class Context {
          * request past it is not a texture that renders badly, it is one the
          * driver refuses to allocate at all.
          *
-         * @return The limit in texels; at least 1024 on any GL 4.3 context.
+         * @return The limit in texels; at least 1024 on any GL 4.5 context.
          */
         int32_t maxTextureSize() const;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <GL/glew.h>
@@ -60,7 +61,7 @@ enum class TextureCompare {
 };
 
 /**
- * @brief Map a wrap mode to the OpenGL enum glTexParameteri expects.
+ * @brief Map a wrap mode to the OpenGL enum glTextureParameteri expects.
  *
  * Free functions rather than per-class statics: the mapping depends only on
  * the enum, and every texture type plus Sampler needs the same answer.
@@ -101,7 +102,7 @@ GLenum toGLenum(TextureCompare compare);
 /**
  * @brief The highest degree of anisotropic filtering this driver will accept.
  *
- * GL_TEXTURE_MAX_ANISOTROPY is only core in 4.6, so on the 4.3 context this
+ * GL_TEXTURE_MAX_ANISOTROPY is only core in 4.6, so on the 4.5 context this
  * library targets it exists only when GL_ARB_texture_filter_anisotropic or its
  * EXT predecessor is present. Returns 1.0 when neither is, which is the value
  * meaning "no anisotropy" and lets callers degrade to plain trilinear without
@@ -133,8 +134,18 @@ struct Texture2DParams {
     float maxAnisotropy = 1.0f;                                           ///< Anisotropic filtering degree (1 = off); clamped to the driver's limit
 
     bool generateMipmaps = true;                                          ///< Automatically generate mipmaps
+    uint32_t levels      = 0;                                             ///< Levels; 0: see levelCount
     const void* data     = nullptr;                                       ///< Pointer to initial data
 };
+
+/**
+ * @brief How many levels @p params allocates.
+ *
+ * @param params The texture's parameters.
+ * @return params.levels, or with none given the whole chain down to 1x1 when it generates
+ *         mipmaps and level 0 alone when it does not.
+ */
+uint32_t levelCount(const Texture2DParams& params);
 
 /**
  * @brief Params preset for an off-screen render-target texture: clamped, no
@@ -142,18 +153,25 @@ struct Texture2DParams {
  * nearest (depth / data targets); colour targets pass linear.
  */
 Texture2DParams renderTargetParams(
-    uint32_t width, uint32_t height, GLenum internalFormat, GLenum format,
+    uint32_t width,
+    uint32_t height,
+    GLenum internalFormat,
+    GLenum format,
     TextureMinFilter minFilter = TextureMinFilter::Nearest,
-    TextureMagFilter magFilter = TextureMagFilter::Nearest);
+    TextureMagFilter magFilter = TextureMagFilter::Nearest
+);
 
 
 /**
- * @brief A 2D OpenGL texture object: bind, set parameters, update pixels.
+ * @brief A 2D OpenGL texture object with immutable storage: sample it, set parameters, fill levels.
  *
- * Built from pixels the caller already has. Decoding a file is not this
- * module's job - a platform layer that owned an image decoder would decide the
- * application's image formats for it - so an application decodes with whatever
- * it uses elsewhere and hands the bytes over.
+ * Every edit goes through direct state access, so none disturbs what is bound. The storage is
+ * fixed at creation - levelCount(params) levels of params.internalFormat - and setData() makes new
+ * storage, under a new name, only when the size changes.
+ *
+ * Built from pixels the caller already has. Decoding a file is not this module's job - a platform
+ * layer that owned an image decoder would decide the application's image formats for it - so an
+ * application decodes with whatever it uses elsewhere and hands the bytes over.
  */
 class Texture2D : public GLObject {
     public:
@@ -173,23 +191,10 @@ class Texture2D : public GLObject {
 
     public:
         /**
-         * @brief Bind the texture to the current OpenGL context.
-         * @param target Target texture type, defaults to GL_NONE (use internal target).
+         * @brief Bind the texture to a texture unit for sampling.
+         * @param slot Texture unit.
          */
-        void bind(GLenum target = GL_NONE) const;
-
-        /**
-         * @brief Unbind the texture from the bind point.
-         * @param target Target texture type, defaults to GL_NONE (use internal target).
-         */
-        void unbind(GLenum target = GL_NONE) const;
-
-        /**
-         * @brief Bind the texture to a given texture slot.
-         * @param slot   Texture unit slot.
-         * @param target Texture type.
-         */
-        void bindSlot(uint32_t slot, GLenum target = GL_NONE) const;
+        void bindSlot(uint32_t slot) const;
 
         /**
          * @brief The parameters this texture was created with.
@@ -204,7 +209,11 @@ class Texture2D : public GLObject {
         const std::string& getName() const { return m_name; }
 
         /**
-         * @brief Set new data for the texture.
+         * @brief Fill level 0 with new pixels, and the chain below when it generates mipmaps.
+         *
+         * A new size makes new storage, so the texture's name changes: an FBO attachment or a
+         * handle taken from getID() before is stale after.
+         *
          * @param data   Pointer to pixel data.
          * @param width  Width of new data.
          * @param height Height of new data.
@@ -212,6 +221,40 @@ class Texture2D : public GLObject {
          * @param type   OpenGL data type.
          */
         void setData(const void* data, uint32_t width, uint32_t height, GLenum format, GLenum type);
+
+        /**
+         * @brief Fill one level with pixels of the texture's current format and type.
+         *
+         * @param level  The level, below levels().
+         * @param pixels Its pixels, tightly packed at the level's own size.
+         */
+        void uploadLevel(uint32_t level, const void* pixels) const;
+
+        /**
+         * @brief Fill one level of a block-compressed texture.
+         *
+         * @param level  The level, below levels().
+         * @param blocks Its blocks.
+         * @param bytes  How many bytes they take.
+         */
+        void uploadCompressedLevel(uint32_t level, const void* blocks, uint32_t bytes) const;
+
+        /// Build every level below 0 from level 0.
+        void generateMipmaps() const;
+
+        /**
+         * @brief Choose which channel each of r, g, b and a reads, kept across setData()'s new
+         *        storage.
+         *
+         * @param rgba GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA, GL_ZERO or GL_ONE for each.
+         */
+        void setSwizzle(const GLint rgba[4]);
+
+        /**
+         * @brief How many levels the storage holds.
+         * @return levelCount() of its parameters; a texture of no size holds none.
+         */
+        uint32_t levels() const { return levelCount(m_params); }
 
         /**
          * @brief Set the S and T coordinate wrapping modes.
@@ -276,11 +319,15 @@ class Texture2D : public GLObject {
          */
         void release() noexcept;
 
+        /// Create the name and its storage from m_params, level 0 filled from m_params.data.
+        void allocate();
+
         void applyParameters() const;
 
     private:
-        std::string     m_name;     ///< Debug label, for GL object naming and logs.
-        Texture2DParams m_params;
+        std::string          m_name;     ///< Debug label, for GL object naming and logs.
+        Texture2DParams      m_params;
+        std::array<GLint, 4> m_swizzle = {GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA};  ///< See setSwizzle().
 };
 
 } // namespace Vkm::GL

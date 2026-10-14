@@ -5,71 +5,10 @@
 namespace Vkm::GL {
 
 /**
- * @brief Enum class to specify the dimensionality of a framebuffer attachment.
- */
-enum class FrameBufferDimension {
-    ND = 0,  ///< Layered/framebuffer texture (glFramebufferTexture)
-    D1 = 1,  ///< 1D texture (glFramebufferTexture1D)
-    D2 = 2,  ///< 2D texture (glFramebufferTexture2D)
-    D3 = 3   ///< 3D texture (glFramebufferTexture3D)
-};
-
-/**
- * @brief Describes a framebuffer attachment, which can be a texture or renderbuffer.
- *
- * Holds all information required to attach a texture or renderbuffer to a framebuffer.
- * The `attachment` specifies to which framebuffer attachment point (e.g., GL_COLOR_ATTACHMENT0).
- * The `textarget` specifies the texture target type (e.g., GL_TEXTURE_2D).
- * `textureID` references the GL object, while `level` and `layer` are used for mipmap and array/3D slices.
- */
-struct FrameBufferAttachment {
-    GLenum attachment = GL_COLOR_ATTACHMENT0; ///< Attachment point (e.g. GL_COLOR_ATTACHMENT0)
-    GLenum textarget = GL_TEXTURE_2D;        ///< Texture target (e.g. GL_TEXTURE_2D)
-    uint32_t textureID = 0;                  ///< OpenGL texture object ID
-    int32_t level = 0;                       ///< Mipmap level
-    int32_t layer = 0;                       ///< Layer for array/3D textures
-
-    FrameBufferAttachment() = default;
-
-    /**
-     * @brief Create attachment with a specific attachment point and texture.
-     * @param attach GL attachment point.
-     * @param texID Texture object ID.
-     * @param lvl Mipmap level.
-     */
-    FrameBufferAttachment(
-        GLenum attach,
-        uint32_t texID,
-        int32_t lvl = 0
-    ) : attachment(attach),
-        textureID(texID),
-        level(lvl) {}
-
-    /**
-     * @brief Create attachment with detailed texture target/layer control.
-     * @param attach GL attachment point.
-     * @param target GL texture target.
-     * @param texID Texture object ID.
-     * @param lvl Mipmap level.
-     * @param lyr Layer (for 3D/array textures).
-     */
-    FrameBufferAttachment(
-        GLenum attach,
-        GLenum target,
-        uint32_t texID,
-        int32_t lvl = 0,
-        int32_t lyr = 0
-    ) : attachment(attach),
-        textarget(target),
-        textureID(texID),
-        level(lvl),
-        layer(lyr) {}
-};
-
-/**
  * @brief OpenGL Frame Buffer Object (FBO) abstraction.
  *
- * Manages FBO creation, deletion, attachment, and status checks.
+ * Manages FBO creation, deletion, attachment, and status checks, all through direct state
+ * access: only bind() changes what is drawn into.
  */
 class FrameBuffer : public GLObject {
     public:
@@ -104,33 +43,27 @@ class FrameBuffer : public GLObject {
         static void bindDefault();
 
         /**
-         * @brief Attach a texture to the framebuffer using a FrameBufferAttachment.
-         * @param dim The dimensionality/type of the texture.
-         * @param attachment The attachment data.
+         * @brief Attach a texture level: a 2D texture, multisample or not, or a whole layered one.
+         * @param attachment Framebuffer attachment (e.g., GL_COLOR_ATTACHMENT0).
+         * @param textureID  GL texture object ID; 0 detaches.
+         * @param level      Mipmap level (default 0).
          */
-        void attachTexture(FrameBufferDimension dim, const FrameBufferAttachment& attachment);
+        void attachTexture(GLenum attachment, uint32_t textureID, int32_t level = 0);
 
         /**
-         * @brief Attach a 2D texture to a framebuffer attachment point.
-         * @param attachment Framebuffer attachment (e.g., GL_COLOR_ATTACHMENT0).
-         * @param textureID GL texture object ID.
-         * @param level Mipmap level (default 0).
+         * @brief Attach one layer of a texture level: an array's layer, a cube's face, a cube
+         *        array's layer * 6 + face.
+         * @param attachment Framebuffer attachment (e.g., GL_DEPTH_ATTACHMENT).
+         * @param textureID  GL texture object ID.
+         * @param level      Mipmap level.
+         * @param layer      The layer.
          */
-        void attachTexture2D(GLenum attachment, uint32_t textureID, int32_t level = 0);
-
-        /**
-         * @brief Attach a 2D texture with a specified texture target.
-         * @param attachment Framebuffer attachment (e.g., GL_COLOR_ATTACHMENT0).
-         * @param textarget Texture target (e.g., GL_TEXTURE_2D).
-         * @param textureID GL texture object ID.
-         * @param level Mipmap level (default 0).
-         */
-        void attachTexture2D(GLenum attachment, GLenum textarget, uint32_t textureID, int32_t level = 0);
+        void attachLayer(GLenum attachment, uint32_t textureID, int32_t level, int32_t layer);
 
         /**
          * @brief Attach a render buffer to the framebuffer.
          * @param attachment Framebuffer attachment point (e.g., GL_DEPTH_ATTACHMENT).
-         * @param renderBufferID GL renderbuffer object ID.
+         * @param renderBufferID GL renderbuffer object ID; 0 detaches.
          */
         void attachRenderBuffer(GLenum attachment, uint32_t renderBufferID);
 
@@ -161,12 +94,14 @@ class FrameBuffer : public GLObject {
 
         /**
          * @brief Perform an OpenGL status check for the framebuffer.
-         * @return The GL status code from glCheckFramebufferStatus.
+         * @return The GL status code from glCheckNamedFramebufferStatus.
          */
         GLenum checkStatus() const;
 
         /**
          * @brief Blit (copy) a rectangle of pixels from one framebuffer to another.
+         * @param sourceID Framebuffer read from; 0 is the default one.
+         * @param targetID Framebuffer written to; 0 is the default one.
          * @param srcX0 Source rectangle X0
          * @param srcY0 Source rectangle Y0
          * @param srcX1 Source rectangle X1
@@ -179,9 +114,18 @@ class FrameBuffer : public GLObject {
          * @param filter Interpolation method (GL_NEAREST or GL_LINEAR)
          */
         static void blit(
-            int32_t srcX0, int32_t srcY0, int32_t srcX1, int32_t srcY1,
-            int32_t dstX0, int32_t dstY0, int32_t dstX1, int32_t dstY1,
-            GLbitfield mask, GLenum filter
+            uint32_t sourceID,
+            uint32_t targetID,
+            int32_t srcX0,
+            int32_t srcY0,
+            int32_t srcX1,
+            int32_t srcY1,
+            int32_t dstX0,
+            int32_t dstY0,
+            int32_t dstX1,
+            int32_t dstY1,
+            GLbitfield mask,
+            GLenum filter
         );
 
     private:
