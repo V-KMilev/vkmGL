@@ -10,7 +10,7 @@
 namespace Vkm::GL {
 
 FrameBuffer::FrameBuffer() : GLObject(GL_FRAMEBUFFER, GL_FRAMEBUFFER, 0) {
-    VKM_GL_CHECK(glGenFramebuffers(1, &m_id));
+    VKM_GL_CHECK(glCreateFramebuffers(1, &m_id));
     VKM_ASSERT(m_id != 0);
 }
 
@@ -44,79 +44,28 @@ void FrameBuffer::bindDefault() {
     VKM_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-void FrameBuffer::attachTexture(FrameBufferDimension dim, const FrameBufferAttachment& attachment) {
-    bind();
-
-    switch (dim) {
-        case FrameBufferDimension::ND:
-            VKM_GL_CHECK(glFramebufferTexture(
-                GL_FRAMEBUFFER,
-                attachment.attachment,
-                attachment.textureID,
-                attachment.level
-            ));
-            break;
-
-        case FrameBufferDimension::D1:
-            VKM_GL_CHECK(glFramebufferTexture1D(
-                GL_FRAMEBUFFER,
-                attachment.attachment,
-                attachment.textarget,
-                attachment.textureID,
-                attachment.level
-            ));
-            break;
-
-        case FrameBufferDimension::D2:
-            VKM_GL_CHECK(glFramebufferTexture2D(
-                GL_FRAMEBUFFER,
-                attachment.attachment,
-                attachment.textarget,
-                attachment.textureID,
-                attachment.level
-            ));
-            break;
-
-        case FrameBufferDimension::D3:
-            VKM_GL_CHECK(glFramebufferTexture3D(
-                GL_FRAMEBUFFER,
-                attachment.attachment,
-                attachment.textarget,
-                attachment.textureID,
-                attachment.level,
-                attachment.layer
-            ));
-            break;
-    }
+void FrameBuffer::attachTexture(GLenum attachment, uint32_t textureID, int32_t level) {
+    VKM_GL_CHECK(glNamedFramebufferTexture(m_id, attachment, textureID, level));
 }
 
-void FrameBuffer::attachTexture2D(GLenum attachment, uint32_t textureID, int32_t level) {
-    attachTexture2D(attachment, GL_TEXTURE_2D, textureID, level);
-}
-
-void FrameBuffer::attachTexture2D(GLenum attachment, GLenum textarget, uint32_t textureID, int32_t level) {
-    bind();
-    VKM_GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, textarget, textureID, level));
+void FrameBuffer::attachLayer(GLenum attachment, uint32_t textureID, int32_t level, int32_t layer) {
+    VKM_GL_CHECK(glNamedFramebufferTextureLayer(m_id, attachment, textureID, level, layer));
 }
 
 void FrameBuffer::attachRenderBuffer(GLenum attachment, uint32_t renderBufferID) {
-    bind();
-    VKM_GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderBufferID));
+    VKM_GL_CHECK(glNamedFramebufferRenderbuffer(m_id, attachment, GL_RENDERBUFFER, renderBufferID));
 }
 
 void FrameBuffer::setDrawBuffers(const GLenum* attachments, int32_t count) {
-    bind();
-    VKM_GL_CHECK(glDrawBuffers(count, attachments));
+    VKM_GL_CHECK(glNamedFramebufferDrawBuffers(m_id, count, attachments));
 }
 
 void FrameBuffer::setDrawBuffer(GLenum attachment) {
-    bind();
-    VKM_GL_CHECK(glDrawBuffer(attachment));
+    VKM_GL_CHECK(glNamedFramebufferDrawBuffer(m_id, attachment));
 }
 
 void FrameBuffer::setReadBuffer(GLenum attachment) {
-    bind();
-    VKM_GL_CHECK(glReadBuffer(attachment));
+    VKM_GL_CHECK(glNamedFramebufferReadBuffer(m_id, attachment));
 }
 
 bool FrameBuffer::isComplete() const {
@@ -124,8 +73,7 @@ bool FrameBuffer::isComplete() const {
 }
 
 GLenum FrameBuffer::checkStatus() const {
-    bind();
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    const GLenum status = glCheckNamedFramebufferStatus(m_id, GL_FRAMEBUFFER);
 
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         const char* errorStr = "Unknown error";
@@ -146,11 +94,33 @@ GLenum FrameBuffer::checkStatus() const {
 }
 
 void FrameBuffer::blit(
-    int32_t srcX0, int32_t srcY0, int32_t srcX1, int32_t srcY1,
-    int32_t dstX0, int32_t dstY0, int32_t dstX1, int32_t dstY1,
-    GLbitfield mask, GLenum filter
+    uint32_t sourceID,
+    uint32_t targetID,
+    int32_t srcX0,
+    int32_t srcY0,
+    int32_t srcX1,
+    int32_t srcY1,
+    int32_t dstX0,
+    int32_t dstY0,
+    int32_t dstX1,
+    int32_t dstY1,
+    GLbitfield mask,
+    GLenum filter
 ) {
-    VKM_GL_CHECK(glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter));
+    VKM_GL_CHECK(glBlitNamedFramebuffer(
+        sourceID,
+        targetID,
+        srcX0,
+        srcY0,
+        srcX1,
+        srcY1,
+        dstX0,
+        dstY0,
+        dstX1,
+        dstY1,
+        mask,
+        filter
+    ));
 }
 
 } // namespace Vkm::GL

@@ -115,11 +115,12 @@ class Context {
 
         /**
          * @brief Clear framebuffer buffers (color/depth/stencil).
-         * @param color   Clear color buffer if true.
-         * @param depth   Clear depth buffer if true.
-         * @param stencil Clear stencil buffer if true.
+         * @param color      Clear color buffer if true.
+         * @param depth      Clear depth buffer if true.
+         * @param stencil    Clear stencil buffer if true.
+         * @param depthValue What the depth buffer is cleared to: 1 is GL's far plane, 0 a reversed one's.
          */
-        void clear(bool color = true, bool depth = true, bool stencil = false) const;
+        void clear(bool color = true, bool depth = true, bool stencil = false, float depthValue = 1.0f) const;
 
         /**
          * @brief Set the viewport region for rendering.
@@ -356,7 +357,7 @@ class Context {
          * request past it is not a texture that renders badly, it is one the
          * driver refuses to allocate at all.
          *
-         * @return The limit in texels; at least 1024 on any GL 4.3 context.
+         * @return The limit in texels; at least 1024 on any GL 4.5 context.
          */
         int32_t maxTextureSize() const;
 

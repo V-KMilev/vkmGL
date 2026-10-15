@@ -48,10 +48,12 @@ GraphicsShaderSource::GraphicsShaderSource(const std::string& path)
     }
 }
 
-GraphicsShaderSource::GraphicsShaderSource(std::string path,
-                                           std::string vertexShader_,
-                                           std::string fragmentShader_,
-                                           std::string geometryShader_)
+GraphicsShaderSource::GraphicsShaderSource(
+    std::string path,
+    std::string vertexShader_,
+    std::string fragmentShader_,
+    std::string geometryShader_
+)
     : m_path(std::move(path))
     , vertexShader(std::move(vertexShader_))
     , fragmentShader(std::move(fragmentShader_))

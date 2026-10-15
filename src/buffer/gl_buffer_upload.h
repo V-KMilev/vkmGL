@@ -45,8 +45,12 @@ inline void uploadIfChanged(std::unique_ptr<Buffer>& buffer, T& last, const T& d
  * @param activeSize Bytes actually read by the shaders this frame.
  */
 template <typename Buffer, typename T>
-inline void uploadPrefixIfChanged(std::unique_ptr<Buffer>& buffer, T& last,
-                                  const T& data, size_t activeSize) {
+inline void uploadPrefixIfChanged(
+    std::unique_ptr<Buffer>& buffer,
+    T& last,
+    const T& data,
+    size_t activeSize
+) {
     const bool first = !buffer;
     if (!first && std::memcmp(&data, &last, activeSize) == 0) return;
     if (first) buffer = std::make_unique<Buffer>(&data, sizeof(T), GL_DYNAMIC_DRAW);

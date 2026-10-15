@@ -16,11 +16,9 @@ GLBuffer::GLBuffer(
     m_size(size),
     m_usage(usage)
 {
-    VKM_GL_CHECK(glGenBuffers(1, &m_id));
+    VKM_GL_CHECK(glCreateBuffers(1, &m_id));
     VKM_ASSERT(m_id != 0);
-
-    bind();
-    VKM_GL_CHECK(glBufferData(m_target, m_size, data, m_usage));
+    VKM_GL_CHECK(glNamedBufferData(m_id, m_size, data, m_usage));
 }
 
 GLBuffer::~GLBuffer() {
@@ -64,13 +62,11 @@ GLenum GLBuffer::getTarget() const {
 
 void GLBuffer::update(const void* data, uint32_t size, uint32_t offset) {
     VKM_ASSERT(offset + size <= m_size);
-    bind();
-    VKM_GL_CHECK(glBufferSubData(m_target, offset, size, data));
+    VKM_GL_CHECK(glNamedBufferSubData(m_id, offset, size, data));
 }
 
 void GLBuffer::allocate(uint32_t size, const void* data) {
-    bind();
-    VKM_GL_CHECK(glBufferData(m_target, size, data, m_usage));
+    VKM_GL_CHECK(glNamedBufferData(m_id, size, data, m_usage));
     m_size = size;
 }
 
@@ -88,8 +84,7 @@ MappedBuffer::MappedBuffer(const GLBuffer& buffer, void* data)
 
 MappedBuffer::~MappedBuffer() {
     if (m_data == nullptr) return;
-    m_buffer->bind();
-    VKM_GL_CHECK(glUnmapBuffer(m_buffer->getTarget()));
+    VKM_GL_CHECK(glUnmapNamedBuffer(m_buffer->getID()));
 }
 
 MappedBuffer::MappedBuffer(MappedBuffer && other) noexcept
@@ -108,17 +103,15 @@ MappedBuffer& MappedBuffer::operator=(MappedBuffer && other) noexcept {
 }
 
 MappedBuffer GLBuffer::map(GLenum access) {
-    bind();
     void* data = nullptr;
-    VKM_GL_CHECK(data = glMapBuffer(m_target, access));
+    VKM_GL_CHECK(data = glMapNamedBuffer(m_id, access));
     return MappedBuffer(*this, data);
 }
 
 MappedBuffer GLBuffer::mapRange(uint32_t offset, uint32_t length, GLbitfield access) {
     VKM_ASSERT(offset + length <= m_size);
-    bind();
     void* data = nullptr;
-    VKM_GL_CHECK(data = glMapBufferRange(m_target, offset, length, access));
+    VKM_GL_CHECK(data = glMapNamedBufferRange(m_id, offset, length, access));
     return MappedBuffer(*this, data);
 }
 

@@ -76,8 +76,8 @@ class ShaderBase : public GLObject {
          */
         const std::string& getPath() const;
 
-        // Uniform setters. The cache is content-hashed; any source of the name
-        // works (string literal, std::string::c_str(), runtime-constructed).
+        // Uniform setters, on this program whether it is bound or not. The cache is content-hashed;
+        // any source of the name works (string literal, std::string::c_str(), runtime-constructed).
         void setUniform4f(const char* uniformName, float f0, float f1, float f2, float f3) const;
         void setUniform3f(const char* uniformName, float f0, float f1, float f2) const;
         void setUniform2f(const char* uniformName, float f0, float f1) const;

@@ -10,7 +10,7 @@ RenderBuffer::RenderBuffer()
 : GLObject(GL_RENDERBUFFER, GL_RENDERBUFFER, 0)
 , m_width(0)
 , m_height(0) {
-    VKM_GL_CHECK(glGenRenderbuffers(1, &m_id));
+    VKM_GL_CHECK(glCreateRenderbuffers(1, &m_id));
     VKM_ASSERT(m_id != 0);
 }
 
@@ -54,16 +54,14 @@ void RenderBuffer::storage(GLenum internalFormat, int32_t width, int32_t height)
     m_width = width;
     m_height = height;
 
-    bind();
-    VKM_GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, internalFormat, width, height));
+    VKM_GL_CHECK(glNamedRenderbufferStorage(m_id, internalFormat, width, height));
 }
 
 void RenderBuffer::storageMultisample(int32_t samples, GLenum internalFormat, int32_t width, int32_t height) {
     m_width = width;
     m_height = height;
 
-    bind();
-    VKM_GL_CHECK(glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internalFormat, width, height));
+    VKM_GL_CHECK(glNamedRenderbufferStorageMultisample(m_id, samples, internalFormat, width, height));
 }
 
 } // namespace Vkm::GL
