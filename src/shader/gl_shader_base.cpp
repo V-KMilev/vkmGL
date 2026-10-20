@@ -5,6 +5,7 @@
 
 #include "gl_shader_reload.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <stdexcept>
 #include <utility>
@@ -49,6 +50,10 @@ ShaderBase& ShaderBase::operator=(ShaderBase && other) noexcept {
         // move preserves element addresses, keeping the view keys valid.
         m_uniformNames         = std::move(other.m_uniformNames);
         m_uniformLocationCache = std::move(other.m_uniformLocationCache);
+        m_plain                = std::move(other.m_plain);
+        m_plainListed          = std::exchange(other.m_plainListed, false);
+        m_zeros                = std::move(other.m_zeros);
+        m_intZeros             = std::move(other.m_intZeros);
     }
     return *this;
 }
@@ -97,6 +102,7 @@ bool ShaderBase::tryRecompile() {
     }
     m_uniformLocationCache.clear();
     m_uniformNames.clear();
+    m_plainListed = false;
     return true;
 }
 
@@ -174,7 +180,8 @@ int32_t ShaderBase::resolveUniform(const char* name, bool warnIfMissing) const {
         return it->second;
     }
 
-    const int32_t location = glGetUniformLocation(m_id, name);
+    int32_t location = -1;
+    VKM_GL_CHECK(location = glGetUniformLocation(m_id, name));
     if (location == -1 && warnIfMissing) {
         LOG_WARNING("Shader '%s' uniform '%s' does not exist", m_name.c_str(), name);
     }
@@ -184,6 +191,96 @@ int32_t ShaderBase::resolveUniform(const char* name, bool warnIfMissing) const {
     const std::string& owned = m_uniformNames.emplace_back(name);
     m_uniformLocationCache.emplace(std::string_view(owned), location);
     return location;
+}
+
+namespace {
+
+/// The values in a uniform of GL type @p type; 0 for one zeroUniforms() leaves.
+uint32_t valuesIn(GLenum type) {
+    switch (type) {
+        case GL_FLOAT:
+        case GL_INT:
+        case GL_BOOL:
+        case GL_UNSIGNED_INT:      return 1;
+        case GL_FLOAT_VEC2:
+        case GL_INT_VEC2:
+        case GL_BOOL_VEC2:
+        case GL_UNSIGNED_INT_VEC2: return 2;
+        case GL_FLOAT_VEC3:
+        case GL_INT_VEC3:
+        case GL_BOOL_VEC3:
+        case GL_UNSIGNED_INT_VEC3: return 3;
+        case GL_FLOAT_VEC4:
+        case GL_INT_VEC4:
+        case GL_BOOL_VEC4:
+        case GL_UNSIGNED_INT_VEC4: return 4;
+        case GL_FLOAT_MAT3:        return 9;
+        case GL_FLOAT_MAT4:        return 16;
+        default:                   return 0;  // a sampler or an image keeps the unit it is bound to
+    }
+}
+
+} // namespace
+
+void ShaderBase::listPlainUniforms() const {
+    m_plain.clear();
+    GLint active = 0;
+    VKM_GL_CHECK(glGetProgramiv(m_id, GL_ACTIVE_UNIFORMS, &active));
+    size_t most = 0;
+    for (GLint i = 0; i < active; ++i) {
+        char   name[256];
+        GLint  count = 0;
+        GLenum type  = 0;
+        const auto index = static_cast<GLuint>(i);
+        VKM_GL_CHECK(glGetActiveUniform(m_id, index, sizeof(name), nullptr, &count, &type, name));
+        // A block's member has no location.
+        GLint location = -1;
+        VKM_GL_CHECK(location = glGetUniformLocation(m_id, name));
+        const uint32_t values = valuesIn(type);
+        if (location < 0 || values == 0) continue;
+        m_plain.push_back(PlainUniform{location, count, type});
+        most = std::max<size_t>(most, static_cast<size_t>(count) * values);
+    }
+    m_zeros.assign(most, 0.0f);
+    m_intZeros.assign(most, 0u);
+    m_plainListed = true;
+}
+
+void ShaderBase::zeroUniforms() const {
+    if (!m_plainListed) listPlainUniforms();
+
+    const GLfloat* zeros = m_zeros.data();
+    const auto*    ints  = reinterpret_cast<const GLint*>(m_intZeros.data());
+    const GLuint*  uints = m_intZeros.data();
+    for (const PlainUniform& u : m_plain) {
+        const GLint   at = u.location;
+        const GLsizei n  = u.count;
+        switch (u.type) {
+            case GL_FLOAT:             VKM_GL_CHECK(glProgramUniform1fv(m_id, at, n, zeros)); break;
+            case GL_FLOAT_VEC2:        VKM_GL_CHECK(glProgramUniform2fv(m_id, at, n, zeros)); break;
+            case GL_FLOAT_VEC3:        VKM_GL_CHECK(glProgramUniform3fv(m_id, at, n, zeros)); break;
+            case GL_FLOAT_VEC4:        VKM_GL_CHECK(glProgramUniform4fv(m_id, at, n, zeros)); break;
+            case GL_FLOAT_MAT3:
+                VKM_GL_CHECK(glProgramUniformMatrix3fv(m_id, at, n, GL_FALSE, zeros));
+                break;
+            case GL_FLOAT_MAT4:
+                VKM_GL_CHECK(glProgramUniformMatrix4fv(m_id, at, n, GL_FALSE, zeros));
+                break;
+            case GL_INT:
+            case GL_BOOL:              VKM_GL_CHECK(glProgramUniform1iv(m_id, at, n, ints)); break;
+            case GL_INT_VEC2:
+            case GL_BOOL_VEC2:         VKM_GL_CHECK(glProgramUniform2iv(m_id, at, n, ints)); break;
+            case GL_INT_VEC3:
+            case GL_BOOL_VEC3:         VKM_GL_CHECK(glProgramUniform3iv(m_id, at, n, ints)); break;
+            case GL_INT_VEC4:
+            case GL_BOOL_VEC4:         VKM_GL_CHECK(glProgramUniform4iv(m_id, at, n, ints)); break;
+            case GL_UNSIGNED_INT:      VKM_GL_CHECK(glProgramUniform1uiv(m_id, at, n, uints)); break;
+            case GL_UNSIGNED_INT_VEC2: VKM_GL_CHECK(glProgramUniform2uiv(m_id, at, n, uints)); break;
+            case GL_UNSIGNED_INT_VEC3: VKM_GL_CHECK(glProgramUniform3uiv(m_id, at, n, uints)); break;
+            case GL_UNSIGNED_INT_VEC4: VKM_GL_CHECK(glProgramUniform4uiv(m_id, at, n, uints)); break;
+            default: break;
+        }
+    }
 }
 
 bool ShaderBase::hasUniform(const char* name) const {

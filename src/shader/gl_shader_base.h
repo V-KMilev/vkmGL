@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -107,6 +108,17 @@ class ShaderBase : public GLObject {
          */
         bool hasUniform(const char* name) const;
 
+        /**
+         * @brief Set every uniform outside a block that is a float, int, uint or bool scalar or
+         *        vector, a mat3 or a mat4, to zero.
+         *
+         * A program shared by passes that each set only some starts from this rather than from
+         * what another left. Any other type is left as it is: samplers and images keep their
+         * units, and a mat2, a non-square matrix or a double keeps its value. A block is its
+         * buffer's. The uniforms are listed once a link.
+         */
+        void zeroUniforms() const;
+
     protected:
         /**
          * @brief Protected constructor for derived classes.
@@ -163,6 +175,16 @@ class ShaderBase : public GLObject {
         int32_t getUniformLocation(const char* name) const;
 
     private:
+        /// A uniform zeroUniforms() sets.
+        struct PlainUniform {
+            int32_t  location = -1;
+            int32_t  count    = 0;  ///< Its array's length, 1 for a single value.
+            uint32_t type     = 0;  ///< Its GL type.
+        };
+
+        /// List the program's plain uniforms into m_plain, and size the zeros for the largest.
+        void listPlainUniforms() const;
+
         /**
          * @brief Shared body of hasUniform() and getUniformLocation().
          *
@@ -194,6 +216,12 @@ class ShaderBase : public GLObject {
 
         /// Name -> location, keyed by view so a literal hashes without allocating.
         mutable std::unordered_map<std::string_view, int32_t> m_uniformLocationCache;
+
+        // What zeroUniforms() sets, listed on first use after a link, and zeros for the largest.
+        mutable std::vector<PlainUniform> m_plain;
+        mutable bool                      m_plainListed = false;
+        mutable std::vector<float>        m_zeros;
+        mutable std::vector<uint32_t>     m_intZeros;  ///< Read as signed and unsigned alike.
 };
 
 } // namespace Vkm::GL
