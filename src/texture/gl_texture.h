@@ -136,6 +136,9 @@ struct Texture2DParams {
     bool generateMipmaps = true;                                          ///< Automatically generate mipmaps
     uint32_t levels      = 0;                                             ///< Levels; 0: see levelCount
     const void* data     = nullptr;                                       ///< Pointer to initial data
+
+    /// Samples a texel; above 1 a multisampled texture, which takes no pixels, levels or filter.
+    uint32_t samples     = 1;
 };
 
 /**
@@ -197,6 +200,26 @@ class Texture2D : public GLObject {
         void bindSlot(uint32_t slot) const;
 
         /**
+         * @brief Bind one level as an image, in the texture's own format, for a shader to read or
+         *        write.
+         *
+         * @param unit   Image unit the shader names.
+         * @param access GL_READ_ONLY, GL_WRITE_ONLY or GL_READ_WRITE.
+         * @param level  The level.
+         */
+        void bindImage(uint32_t unit, GLenum access, uint32_t level = 0) const;
+
+        /**
+         * @brief Fill one level with a single value.
+         *
+         * @param level  The level.
+         * @param format GL format of @p value, e.g. GL_RGBA or GL_DEPTH_COMPONENT.
+         * @param type   GL type of each of its channels.
+         * @param value  One texel's worth; null clears to zero.
+         */
+        void clear(uint32_t level, GLenum format, GLenum type, const void* value) const;
+
+        /**
          * @brief The parameters this texture was created with.
          * @return Its Texture2DParams.
          */
@@ -255,6 +278,9 @@ class Texture2D : public GLObject {
          * @return levelCount() of its parameters; a texture of no size holds none.
          */
         uint32_t levels() const { return levelCount(m_params); }
+
+        /// Whether it is multisampled: params.samples above 1.
+        bool multisampled() const { return m_params.samples > 1; }
 
         /**
          * @brief Set the S and T coordinate wrapping modes.

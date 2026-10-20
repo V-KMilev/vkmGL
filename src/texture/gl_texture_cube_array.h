@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <utility>
 
@@ -72,6 +73,35 @@ class TextureCubeArray : public GLObject {
 
         void bindSlot(uint32_t slot) const {
             VKM_GL_CHECK(glBindTextureUnit(slot, m_id));
+        }
+
+        /**
+         * @brief Copy cube @p from, every face of every level, over cube @p to.
+         *
+         * @param from The cube copied, below capacity().
+         * @param to   The cube overwritten, below capacity().
+         */
+        void copyCube(int from, int to) const {
+            for (int mip = 0; mip < m_mips; ++mip) {
+                const int edge = std::max(m_size >> mip, 1);
+                VKM_GL_CHECK(glCopyImageSubData(
+                    m_id,
+                    GL_TEXTURE_CUBE_MAP_ARRAY,
+                    mip,
+                    0,
+                    0,
+                    from * 6,
+                    m_id,
+                    GL_TEXTURE_CUBE_MAP_ARRAY,
+                    mip,
+                    0,
+                    0,
+                    to * 6,
+                    edge,
+                    edge,
+                    6
+                ));
+            }
         }
 
         int size()     const { return m_size; }
