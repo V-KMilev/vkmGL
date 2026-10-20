@@ -147,13 +147,83 @@ void Context::setStencilMask(GLuint mask) {
 
 void Context::setColorMask(bool r, bool g, bool b, bool a) {
     auto& c = m_state.colorMask;
-    if (c.r == r && c.g == g && c.b == b && c.a == a) return;
+    if (!m_state.colorMaskSplit && c.r == r && c.g == g && c.b == b && c.a == a) return;
     c.r = r; c.g = g; c.b = b; c.a = a;
+    m_state.colorMaskSplit = false;
     VKM_GL_CHECK(glColorMask(
         r ? GL_TRUE : GL_FALSE,
         g ? GL_TRUE : GL_FALSE,
         b ? GL_TRUE : GL_FALSE,
         a ? GL_TRUE : GL_FALSE));
+}
+
+void Context::setColorMask(uint32_t drawBuffer, bool r, bool g, bool b, bool a) {
+    m_state.colorMaskSplit = true;
+    VKM_GL_CHECK(glColorMaski(
+        drawBuffer,
+        r ? GL_TRUE : GL_FALSE,
+        g ? GL_TRUE : GL_FALSE,
+        b ? GL_TRUE : GL_FALSE,
+        a ? GL_TRUE : GL_FALSE
+    ));
+}
+
+namespace {
+
+/// User clip planes setDefaultState() resets: the least every GL 4.5 driver offers.
+constexpr uint32_t CLIP_PLANES = 8;
+
+// Turn @p capability on or off when @p cached says otherwise, and remember it.
+void toggle(bool& cached, GLenum capability, bool enable) {
+    if (cached == enable) return;
+    cached = enable;
+    if (enable) { VKM_GL_CHECK(glEnable(capability)); }
+    else        { VKM_GL_CHECK(glDisable(capability)); }
+}
+
+} // namespace
+
+void Context::setAlphaToCoverage(bool enable) {
+    toggle(m_state.alphaToCoverage, GL_SAMPLE_ALPHA_TO_COVERAGE, enable);
+}
+
+void Context::setPolygonOffset(GLenum mode, bool enable, float factor, float units) {
+    if (enable && (m_state.offsetFactor != factor || m_state.offsetUnits != units)) {
+        m_state.offsetFactor = factor;
+        m_state.offsetUnits  = units;
+        VKM_GL_CHECK(glPolygonOffset(factor, units));
+    }
+    switch (mode) {
+        case GL_FILL:  toggle(m_state.offsetFill, GL_POLYGON_OFFSET_FILL, enable);   break;
+        case GL_LINE:  toggle(m_state.offsetLine, GL_POLYGON_OFFSET_LINE, enable);   break;
+        case GL_POINT: toggle(m_state.offsetPoint, GL_POLYGON_OFFSET_POINT, enable); break;
+        default: break;
+    }
+}
+
+void Context::setDepthClamp(bool enable) {
+    toggle(m_state.depthClamp, GL_DEPTH_CLAMP, enable);
+}
+
+void Context::setClipDistance(uint32_t plane, bool enable) {
+    const uint32_t bit = 1u << plane;
+    bool on = (m_state.clipDistances & bit) != 0;
+    toggle(on, GL_CLIP_DISTANCE0 + plane, enable);
+    m_state.clipDistances = on ? (m_state.clipDistances | bit) : (m_state.clipDistances & ~bit);
+}
+
+void Context::setClipControl(GLenum origin, GLenum depth) const {
+    VKM_GL_CHECK(glClipControl(origin, depth));
+}
+
+void Context::setPixelAlignment(int32_t alignment) const {
+    VKM_GL_CHECK(glPixelStorei(GL_PACK_ALIGNMENT, alignment));
+    VKM_GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, alignment));
+}
+
+void Context::setSeamlessCubes(bool enable) const {
+    if (enable) { VKM_GL_CHECK(glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)); }
+    else        { VKM_GL_CHECK(glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS)); }
 }
 
 void Context::setPolygonMode(GLenum face, GLenum mode) {
@@ -184,6 +254,13 @@ void Context::setDefaultState() {
     enableScissor(false);
 
     setPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    setAlphaToCoverage(false);
+    setPolygonOffset(GL_FILL, false);
+    setPolygonOffset(GL_LINE, false);
+    setPolygonOffset(GL_POINT, false);
+    setDepthClamp(false);
+    for (uint32_t plane = 0; plane < CLIP_PLANES; ++plane) setClipDistance(plane, false);
 }
 
 int32_t Context::maxSamples() const {
@@ -204,6 +281,20 @@ int32_t Context::maxTextureSize() const {
         m_maxTextureSize = size > 0 ? size : 1024;
     }
     return m_maxTextureSize;
+}
+
+int32_t Context::integer(GLenum name) const {
+    GLint value = 0;
+    VKM_GL_CHECK(glGetIntegerv(name, &value));
+    return value;
+}
+
+void memoryBarrier(GLbitfield barriers) {
+    VKM_GL_CHECK(glMemoryBarrier(barriers));
+}
+
+void finish() {
+    VKM_GL_CHECK(glFinish());
 }
 
 std::string Context::versionString() const {
