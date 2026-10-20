@@ -6,6 +6,8 @@
 
 #include <GL/glew.h>
 
+#include "gl_fence.h"
+
 namespace Vkm::GL {
 
 /**
@@ -106,8 +108,8 @@ class StreamRing {
         uint32_t m_frame       = 0;      ///< Frames ended.
         bool     m_open        = false;
 
-        std::array<GLsync, FRAMES> m_fences{};
-        std::vector<Retired>       m_retired;
+        std::array<Fence, FRAMES> m_fences;
+        std::vector<Retired>      m_retired;
 };
 
 /**

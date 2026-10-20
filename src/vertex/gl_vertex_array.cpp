@@ -1,7 +1,9 @@
 #include "gl_vertex_array.h"
 
+#include <cstdint>
 #include <utility>
 
+#include "gl_buffer.h"
 #include "gl_error_handle.h"
 #include "l_assert.h"
 
@@ -84,6 +86,78 @@ void VertexArray::setDivisor(uint32_t startIndex, uint32_t divisor) {
 
 void VertexArray::drawArrays(GLenum mode, int32_t first, int32_t count) const {
     VKM_GL_CHECK(glDrawArrays(mode, first, count));
+}
+
+void VertexArray::setAttribute(
+    uint32_t index,
+    uint32_t binding,
+    int32_t count,
+    GLenum type,
+    uint32_t offset,
+    AttributeKind kind
+) {
+    VKM_GL_CHECK(glEnableVertexArrayAttrib(m_id, index));
+    switch (kind) {
+        case AttributeKind::Float:
+            VKM_GL_CHECK(glVertexArrayAttribFormat(m_id, index, count, type, GL_FALSE, offset));
+            break;
+        case AttributeKind::Normalized:
+            VKM_GL_CHECK(glVertexArrayAttribFormat(m_id, index, count, type, GL_TRUE, offset));
+            break;
+        case AttributeKind::Integer:
+            VKM_GL_CHECK(glVertexArrayAttribIFormat(m_id, index, count, type, offset));
+            break;
+    }
+    VKM_GL_CHECK(glVertexArrayAttribBinding(m_id, index, binding));
+}
+
+void VertexArray::setVertexBuffer(
+    uint32_t binding,
+    const GLBuffer& buffer,
+    uint32_t offset,
+    uint32_t stride
+) {
+    setVertexBuffer(binding, BufferSpan{buffer.getID(), offset, buffer.getSize()}, stride);
+}
+
+void VertexArray::setVertexBuffer(uint32_t binding, const BufferSpan& span, uint32_t stride) {
+    const auto at   = static_cast<GLintptr>(span.offset);
+    const auto step = static_cast<GLsizei>(stride);
+    VKM_GL_CHECK(glVertexArrayVertexBuffer(m_id, binding, span.buffer, at, step));
+}
+
+void VertexArray::setIndexBuffer(const GLBuffer& buffer) {
+    VKM_GL_CHECK(glVertexArrayElementBuffer(m_id, buffer.getID()));
+}
+
+void VertexArray::drawElementsBaseVertex(
+    GLenum mode,
+    uint32_t count,
+    uint32_t firstIndex,
+    int32_t baseVertex
+) const {
+    const auto* at    = reinterpret_cast<const void*>(uintptr_t{firstIndex} * sizeof(uint32_t));
+    const auto  drawn = static_cast<GLsizei>(count);
+    VKM_GL_CHECK(glDrawElementsBaseVertex(mode, drawn, GL_UNSIGNED_INT, at, baseVertex));
+}
+
+void VertexArray::multiDrawElementsIndirect(GLenum mode, const BufferSpan& commands, uint32_t count) const {
+    VKM_GL_CHECK(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, commands.buffer));
+    const auto* at = reinterpret_cast<const void*>(uintptr_t{commands.offset});
+    VKM_GL_CHECK(glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, at, static_cast<GLsizei>(count), 0));
+}
+
+void VertexArray::drawArraysInstanced(GLenum mode, int32_t first, int32_t count, int32_t instances) const {
+    VKM_GL_CHECK(glDrawArraysInstanced(mode, first, count, instances));
+}
+
+void VertexArray::multiDrawArrays(
+    GLenum mode,
+    const int32_t* firsts,
+    const int32_t* counts,
+    int32_t draws
+) const {
+    VKM_GL_CHECK(glMultiDrawArrays(mode, firsts, counts, draws));
 }
 
 } // namespace Vkm::GL

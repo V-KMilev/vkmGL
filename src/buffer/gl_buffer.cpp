@@ -78,6 +78,18 @@ void GLBuffer::bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) 
     VKM_GL_CHECK(glBindBufferRange(m_target, bindingPoint, m_id, offset, size));
 }
 
+void GLBuffer::copyFrom(const GLBuffer& source, uint32_t sourceOffset, uint32_t offset, uint32_t bytes) {
+    VKM_GL_CHECK(glCopyNamedBufferSubData(source.getID(), m_id, sourceOffset, offset, bytes));
+}
+
+void GLBuffer::clear(GLenum internalFormat, GLenum format, GLenum type, const void* value) {
+    VKM_GL_CHECK(glClearNamedBufferData(m_id, internalFormat, format, type, value));
+}
+
+void GLBuffer::read(uint32_t offset, uint32_t bytes, void* out) const {
+    VKM_GL_CHECK(glGetNamedBufferSubData(m_id, offset, bytes, out));
+}
+
 MappedBuffer::MappedBuffer(const GLBuffer& buffer, void* data)
     : m_buffer(&buffer)
     , m_data(data) {}

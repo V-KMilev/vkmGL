@@ -140,6 +140,37 @@ class GLBuffer : public GLObject {
         void bindRange(uint32_t bindingPoint, uint32_t offset, uint32_t size) const;
 
         /**
+         * @brief Copy @p bytes of @p source, from @p sourceOffset, into this buffer at @p offset.
+         *
+         * @param source       The buffer copied from; may be this one, the ranges apart.
+         * @param sourceOffset Where in it the copy begins.
+         * @param offset       Where in this buffer it lands.
+         * @param bytes        How many bytes.
+         */
+        void copyFrom(const GLBuffer& source, uint32_t sourceOffset, uint32_t offset, uint32_t bytes);
+
+        /**
+         * @brief Fill the whole buffer with one value repeated.
+         *
+         * @param internalFormat The sized format each repeat is stored as, e.g. GL_R32UI.
+         * @param format         GL format of @p value, e.g. GL_RED_INTEGER.
+         * @param type           GL type of its channels.
+         * @param value          One repeat's worth; null fills with zeros.
+         */
+        void clear(GLenum internalFormat, GLenum format, GLenum type, const void* value);
+
+        /**
+         * @brief Read @p bytes from @p offset back into @p out.
+         *
+         * Waits for every command writing it: for a test or a bake, not a frame.
+         *
+         * @param offset Where the read begins.
+         * @param bytes  How many bytes.
+         * @param out    Where they land, room for @p bytes.
+         */
+        void read(uint32_t offset, uint32_t bytes, void* out) const;
+
+        /**
          * @brief Map the whole buffer into client address space.
          *
          * The mapping unmaps itself when the returned object goes out of

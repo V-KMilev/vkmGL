@@ -46,10 +46,7 @@ StreamRing::~StreamRing() {
 }
 
 void StreamRing::release() noexcept {
-    for (GLsync& fence : m_fences) {
-        if (fence) VKM_GL_CHECK(glDeleteSync(fence));
-        fence = nullptr;
-    }
+    for (Fence& fence : m_fences) fence = Fence{};
     for (const Retired& retired : m_retired) VKM_GL_CHECK(glDeleteBuffers(1, &retired.buffer));
     m_retired.clear();
     if (m_buffer == 0) return;
@@ -76,20 +73,14 @@ BufferSpan StreamRing::write(const void* data, uint32_t bytes) {
 
 void StreamRing::endFrame() {
     if (!m_open) return;
-    m_fences[m_region] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    m_fences[m_region].place();
     m_open = false;
     ++m_frame;
 }
 
 void StreamRing::open() {
     m_region = (m_region + 1) % FRAMES;
-    if (GLsync& fence = m_fences[m_region]) {
-        // Flushed on the first wait, so the fence reaches the GPU rather than waiting forever.
-        GLbitfield flags = GL_SYNC_FLUSH_COMMANDS_BIT;
-        while (glClientWaitSync(fence, flags, 1000000000u) == GL_TIMEOUT_EXPIRED) flags = 0;
-        VKM_GL_CHECK(glDeleteSync(fence));
-        fence = nullptr;
-    }
+    m_fences[m_region].wait();
     // The frame that last read a retired buffer is now done when FRAMES frames have ended since.
     const auto done = [this](const Retired& retired) { return retired.frame + FRAMES <= m_frame; };
     for (const Retired& retired : m_retired) {
