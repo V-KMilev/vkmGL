@@ -76,6 +76,23 @@ void unregisterShader(ShaderBase* shader) {
     }
 }
 
+ShaderCount countShaders() {
+    ShaderCount count;
+    for (const ShaderBase* shader : liveShaders()) {
+        if (shader->getPath().empty()) continue;  // moved from
+        ++count.live;
+        if (!shader->ready()) ++count.compiling;
+    }
+    return count;
+}
+
+void checkShaders() {
+    for (const ShaderBase* shader : liveShaders()) {
+        if (shader->getPath().empty()) continue;  // moved from
+        shader->finishLink();
+    }
+}
+
 uint32_t reloadChangedShaders(const std::string& directory) {
     const std::optional<std::filesystem::file_time_type> newest = newestWrite(directory);
     if (!newest) return 0;

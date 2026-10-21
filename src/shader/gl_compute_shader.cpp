@@ -56,25 +56,10 @@ void ComputeShader::createProgram() {
     VKM_GL_CHECK(m_id = glCreateProgram());
     VKM_ASSERT(m_id != 0);
 
-    const uint32_t computeShader = compileShader(GL_COMPUTE_SHADER, m_source.computeShader);
-
-    // Released on every exit path, as Shader::createProgram releases its own:
-    // linkProgram throws on a failed link, and a hot reload of a compute shader
-    // that has stopped linking would otherwise leak one stage object per save.
-    try {
-        VKM_GL_CHECK(glAttachShader(m_id, computeShader));
-        linkProgram(m_id);
-    } catch (...) {
-        VKM_GL_CHECK(glDeleteShader(computeShader));
-        throw;
-    }
-
     // Apply a debug label for easier GPU debugging.
     setLabel(m_name.c_str());
 
-    VKM_GL_CHECK(glDeleteShader(computeShader));
-
-    LOG_TRACE("Compute shader '%s' successfully created", m_path.c_str());
+    startLink({startStage(GL_COMPUTE_SHADER, m_source.computeShader)});
 }
 
 void ComputeShader::dispatch(uint32_t numGroupsX, uint32_t numGroupsY, uint32_t numGroupsZ) const {

@@ -103,41 +103,16 @@ void Shader::createProgram() {
     VKM_GL_CHECK(m_id = glCreateProgram());
     VKM_ASSERT(m_id != 0);
 
-    // Stage objects are released on every exit path. compileShader throws when
-    // a stage fails, and the stages already built before it must not leak out
-    // with the exception - a hot reload of a broken shader would otherwise leak
-    // one object per save.
-    std::vector<uint32_t> stages;
-    const auto deleteStages = [&stages]() {
-        for (const uint32_t stage : stages) {
-            VKM_GL_CHECK(glDeleteShader(stage));
-        }
-    };
-
-    try {
-        stages.push_back(compileShader(GL_VERTEX_SHADER, m_source.vertexShader));
-        stages.push_back(compileShader(GL_FRAGMENT_SHADER, m_source.fragmentShader));
-
-        if (!m_source.geometryShader.empty()) {
-            stages.push_back(compileShader(GL_GEOMETRY_SHADER, m_source.geometryShader));
-        }
-
-        for (const uint32_t stage : stages) {
-            VKM_GL_CHECK(glAttachShader(m_id, stage));
-        }
-
-        linkProgram(m_id);
-    } catch (...) {
-        deleteStages();
-        throw;
-    }
-
     // Apply a debug label for easier GPU debugging.
     setLabel(m_name.c_str());
 
-    deleteStages();
-
-    LOG_TRACE("Graphics shader '%s' successfully created", m_path.c_str());
+    std::vector<uint32_t> stages;
+    stages.push_back(startStage(GL_VERTEX_SHADER, m_source.vertexShader));
+    stages.push_back(startStage(GL_FRAGMENT_SHADER, m_source.fragmentShader));
+    if (!m_source.geometryShader.empty()) {
+        stages.push_back(startStage(GL_GEOMETRY_SHADER, m_source.geometryShader));
+    }
+    startLink(std::move(stages));
 }
 
 } // namespace Vkm::GL

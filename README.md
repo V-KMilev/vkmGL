@@ -32,7 +32,7 @@ Headers are included flat: `#include "gl_texture.h"`.
 | `vertex`  | `VertexArray` (attribute formats, bindings, draws), `VertexBufferLayout`                |
 | `texture` | `Texture2D`, `Texture2DArray`, `Texture3D`, `TextureCube`, `TextureCubeArray`, `MipChainTexture`, `Sampler` |
 | `target`  | `FrameBuffer`, `RenderBuffer`                                                           |
-| `shader`  | `Shader`, `ComputeShader`, the source preprocessor, hot reload                          |
+| `shader`  | `Shader`, `ComputeShader`, the source preprocessor, parallel compiling, hot reload      |
 
 ## Tests
 

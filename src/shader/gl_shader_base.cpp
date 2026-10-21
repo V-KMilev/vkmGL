@@ -54,17 +54,50 @@ ShaderBase& ShaderBase::operator=(ShaderBase && other) noexcept {
         m_plainListed          = std::exchange(other.m_plainListed, false);
         m_zeros                = std::move(other.m_zeros);
         m_intZeros             = std::move(other.m_intZeros);
+        m_stages               = std::move(other.m_stages);
     }
     return *this;
 }
 
 void ShaderBase::release() noexcept {
+    for (const uint32_t stage : m_stages) {
+        VKM_GL_CHECK(glDeleteShader(stage));
+    }
+    m_stages.clear();
     if (m_id == 0) return;
     VKM_GL_CHECK(glDeleteProgram(m_id));
     m_id = 0;
 }
 
+namespace {
+
+/// Whether compileInParallel() found the driver's threads.
+bool g_parallel = false;
+
+} // namespace
+
+bool ShaderBase::compileInParallel(bool on) {
+    // Any count past the driver's own maximum asks for that maximum; none, for no threads.
+    const GLuint threads = on ? 0xFFFFFFFFu : 0u;
+    if (GLEW_KHR_parallel_shader_compile) {
+        VKM_GL_CHECK(glMaxShaderCompilerThreadsKHR(threads));
+        g_parallel = on;
+    } else if (GLEW_ARB_parallel_shader_compile) {
+        VKM_GL_CHECK(glMaxShaderCompilerThreadsARB(threads));
+        g_parallel = on;
+    }
+    return g_parallel;
+}
+
+bool ShaderBase::ready() const {
+    if (m_stages.empty() || !g_parallel) return true;
+    int32_t done = GL_FALSE;
+    VKM_GL_CHECK(glGetProgramiv(m_id, GL_COMPLETION_STATUS_KHR, &done));
+    return done == GL_TRUE;
+}
+
 void ShaderBase::bind() const {
+    finishLink();
     VKM_GL_CHECK(glUseProgram(m_id));
 }
 
@@ -73,6 +106,12 @@ void ShaderBase::unbind() const {
 }
 
 bool ShaderBase::tryRecompile() {
+    // A program still being built is waited for, so its stages are not lost to the new one's.
+    try {
+        finishLink();
+    } catch (const std::exception&) {
+        // Already logged; the reload replaces it.
+    }
     const uint32_t previous = m_id;
 
     try {
@@ -81,6 +120,7 @@ bool ShaderBase::tryRecompile() {
         // throw cannot leave us pointing at the old program's id.
         m_id = 0;
         createProgram();
+        finishLink();
     } catch (const std::exception& e) {
         // Drop whatever half-built program we made, restore the one that works.
         if (m_id != 0 && m_id != previous) {
@@ -114,40 +154,61 @@ const std::string& ShaderBase::getPath() const {
     return m_path;
 }
 
-uint32_t ShaderBase::compileShader(uint32_t type, const std::string& source) const {
+uint32_t ShaderBase::startStage(uint32_t type, const std::string& source) const {
     uint32_t id = 0;
     VKM_GL_CHECK(id = glCreateShader(type));
     const char* src = source.c_str();
 
     VKM_GL_CHECK(glShaderSource(id, 1, &src, nullptr));
     VKM_GL_CHECK(glCompileShader(id));
-
-    int32_t result = 0;
-    VKM_GL_CHECK(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
-
-    if (result != GL_TRUE) {
-        throwCompilationError(type, id);
-    }
-
     return id;
 }
 
-void ShaderBase::linkProgram(uint32_t programId) const {
-    VKM_GL_CHECK(glLinkProgram(programId));
+void ShaderBase::startLink(std::vector<uint32_t> stages) {
+    m_stages = std::move(stages);
+    for (const uint32_t stage : m_stages) {
+        VKM_GL_CHECK(glAttachShader(m_id, stage));
+    }
+    VKM_GL_CHECK(glLinkProgram(m_id));
+    if (!g_parallel) finishLink();
+}
+
+void ShaderBase::finishLink() const {
+    if (m_stages.empty()) return;
+
+    // Asking a stage or the program its status waits for the driver to finish it.
+    std::vector<uint32_t> stages;
+    stages.swap(m_stages);
+    const auto deleteStages = [&stages](uint32_t kept) {
+        for (const uint32_t stage : stages) {
+            if (stage != kept) VKM_GL_CHECK(glDeleteShader(stage));
+        }
+    };
+    for (const uint32_t stage : stages) {
+        int32_t compiled = GL_FALSE;
+        VKM_GL_CHECK(glGetShaderiv(stage, GL_COMPILE_STATUS, &compiled));
+        if (compiled == GL_TRUE) continue;
+        int32_t type = 0;
+        VKM_GL_CHECK(glGetShaderiv(stage, GL_SHADER_TYPE, &type));
+        deleteStages(stage);
+        throwCompilationError(static_cast<uint32_t>(type), stage);
+    }
 
     int32_t linkStatus = 0;
-    VKM_GL_CHECK(glGetProgramiv(programId, GL_LINK_STATUS, &linkStatus));
+    VKM_GL_CHECK(glGetProgramiv(m_id, GL_LINK_STATUS, &linkStatus));
+    deleteStages(0);
     if (linkStatus != GL_TRUE) {
         int32_t infoLogLength = 0;
-        VKM_GL_CHECK(glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &infoLogLength));
+        VKM_GL_CHECK(glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &infoLogLength));
         std::string errorMessage(static_cast<size_t>(infoLogLength), '\0');
-        VKM_GL_CHECK(glGetProgramInfoLog(programId, infoLogLength, &infoLogLength, errorMessage.data()));
+        VKM_GL_CHECK(glGetProgramInfoLog(m_id, infoLogLength, &infoLogLength, errorMessage.data()));
         // Not fatal: tryRecompile() catches this so a hot-reload edit that does
-        // not link keeps the working program. Only an uncaught throw - startup -
-        // ends the process, and that is the caller's policy, not ours.
+        // not link keeps the working program. Any other caller decides what a
+        // failure does.
         LOG_ERROR("Shader program link failed [%s]: %s", m_name.c_str(), errorMessage.c_str());
         throw std::runtime_error("Shader program link failed");
     }
+    LOG_TRACE("Shader '%s' linked", m_path.c_str());
 }
 
 void ShaderBase::throwCompilationError(uint32_t type, uint32_t id) const {
@@ -175,6 +236,7 @@ void ShaderBase::throwCompilationError(uint32_t type, uint32_t id) const {
 }
 
 int32_t ShaderBase::resolveUniform(const char* name, bool warnIfMissing) const {
+    finishLink();
     const auto it = m_uniformLocationCache.find(std::string_view(name));
     if (it != m_uniformLocationCache.end()) {
         return it->second;
@@ -223,6 +285,7 @@ uint32_t valuesIn(GLenum type) {
 } // namespace
 
 void ShaderBase::listPlainUniforms() const {
+    finishLink();
     m_plain.clear();
     GLint active = 0;
     VKM_GL_CHECK(glGetProgramiv(m_id, GL_ACTIVE_UNIFORMS, &active));
