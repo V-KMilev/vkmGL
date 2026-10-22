@@ -1,5 +1,5 @@
 #define VKM_LOG_SUFFIX "VKM-GL"
-#define VKM_LOG_CATEGORY "DEBUG"
+#define VKM_LOG_CATEGORY "DRIVER"
 
 #include "gl_debug.h"
 
