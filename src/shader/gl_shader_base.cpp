@@ -34,6 +34,21 @@ ShaderBase::ShaderBase(const std::string& path)
     registerShader(this);
 }
 
+// The new shader takes the moved-from one's place in the registry, so a walk of it never meets that one.
+ShaderBase::ShaderBase(ShaderBase && other) noexcept
+    : GLObject(std::move(other))
+    , m_name(std::move(other.m_name))
+    , m_path(std::move(other.m_path))
+    , m_uniformNames(std::move(other.m_uniformNames))
+    , m_uniformLocationCache(std::move(other.m_uniformLocationCache))
+    , m_plain(std::move(other.m_plain))
+    , m_plainListed(std::exchange(other.m_plainListed, false))
+    , m_zeros(std::move(other.m_zeros))
+    , m_intZeros(std::move(other.m_intZeros))
+    , m_stages(std::move(other.m_stages)) {
+    handOverShader(&other, this);
+}
+
 ShaderBase::~ShaderBase() {
     unregisterShader(this);
     release();
@@ -55,6 +70,8 @@ ShaderBase& ShaderBase::operator=(ShaderBase && other) noexcept {
         m_zeros                = std::move(other.m_zeros);
         m_intZeros             = std::move(other.m_intZeros);
         m_stages               = std::move(other.m_stages);
+        // This one's program is gone and other's is here, with its place in the registry.
+        handOverShader(&other, this);
     }
     return *this;
 }

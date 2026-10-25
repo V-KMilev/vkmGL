@@ -37,7 +37,7 @@ class ShaderBase : public GLObject {
         ShaderBase(const ShaderBase& shader) = delete;
         ShaderBase& operator=(const ShaderBase& shader) = delete;
 
-        ShaderBase(ShaderBase && shader) noexcept = default;
+        ShaderBase(ShaderBase && shader) noexcept;
         ShaderBase& operator=(ShaderBase && shader) noexcept;
 
     public:

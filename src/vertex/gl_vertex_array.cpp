@@ -66,7 +66,6 @@ void VertexArray::addBuffer(
 
     const std::vector<VertexBufferElement>& elements = layout.getElements();
     uint32_t offset = 0;
-
     for (uint32_t i = 0; i < elements.size(); ++i) {
         const VertexBufferElement& element = elements[i];
         const auto count = static_cast<int32_t>(element.count);
