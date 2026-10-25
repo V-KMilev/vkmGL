@@ -40,6 +40,20 @@ void VertexArray::unbind() const {
     VKM_GL_CHECK(glBindVertexArray(0));
 }
 
+namespace {
+
+// How a layout element reaches the shader: an integer type keeps its value unless the element is
+// normalized; every other type is read as a float.
+AttributeKind kindOf(const VertexBufferElement& element) {
+    const bool integral = element.type == GL_INT   || element.type == GL_UNSIGNED_INT   ||
+                          element.type == GL_BYTE  || element.type == GL_UNSIGNED_BYTE  ||
+                          element.type == GL_SHORT || element.type == GL_UNSIGNED_SHORT;
+    if (!integral) return AttributeKind::Float;
+    return element.normalized == GL_TRUE ? AttributeKind::Normalized : AttributeKind::Integer;
+}
+
+} // namespace
+
 void VertexArray::addBuffer(
     const VertexBuffer& vertexBuffer,
     const VertexBufferLayout& layout,
@@ -48,34 +62,15 @@ void VertexArray::addBuffer(
     // The buffer takes the binding numbered as its first attribute, so two buffers fed at their
     // own start indices never share one.
     const uint32_t binding = startIndex;
-    const auto stride = static_cast<GLsizei>(layout.getStride());
-    VKM_GL_CHECK(glVertexArrayVertexBuffer(m_id, binding, vertexBuffer.getID(), 0, stride));
+    setVertexBuffer(binding, vertexBuffer, 0, layout.getStride());
 
     const std::vector<VertexBufferElement>& elements = layout.getElements();
     uint32_t offset = 0;
 
     for (uint32_t i = 0; i < elements.size(); ++i) {
         const VertexBufferElement& element = elements[i];
-        const uint32_t index = startIndex + i;
-
-        VKM_GL_CHECK(glEnableVertexArrayAttrib(m_id, index));
-
-        // An integer attribute stays integral in the shader only when it is
-        // not normalized; a normalized one is read as a float, which is the
-        // same path every non-integer type takes.
-        const bool integral = element.type == GL_INT   || element.type == GL_UNSIGNED_INT   ||
-                              element.type == GL_BYTE  || element.type == GL_UNSIGNED_BYTE  ||
-                              element.type == GL_SHORT || element.type == GL_UNSIGNED_SHORT;
-
-        if (integral && element.normalized == GL_FALSE) {
-            VKM_GL_CHECK(glVertexArrayAttribIFormat(m_id, index, element.count, element.type, offset));
-        } else {
-            const GLboolean normalized = element.normalized;
-            const GLenum    type       = element.type;
-            VKM_GL_CHECK(glVertexArrayAttribFormat(m_id, index, element.count, type, normalized, offset));
-        }
-        VKM_GL_CHECK(glVertexArrayAttribBinding(m_id, index, binding));
-
+        const auto count = static_cast<int32_t>(element.count);
+        setAttribute(startIndex + i, binding, count, element.type, offset, kindOf(element));
         offset += element.count * VertexBufferElement::getSizeOfType(element.type);
     }
 }

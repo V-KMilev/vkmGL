@@ -58,6 +58,9 @@ class VertexArray : public GLObject {
          * would move them instead and leave the old, deleted buffer wired to the
          * ones the shader actually reads.
          *
+         * Each element goes through setAttribute: an integer type as AttributeKind::Integer, or
+         * Normalized when the layout normalizes it, and every other type as Float.
+         *
          * @param vertexBuffer Buffer to source the attributes from.
          * @param layout       Element list describing one vertex.
          * @param startIndex   First attribute location to write.
