@@ -37,5 +37,6 @@ Headers are included flat: `#include "gl_texture.h"`.
 ## Tests
 
 `vkm_gl_tests` covers what runs without a context - vertex layouts and the
-preprocessor - so it runs on a machine with no GPU. What needs a context is
+preprocessor - so it runs on a machine with no GPU. A consumer sets
+`VKM_GL_BUILD_TESTS` before adding the library to build it. What needs a context is
 tested by the renderer that consumes the library.

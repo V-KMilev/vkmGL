@@ -65,9 +65,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
 # Tests cover only what runs without a GL context, so this binary stays usable
-# on a build machine with no GPU. Built when vkm_gl is the top-level project, or
-# when a parent asks for it - the engine does not build them by default.
-option(VKM_GL_BUILD_TESTS "Build the vkm_gl test suite" ${PROJECT_IS_TOP_LEVEL})
+# on a build machine with no GPU. vkm_gl is always a consumer's subdirectory (it
+# needs the glm and vkm_log targets the consumer adds), so built only when the
+# consumer asks for them.
+option(VKM_GL_BUILD_TESTS "Build the vkm_gl test suite" OFF)
 
 if(VKM_GL_BUILD_TESTS)
 	enable_testing()
