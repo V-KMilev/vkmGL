@@ -154,7 +154,8 @@ void Context::setColorMask(bool r, bool g, bool b, bool a) {
         r ? GL_TRUE : GL_FALSE,
         g ? GL_TRUE : GL_FALSE,
         b ? GL_TRUE : GL_FALSE,
-        a ? GL_TRUE : GL_FALSE));
+        a ? GL_TRUE : GL_FALSE
+    ));
 }
 
 void Context::setColorMask(uint32_t drawBuffer, bool r, bool g, bool b, bool a) {
