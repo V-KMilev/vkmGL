@@ -103,7 +103,8 @@ bool FrameBuffer::isComplete() const {
 }
 
 GLenum FrameBuffer::checkStatus() const {
-    const GLenum status = glCheckNamedFramebufferStatus(m_id, GL_FRAMEBUFFER);
+    GLenum status = GL_NONE;
+    VKM_GL_CHECK(status = glCheckNamedFramebufferStatus(m_id, GL_FRAMEBUFFER));
 
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         const char* errorStr = "Unknown error";
