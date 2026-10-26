@@ -90,6 +90,7 @@ ShaderCount countShaders() {
     for (const ShaderBase* shader : liveShaders()) {
         ++count.live;
         if (!shader->ready()) ++count.compiling;
+        if (!shader->checked()) ++count.unchecked;
     }
     return count;
 }
@@ -98,6 +99,15 @@ void checkShaders() {
     for (const ShaderBase* shader : liveShaders()) {
         shader->finishLink();
     }
+}
+
+bool checkNextShader() {
+    for (const ShaderBase* shader : liveShaders()) {
+        if (shader->checked() || !shader->ready()) continue;
+        shader->finishLink();
+        return true;
+    }
+    return false;
 }
 
 uint32_t reloadChangedShaders(const std::string& directory) {
