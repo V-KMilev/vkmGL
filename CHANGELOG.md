@@ -2,6 +2,39 @@
 
 Notable changes to vkmGL, newest first. Each release is tagged `vX.Y.Z`.
 
+## 1.1.0
+
+What a renderer reached past vkmGL for, now in it: parallel shader builds, array and
+multisampled textures, fences and readbacks, and the state a frame sets.
+
+- **Parallel shader builds**: `ShaderBase::compileInParallel` hands each program to the
+  driver's own threads and checks it at its first use; `ready()` asks without waiting,
+  `countShaders()` counts the live shaders and how many are still compiling, for a progress bar,
+  and `checkShaders()` checks every one, so a broken program is found before anything binds it.
+- **`zeroUniforms`** sets every plain uniform of a program to zero, so a pass sharing it starts
+  from nothing another pass left.
+- **`Texture2DArray`**: layers of one size and format, sampled whole or through a view in
+  another format, bound as a layered image, cleared a level at a time, its levels built from
+  the first. `Texture2D` can be multisampled, binds a level as an image and clears a level;
+  `TextureCubeArray` copies one cube over another.
+- **`Fence`** owns a sync object, and `StreamRing` waits on them; a **`ReadbackBuffer`** is a
+  persistently mapped copy the CPU reads once it has landed, never waiting. `GLBuffer` copies,
+  clears and reads back by name.
+- **`VertexArray`** sets attribute formats of each kind, its buffer bindings and index buffer,
+  and draws instanced, multi and indirect.
+- **`Context`** caches alpha to coverage, polygon offset, depth clamp, clip planes and a
+  per-buffer colour mask, and sets clip control, pixel alignment and seamless cubes;
+  `setDefaultState` resets them all. `FrameBuffer` clears its own attachments by name.
+- The driver's debug messages log under the category `DRIVER`, and its performance notes below
+  high severity at debug rather than as warnings.
+- `BufferSpan` and `bindRange` live in `gl_buffer.h`, beside the buffer they name.
+- vkm_gl requires only the `glm` and `vkm_log` targets; the consumer makes the context and
+  starts glew. Its tests build when the consumer sets `VKM_GL_BUILD_TESTS`.
+
+Fixes: a shader moved into place is in the registry, so hot reload and `countShaders()` find
+it, and the moved-from one is not walked; the framebuffer status check goes through
+`VKM_GL_CHECK`.
+
 ## 1.0.0
 
 The first release with a changelog. vkmGL needs OpenGL 4.5 core and edits every object
