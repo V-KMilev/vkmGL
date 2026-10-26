@@ -1,5 +1,6 @@
 #include "gl_shader_reload.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <optional>
 #include <system_error>
@@ -76,6 +77,29 @@ void unregisterShader(ShaderBase* shader) {
     }
 }
 
+void handOverShader(ShaderBase* from, ShaderBase* to) {
+    if (from == to) return;
+    unregisterShader(to);
+    std::vector<ShaderBase*>& shaders = liveShaders();
+    const auto place = std::find(shaders.begin(), shaders.end(), from);
+    if (place != shaders.end()) *place = to;
+}
+
+ShaderCount countShaders() {
+    ShaderCount count;
+    for (const ShaderBase* shader : liveShaders()) {
+        ++count.live;
+        if (!shader->ready()) ++count.compiling;
+    }
+    return count;
+}
+
+void checkShaders() {
+    for (const ShaderBase* shader : liveShaders()) {
+        shader->finishLink();
+    }
+}
+
 uint32_t reloadChangedShaders(const std::string& directory) {
     const std::optional<std::filesystem::file_time_type> newest = newestWrite(directory);
     if (!newest) return 0;
@@ -93,9 +117,6 @@ uint32_t reloadChangedShaders(const std::string& directory) {
     uint32_t reloaded = 0;
     uint32_t failed   = 0;
     for (ShaderBase* shader : liveShaders()) {
-        // A moved-from shader stays registered until it is destroyed and has no
-        // source left to read; skip it rather than reporting a failure for it.
-        if (!shader || shader->getPath().empty()) continue;
         if (shader->tryRecompile()) ++reloaded;
         else                        ++failed;
     }

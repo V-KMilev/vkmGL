@@ -1,5 +1,5 @@
 #define VKM_LOG_SUFFIX "VKM-GL"
-#define VKM_LOG_CATEGORY "DEBUG"
+#define VKM_LOG_CATEGORY "DRIVER"
 
 #include "gl_debug.h"
 
@@ -57,9 +57,14 @@ namespace {
             case GL_DEBUG_TYPE_OTHER:               typeStr = "OTHER"; break;
         }
 
-        // Severity maps to log level so HIGH GL errors log as ERROR and
-        // MEDIUM as WARNING. Previously everything came out as ERROR, which
-        // turned routine driver hints into noise.
+        // A performance note is mostly the driver describing its own work - a program recompiled for
+        // the state it is drawn in, say - rarely something to act on: logged for whoever profiles.
+        if (type == GL_DEBUG_TYPE_PERFORMANCE && severity != GL_DEBUG_SEVERITY_HIGH) {
+            LOG_DEBUG("[%s/%s][ID:%u] %s", srcStr, typeStr, id, message);
+            return;
+        }
+
+        // Severity maps to log level so HIGH GL errors log as ERROR and MEDIUM as WARNING.
         switch (severity) {
             case GL_DEBUG_SEVERITY_HIGH:
                 LOG_ERROR("[%s/%s/HIGH][ID:%u] %s", srcStr, typeStr, id, message);

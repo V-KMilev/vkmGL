@@ -2,13 +2,12 @@ set(MODULES_DIR ${PROJECT_SOURCE_DIR}/modules)
 
 set(GLEW_DIR  ${MODULES_DIR}/glew)
 
-# glm, glfw, stb and vkm_log are the consuming project's to provide. They are not
-# vendored here because vkm_gl is not their only user - glm crosses this library's
-# own API, and the engine above needs all four directly - so a copy in here would
-# be a second one, and two copies of glm across a module boundary is a layout
-# mismatch waiting to happen. Fail with the reason rather than with whatever
-# error a missing target produces three files later.
-foreach(_vkm_gl_required glm glfw vkm_log stb)
+# glm and vkm_log are the consuming project's to provide: vkm_gl links them but is not
+# their only user - glm crosses this library's own API - so a copy in here would be a
+# second one, and two copies of glm across a module boundary is a layout mismatch
+# waiting to happen. Fail with the reason rather than with whatever error a missing
+# target produces three files later.
+foreach(_vkm_gl_required glm vkm_log)
 	if(NOT TARGET ${_vkm_gl_required})
 		message(FATAL_ERROR
 			"vkm_gl requires the target '${_vkm_gl_required}', which the consuming "
@@ -83,16 +82,11 @@ else()
 endif()
 
 # Set the target's include directories
-# glew is vkm_gl's own, always. The rest may be supplied by a parent project - if
-# they are, their targets carry the include directories and vkm_gl's copies are
-# not even checked out, so pointing at those paths would add empty directories.
+# glew's headers are vkm_gl's own; glm's and vkm_log's come with their targets.
 # Split so the path resolves against this tree while building and against an
 # installed prefix when vkm_gl travels inside an SDK.
 target_include_directories(${PROJECT_NAME} PUBLIC
 	$<BUILD_INTERFACE:${GLEW_DIR}/include>
 	$<INSTALL_INTERFACE:include>
 )
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-	$<TARGET_PROPERTY:stb,INTERFACE_INCLUDE_DIRECTORIES>)
 

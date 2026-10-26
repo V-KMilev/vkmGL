@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -21,8 +22,8 @@ namespace Vkm::GL {
  * Provides common functionality for all shader types:
  * - Program binding/unbinding
  * - Uniform value setting (all types)
- * - Shader compilation
- * - Program linking and validation
+ * - Shader compilation and linking, in the driver's threads where it has them
+ *   (compileInParallel()), checked at the program's first use or checkShaders()
  * - Hot-reloading support
  * - Debug labeling
  *
@@ -36,10 +37,32 @@ class ShaderBase : public GLObject {
         ShaderBase(const ShaderBase& shader) = delete;
         ShaderBase& operator=(const ShaderBase& shader) = delete;
 
-        ShaderBase(ShaderBase && shader) noexcept = default;
+        ShaderBase(ShaderBase && shader) noexcept;
         ShaderBase& operator=(ShaderBase && shader) noexcept;
 
     public:
+        /**
+         * @brief Let the driver compile and link programs on threads of its own, if it can.
+         *
+         * Called once the context is current, before the programs it should speed. A program
+         * built while it is on is handed to the driver and checked at its first use, which waits
+         * for it; ready() says whether that would wait. While it is off, or on a driver without
+         * GL_KHR_parallel_shader_compile or GL_ARB_parallel_shader_compile, a program is checked
+         * as it is built.
+         *
+         * @param on Whether to; off gives the driver's threads back.
+         * @return Whether the driver now compiles in parallel.
+         */
+        static bool compileInParallel(bool on = true);
+
+        /**
+         * @brief Whether the program has compiled and linked, asked without waiting for it.
+         *
+         * @return True once the driver is done with it, failed or not; a failure throws at
+         *         the program's first use, or at checkShaders().
+         */
+        bool ready() const;
+
         /**
          * @brief Bind this shader program (glUseProgram).
          */
@@ -107,6 +130,17 @@ class ShaderBase : public GLObject {
          */
         bool hasUniform(const char* name) const;
 
+        /**
+         * @brief Set every uniform outside a block that is a float, int, uint or bool scalar or
+         *        vector, a mat3 or a mat4, to zero.
+         *
+         * A program shared by passes that each set only some starts from this rather than from
+         * what another left. Any other type is left as it is: samplers and images keep their
+         * units, and a mat2, a non-square matrix or a double keeps its value. A block is its
+         * buffer's. The uniforms are listed once a link.
+         */
+        void zeroUniforms() const;
+
     protected:
         /**
          * @brief Protected constructor for derived classes.
@@ -126,20 +160,24 @@ class ShaderBase : public GLObject {
         virtual void reloadSource() = 0;
 
         /**
-         * @brief Compile a single shader stage.
-         * @param type OpenGL shader stage enum (e.g. GL_VERTEX_SHADER, GL_COMPUTE_SHADER).
+         * @brief Start compiling one stage, without waiting for or checking the result.
+         *
+         * @param type   OpenGL shader stage enum (e.g. GL_VERTEX_SHADER, GL_COMPUTE_SHADER).
          * @param source Shader source code string.
-         * @return Compiled shader object ID.
-         * @throws std::runtime_error on compilation failure.
+         * @return The stage's shader object ID.
          */
-        uint32_t compileShader(uint32_t type, const std::string& source) const;
+        uint32_t startStage(uint32_t type, const std::string& source) const;
 
         /**
-         * @brief Link the shader program and validate it.
-         * @param programId The OpenGL program ID to link.
-         * @throws std::runtime_error on linking failure.
+         * @brief Attach @p stages to the program and start linking it.
+         *
+         * The program keeps the stages until it is checked: at once without
+         * compileInParallel(), else at its first use.
+         *
+         * @param stages The program's stages, from startStage().
+         * @throws std::runtime_error When checked at once and a stage or the link failed.
          */
-        void linkProgram(uint32_t programId) const;
+        void startLink(std::vector<uint32_t> stages);
 
         /**
          * @brief Log a stage's compilation error, delete the stage, and throw.
@@ -163,6 +201,29 @@ class ShaderBase : public GLObject {
         int32_t getUniformLocation(const char* name) const;
 
     private:
+        /// A uniform zeroUniforms() sets.
+        struct PlainUniform {
+            int32_t  location = -1;
+            int32_t  count    = 0;  ///< Its array's length, 1 for a single value.
+            uint32_t type     = 0;  ///< Its GL type.
+        };
+
+        /**
+         * @brief Wait for the program's compile and link, check them, and free its stages.
+         *
+         * Nothing once checked. A failure logs the driver's message, frees the stages and
+         * throws; the program stays, unusable, for its owner to drop.
+         *
+         * @throws std::runtime_error When a stage failed to compile or the program to link.
+         */
+        void finishLink() const;
+
+        // Runs finishLink() on every live shader.
+        friend void checkShaders();
+
+        /// List the program's plain uniforms into m_plain, and size the zeros for the largest.
+        void listPlainUniforms() const;
+
         /**
          * @brief Shared body of hasUniform() and getUniformLocation().
          *
@@ -194,6 +255,15 @@ class ShaderBase : public GLObject {
 
         /// Name -> location, keyed by view so a literal hashes without allocating.
         mutable std::unordered_map<std::string_view, int32_t> m_uniformLocationCache;
+
+        // What zeroUniforms() sets, listed on first use after a link, and zeros for the largest.
+        mutable std::vector<PlainUniform> m_plain;
+        mutable bool                      m_plainListed = false;
+        mutable std::vector<float>        m_zeros;
+        mutable std::vector<uint32_t>     m_intZeros;  ///< Read as signed and unsigned alike.
+
+        /// The stages of a program not yet checked; empty once finishLink() ran.
+        mutable std::vector<uint32_t> m_stages;
 };
 
 } // namespace Vkm::GL

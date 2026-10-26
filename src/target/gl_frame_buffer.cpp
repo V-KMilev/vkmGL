@@ -44,6 +44,36 @@ void FrameBuffer::bindDefault() {
     VKM_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
+void FrameBuffer::clearColor(int32_t drawBuffer, const float rgba[4]) const {
+    VKM_GL_CHECK(glClearNamedFramebufferfv(m_id, GL_COLOR, drawBuffer, rgba));
+}
+
+void FrameBuffer::clearColor(int32_t drawBuffer, const uint32_t rgba[4]) const {
+    VKM_GL_CHECK(glClearNamedFramebufferuiv(m_id, GL_COLOR, drawBuffer, rgba));
+}
+
+void FrameBuffer::clearDepth(float depth) const {
+    VKM_GL_CHECK(glClearNamedFramebufferfv(m_id, GL_DEPTH, 0, &depth));
+}
+
+void FrameBuffer::readDefault(
+    int32_t x,
+    int32_t y,
+    int32_t width,
+    int32_t height,
+    GLenum format,
+    GLenum type,
+    size_t bytes,
+    void* pixels
+) {
+    GLint reading = 0;
+    VKM_GL_CHECK(glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &reading));
+    VKM_GL_CHECK(glBindFramebuffer(GL_READ_FRAMEBUFFER, 0));
+    const auto room = static_cast<GLsizei>(bytes);
+    VKM_GL_CHECK(glReadnPixels(x, y, width, height, format, type, room, pixels));
+    VKM_GL_CHECK(glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(reading)));
+}
+
 void FrameBuffer::attachTexture(GLenum attachment, uint32_t textureID, int32_t level) {
     VKM_GL_CHECK(glNamedFramebufferTexture(m_id, attachment, textureID, level));
 }
@@ -73,7 +103,8 @@ bool FrameBuffer::isComplete() const {
 }
 
 GLenum FrameBuffer::checkStatus() const {
-    const GLenum status = glCheckNamedFramebufferStatus(m_id, GL_FRAMEBUFFER);
+    GLenum status = GL_NONE;
+    VKM_GL_CHECK(status = glCheckNamedFramebufferStatus(m_id, GL_FRAMEBUFFER));
 
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         const char* errorStr = "Unknown error";

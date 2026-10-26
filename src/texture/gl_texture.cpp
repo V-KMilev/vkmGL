@@ -119,6 +119,7 @@ uint32_t levelExtent(uint32_t size, uint32_t level) {
 } // namespace
 
 uint32_t levelCount(const Texture2DParams& params) {
+    if (params.samples > 1) return 1;
     if (params.levels > 0) return params.levels;
     if (!params.generateMipmaps) return 1;
     uint32_t levels = 1;
@@ -156,8 +157,24 @@ void Texture2D::release() noexcept {
 }
 
 void Texture2D::allocate() {
+    if (multisampled()) {
+        // Read a sample at a time by texelFetch: it has no levels, filter or wrap to set.
+        VKM_GL_CHECK(glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &m_id));
+        VKM_ASSERT(m_id != 0);
+        setLabel(m_name.c_str());
+        VKM_GL_CHECK(glTextureStorage2DMultisample(
+            m_id,
+            static_cast<GLsizei>(m_params.samples),
+            m_params.internalFormat,
+            static_cast<GLsizei>(m_params.width),
+            static_cast<GLsizei>(m_params.height),
+            GL_TRUE
+        ));
+        return;
+    }
     VKM_GL_CHECK(glCreateTextures(GL_TEXTURE_2D, 1, &m_id));
     VKM_ASSERT(m_id != 0);
+    setLabel(m_name.c_str());
     applyParameters();
     // A texture of no size - a stub for pixels still loading - has no storage to give, and
     // samples as an incomplete texture: black.
@@ -177,6 +194,15 @@ void Texture2D::allocate() {
 
 void Texture2D::bindSlot(uint32_t slot) const {
     VKM_GL_CHECK(glBindTextureUnit(slot, m_id));
+}
+
+void Texture2D::bindImage(uint32_t unit, GLenum access, uint32_t level) const {
+    const auto at = static_cast<GLint>(level);
+    VKM_GL_CHECK(glBindImageTexture(unit, m_id, at, GL_FALSE, 0, access, m_params.internalFormat));
+}
+
+void Texture2D::clear(uint32_t level, GLenum format, GLenum type, const void* value) const {
+    VKM_GL_CHECK(glClearTexImage(m_id, static_cast<GLint>(level), format, type, value));
 }
 
 void Texture2D::setData(const void* data, uint32_t width, uint32_t height, GLenum format, GLenum type) {
