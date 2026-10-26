@@ -6,33 +6,10 @@
 
 #include <GL/glew.h>
 
+#include "gl_buffer.h"  // BufferSpan
 #include "gl_fence.h"
 
 namespace Vkm::GL {
-
-/**
- * @brief A range of a buffer: where a StreamRing write() put its bytes, or a whole buffer.
- *
- * The buffer is named, not implied, because a ring that outgrows itself moves to a new one
- * mid-frame and what was written before stays where it was.
- */
-struct BufferSpan {
-    GLuint   buffer = 0;
-    uint32_t offset = 0;
-    uint32_t bytes  = 0;
-
-    /// Whether it holds any bytes.
-    explicit operator bool() const { return bytes > 0; }
-};
-
-/**
- * @brief Bind @p span to an indexed binding point of @p target.
- *
- * @param target  GL_SHADER_STORAGE_BUFFER or GL_UNIFORM_BUFFER.
- * @param binding The binding point.
- * @param span    The range; one a StreamRing wrote must be bound in the frame it was written.
- */
-void bindRange(GLenum target, uint32_t binding, const BufferSpan& span);
 
 /**
  * @brief Per-frame data written straight into memory the GPU reads: one persistently mapped

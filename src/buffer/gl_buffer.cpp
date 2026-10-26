@@ -7,6 +7,10 @@
 
 namespace Vkm::GL {
 
+void bindRange(GLenum target, uint32_t binding, const BufferSpan& span) {
+    VKM_GL_CHECK(glBindBufferRange(target, binding, span.buffer, span.offset, span.bytes));
+}
+
 GLBuffer::GLBuffer(
     GLenum target,
     const void* data,

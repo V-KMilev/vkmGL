@@ -34,10 +34,6 @@ uint32_t spanAlignment() {
 
 } // namespace
 
-void bindRange(GLenum target, uint32_t binding, const BufferSpan& span) {
-    VKM_GL_CHECK(glBindBufferRange(target, binding, span.buffer, span.offset, span.bytes));
-}
-
 StreamRing::StreamRing(uint32_t initialBytes)
     : m_regionBytes(initialBytes) {}
 

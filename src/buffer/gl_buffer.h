@@ -8,6 +8,30 @@ namespace Vkm::GL {
 class GLBuffer;
 
 /**
+ * @brief A range of a buffer: a whole buffer, or where a StreamRing write() put its bytes.
+ *
+ * The buffer is named, not implied, because a ring that outgrows itself moves to a new one
+ * mid-frame and what was written before stays where it was.
+ */
+struct BufferSpan {
+    GLuint   buffer = 0;
+    uint32_t offset = 0;
+    uint32_t bytes  = 0;
+
+    /// Whether it holds any bytes.
+    explicit operator bool() const { return bytes > 0; }
+};
+
+/**
+ * @brief Bind @p span to an indexed binding point of @p target.
+ *
+ * @param target  GL_SHADER_STORAGE_BUFFER or GL_UNIFORM_BUFFER.
+ * @param binding The binding point.
+ * @param span    The range; one a StreamRing wrote must be bound in the frame it was written.
+ */
+void bindRange(GLenum target, uint32_t binding, const BufferSpan& span);
+
+/**
  * @brief A buffer mapped into client address space, unmapped on destruction.
  *
  * Obtained from GLBuffer::map() / mapRange(), never constructed directly. Move
