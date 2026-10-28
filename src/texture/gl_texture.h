@@ -153,7 +153,7 @@ uint32_t levelCount(const Texture2DParams& params);
 /**
  * @brief Params preset for an off-screen render-target texture: clamped, no
  * mipmaps, GL_FLOAT source type, no initial data. Filtering defaults to
- * nearest (depth / data targets); colour targets pass linear.
+ * nearest (depth / data targets); color targets pass linear.
  */
 Texture2DParams renderTargetParams(
     uint32_t width,
