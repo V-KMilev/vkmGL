@@ -2,6 +2,15 @@
 
 Notable changes to vkmGL, newest first. Each release is tagged `vX.Y.Z`.
 
+## 1.1.1
+
+A host checks its programs one at a time, so no frame waits on them all.
+
+- **`checkNextShader()`** checks one program the driver is done with: on some drivers asking for
+  a link status is where the program is really built, so `checkShaders()` was one long frozen
+  frame. `ShaderBase::checked()` says whether a program has been checked, and `countShaders()`
+  counts those that have not (`ShaderCount::unchecked`).
+
 ## 1.1.0
 
 What a renderer reached past vkmGL for, now in it: parallel shader builds, array and
