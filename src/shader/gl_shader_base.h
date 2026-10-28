@@ -23,7 +23,8 @@ namespace Vkm::GL {
  * - Program binding/unbinding
  * - Uniform value setting (all types)
  * - Shader compilation and linking, in the driver's threads where it has them
- *   (compileInParallel()), checked at the program's first use or checkShaders()
+ *   (compileInParallel()), checked at the program's first use, at checkShaders()
+ *   or at checkNextShader()
  * - Hot-reloading support
  * - Debug labeling
  *
@@ -59,9 +60,16 @@ class ShaderBase : public GLObject {
          * @brief Whether the program has compiled and linked, asked without waiting for it.
          *
          * @return True once the driver is done with it, failed or not; a failure throws at
-         *         the program's first use, or at checkShaders().
+         *         the program's first use, or at checkShaders() or checkNextShader().
          */
         bool ready() const;
+
+        /**
+         * @brief Whether the program's compile and link have been checked (finishLink()).
+         *
+         * @return True once they have, a failure having thrown then.
+         */
+        bool checked() const { return m_stages.empty(); }
 
         /**
          * @brief Bind this shader program (glUseProgram).
@@ -218,8 +226,9 @@ class ShaderBase : public GLObject {
          */
         void finishLink() const;
 
-        // Runs finishLink() on every live shader.
+        // Run finishLink() on every live shader, or the next one the driver is done with.
         friend void checkShaders();
+        friend bool checkNextShader();
 
         /// List the program's plain uniforms into m_plain, and size the zeros for the largest.
         void listPlainUniforms() const;

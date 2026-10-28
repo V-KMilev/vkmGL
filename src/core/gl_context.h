@@ -424,7 +424,7 @@ class Context {
         /**
          * @brief Reset every tracked piece of state to its default.
          *
-         * Covers all of it - depth, culling, blending, stencil, colour mask,
+         * Covers all of it - depth, culling, blending, stencil, color mask,
          * scissor, polygon mode and offset, alpha to coverage, depth clamp and
          * clip planes - so a caller can rely on the name and not have to know
          * which subset was actually reset. The viewport and scissor *rectangles* are

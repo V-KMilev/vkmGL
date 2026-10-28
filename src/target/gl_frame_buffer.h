@@ -90,7 +90,7 @@ class FrameBuffer : public GLObject {
         void setReadBuffer(GLenum attachment);
 
         /**
-         * @brief Clear one colour draw buffer to @p rgba, whatever is bound.
+         * @brief Clear one color draw buffer to @p rgba, whatever is bound.
          *
          * @param drawBuffer The draw buffer's index.
          * @param rgba       Four values, for a float or normalized buffer.
@@ -98,7 +98,7 @@ class FrameBuffer : public GLObject {
         void clearColor(int32_t drawBuffer, const float rgba[4]) const;
 
         /**
-         * @brief Clear one unsigned-integer colour draw buffer to @p rgba, whatever is bound.
+         * @brief Clear one unsigned-integer color draw buffer to @p rgba, whatever is bound.
          *
          * @param drawBuffer The draw buffer's index.
          * @param rgba       Four values.

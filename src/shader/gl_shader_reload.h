@@ -51,10 +51,11 @@ void unregisterShader(ShaderBase* shader);
  */
 void handOverShader(ShaderBase* from, ShaderBase* to);
 
-/// How many shaders are live, and how many of them the driver is still compiling.
+/// How many shaders are live, how many the driver is still compiling, and how many are unchecked.
 struct ShaderCount {
     uint32_t live      = 0;
     uint32_t compiling = 0;  ///< Not ShaderBase::ready().
+    uint32_t unchecked = 0;  ///< Not ShaderBase::checked(); every one still compiling is too.
 };
 
 /**
@@ -76,6 +77,19 @@ ShaderCount countShaders();
  * @throws std::runtime_error At the first shader that failed to compile or link, having logged it.
  */
 void checkShaders();
+
+/**
+ * @brief Check one live shader the driver is done with that nothing has checked yet, as
+ *        checkShaders() checks them all.
+ *
+ * On some drivers the asking is where a program is really built, holding every GL call while it
+ * is: a host checking a few a frame keeps each frame short where checking all at once is one long
+ * frozen frame.
+ *
+ * @return Whether one was checked.
+ * @throws std::runtime_error When it failed to compile or link, having logged it.
+ */
+bool checkNextShader();
 
 /**
  * @brief Recompile every live shader if anything under @p directory changed.

@@ -18,9 +18,9 @@ void Context::clearColor() const {
 }
 
 void Context::clear(bool color, bool depth, bool stencil, float depthValue) const {
-    // A colour clear applies the stored clear colour first - setClearColor
+    // A color clear applies the stored clear color first - setClearColor
     // alone never touches GL, so set + clear always clears with the caller's
-    // colour instead of whatever glClearColor state was left behind.
+    // color instead of whatever glClearColor state was left behind.
     if (color) clearColor();
     if (depth) VKM_GL_CHECK(glClearDepthf(depthValue));
 

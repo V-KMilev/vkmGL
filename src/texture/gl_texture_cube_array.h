@@ -53,7 +53,7 @@ class TextureCubeArray : public GLObject {
          * @param mips           Mip level count (1 = no chain).
          * @param capacity       Number of cubes (the array holds capacity * 6 layer-faces).
          * @param internalFormat Sized internal format, e.g. GL_RGBA16F (the guaranteed
-         *                       colour-renderable HDR format; RGB16F render support is optional).
+         *                       color-renderable HDR format; RGB16F render support is optional).
          */
         void create(int size, int mips, int capacity, GLenum internalFormat) {
             release();
